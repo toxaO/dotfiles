@@ -1,0 +1,1219 @@
+--------------------------------------------------------------------------------
+-- base
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+-- keymap alias
+local opts = { noremap = true, silent = true }
+local keymap = vim.api.nvim_set_keymap
+
+vim.cmd("autocmd!")
+vim.scriptencoding = "utf-8"
+vim.wo.number = true
+
+--------------------------------------------------
+-- option --
+local options = {
+	encoding = "utf-8",
+	fileencoding = "utf-8",
+	title = true,
+	backup = false,
+	ruler = true,
+	visualbell = true, -- エラー音を画面表示に,
+	helplang = "ja,en", -- ヘルプファイル日本語化
+	clipboard = "unnamed", -- クリップボード連携
+	cmdheight = 2,
+	completeopt = { "menuone", "noselect" },
+	conceallevel = 0,
+	hlsearch = true,
+	ignorecase = true,
+	mouse = "a",
+	pumheight = 10,
+	showcmd = true,
+	wildmenu = true,
+	matchpairs = "(:),{:},[:],<:>,「:」,【:】,『:』",
+	list = true,
+	listchars = "tab:>-,trail:~,eol:↴",
+	hidden = true,
+	showmatch = true,
+	matchtime = 1,
+	showmode = false,
+	showtabline = 2,
+	smartcase = true,
+	smartindent = true,
+	swapfile = false,
+	termguicolors = true,
+	--timeoutlen = 500,
+	undofile = true,
+	updatetime = 300,
+	writebackup = false,
+	backupskip = { "/tmp/*", "/private/tmp/*" },
+	expandtab = true,
+	shiftwidth = 2,
+	tabstop = 2,
+	softtabstop = 2,
+	autoindent = true,
+	cursorline = true,
+	number = true,
+	syntax = "on",
+	relativenumber = false,
+	numberwidth = 4,
+	signcolumn = "yes",
+	wrap = true,
+	wrapscan = true,
+	winblend = 20,
+	wildoptions = "pum",
+	pumblend = 5,
+	background = "dark",
+	scrolloff = 8,
+	sidescrolloff = 8,
+	guifont = "monospace:h17",
+	splitbelow = false, -- オンのとき、ウィンドウを横分割すると新しいウィンドウはカレントウィンドウの下に開かれる
+	splitright = false, -- オンのとき、ウィンドウを縦分割すると新しいウィンドウはカレントウィンドウの右に開かれる
+}
+
+vim.opt.shortmess:append("c")
+
+for k, v in pairs(options) do
+	vim.opt[k] = v
+end
+
+--------------------------------------------------------------------------------
+-- plugins
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+-- lazy.vim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable", -- latest stable release
+		lazypath,
+	})
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup({
+
+--------------------------------------------------
+	-- core
+	{ "vim-jp/vimdoc-ja", lazy = true, keys = {
+		{ "h", mode = "c" },
+	} },
+
+	"cocopon/iceberg.vim",
+	{
+		"nvim-lualine/lualine.nvim",
+		dependencies = { "ryanoasis/vim-devicons" },
+		config = function()
+			require("lualine").setup()
+		end,
+	},
+	{
+		"nanozuki/tabby.nvim",
+		config = function()
+			vim.opt.sessionoptions = "curdir,folds,globals,help,tabpages,terminal,winsize"
+
+			local theme = {
+				fill = "TabLineFill",
+				-- Also you can do this:
+				--fill = { fg='#f2e9de', bg='#907aa9', style='italic' },
+				head = "TabLine",
+				current_tab = "TabLineSel",
+				--current_tab = { fg='#f1e8de', bg='#907aa9', style='italic' },
+				tab = "TabLine",
+				--current_win = { fg='#f2e9de', bg='#907aa9', style='italic' },
+				current_win = "TabLineSel",
+				win = "TabLine",
+				tail = "TabLine",
+			}
+			require("tabby.tabline").set(function(line)
+				return {
+					{
+						{ "  ", hl = theme.head },
+						line.sep("", theme.head, theme.fill),
+					},
+					line.tabs().foreach(function(tab)
+						local hl_tab = tab.is_current() and theme.current_tab or theme.tab
+						return {
+							line.sep("", hl_tab, theme.fill),
+							tab.is_current() and "" or "󰆣",
+							tab.number(),
+							tab.name(),
+							tab.close_btn(""),
+							line.sep("", hl_tab, theme.fill),
+							hl = hl_tab,
+							margin = " ",
+						}
+					end),
+					line.spacer(),
+					line.wins_in_tab(line.api.get_current_tab()).foreach(function(win)
+						local hl_win = win.is_current() and theme.current_win or theme.win
+						return {
+							line.sep("", hl_win, theme.fill),
+							win.is_current() and "" or "",
+							win.buf_name(),
+							line.sep("", hl_win, theme.fill),
+							hl = hl_win,
+							margin = " ",
+						}
+					end),
+					{
+						line.sep("", theme.tail, theme.fill),
+						{ "  ", hl = theme.tail },
+					},
+					hl = theme.fill,
+				}
+			end)
+		end,
+	},
+
+	"ryanoasis/vim-devicons",
+	{ "nvim-tree/nvim-web-devicons" },
+	{ "simeji/winresizer", lazy = true, cmd = { "WinResizerStartResize" }, keys = { "<C-E>", mode = "n" } },
+
+--------------------------------------------------
+	-- LSP
+	{ "neovim/nvim-lspconfig"},
+	{
+		"williamboman/mason.nvim",
+		config = function()
+			--require'lspconfig'.pyright.setup{}
+			require("mason").setup()
+		end,
+	},
+	{
+		"williamboman/mason-lspconfig.nvim",
+		dependencies = { "williamboman/mason.nvim", "neovim/nvim-lspconfig" },
+		event = { "BufReadPre", "BufNewFile" },
+		config = function()
+			vim.lsp.handlers["textDocument/publishDiagnostics"] =
+				vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, { virtual_text = false })
+
+			require("mason-lspconfig").setup({
+				ensure_installed = { "lua_ls", "pyright", "rust_analyzer" },
+			})
+
+			require("mason-lspconfig").setup_handlers({
+				function(server_name)
+					local highlight_variable = function(client, bufnr)
+						if client.supports_method("textDocument/document_highlight") then
+							local lsp_document_highlight = vim.api.nvim_create_augroup("lsp_document_highlight", {})
+							vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+								group = lsp_document_highlight,
+								buffer = bufnr,
+								callback = function()
+									vim.lsp.buf.document_highlight()
+								end,
+							})
+							vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+								group = lsp_document_highlight,
+								buffer = bufnr,
+								callback = function()
+									vim.lsp.buf.clear_references()
+								end,
+							})
+						end
+					end
+
+					local lsp_opts = {
+						on_attach = function(client, bufnr)
+							client.server_capabilities.documentFormattingProvider = false
+							local set = vim.keymap.set
+							set("n", "<Space>ld", "<cmd>lua vim.lsp.buf.definition()<CR>")
+							set("n", "<Space>lD", "<cmd>lua vim.lsp.buf.declaration()<CR>")
+							set("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>")
+							set("n", "<Space>li", "<cmd>lua vim.lsp.buf.implementation()<CR>")
+							set("n", "<Space>ls", "<cmd>lua vim.lsp.buf.signature_help()<CR>")
+							set("n", "<Space>ln", "<cmd>lua vim.lsp.buf.rename()<CR>")
+							set("n", "<Space>la", "<cmd>lua vim.lsp.buf.code_action()<CR>")
+							set("n", "<Space>lr", "<cmd>lua vim.lsp.buf.references()<CR>")
+							set("n", "<Space>ll", '<cmd>lua vim.stic.open_float({scope="line"})<CR>')
+							set("n", "<Space>ls", "<cmd>lua vim.diagnostic.open_float()<CR>")
+							set("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>")
+							set("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>")
+							set("n", "<Space>lf", "<cmd>lua vim.lsp.buf.format()<CR>")
+							highlight_variable(client, bufnr)
+						end,
+					}
+
+					if server_name == "lua_ls" then
+						lsp_opts.settings = {
+							Lua = {
+								diagnostics = { globals = { "vim" } },
+							},
+						}
+					end
+
+					require("lspconfig")[server_name].setup(lsp_opts)
+				end,
+			})
+		end,
+	},
+
+--------------------------------------------------
+	-- dark powered
+	-- denops関係は非同期読み込みのため、遅延の必要なし
+	"vim-denops/denops.vim",
+	{ "Shougo/ddc.vim", dependencies = { "vim-denops/denops.vim" } },
+	"Shougo/pum.vim",
+
+	-- ddc ui
+	{ "Shougo/ddc-ui-pum" },
+	{ "Shougo/ddc-ui-native" },
+	-- ddc lsp
+	{ "uga-rosa/ddc-source-lsp-setup" },
+	{
+		"Shougo/ddc-source-lsp",
+		config = function()
+			require("ddc_source_lsp_setup").setup()
+			local capabilities = require("ddc_source_lsp").make_client_capabilities()
+			require("lspconfig").denols.setup({
+				capabilities = capabilities,
+			})
+		end,
+	},
+	-- ddc source
+	{ "matsui54/ddc-buffer" },
+	{ "Shougo/ddc-source-around" },
+	{ "LumaKernel/ddc-source-file" },
+	{ "Shougo/ddc-source-cmdline" },
+	{ "Shougo/ddc-source-cmdline-history" },
+	{ "Shougo/ddc-source-input" },
+	{ "Shougo/ddc-source-rg" },
+	{ "Shougo/ddc-source-omni" },
+	{ "Shougo/ddc-source-mocword" },
+	{ "matsui54/ddc-dictionary" },
+	{ "Shougo/ddc-source-copilot" },
+	{ "Shougo/ddc-source-line" },
+	{ "tani/ddc-fuzzy" },
+	-- ddc filter
+	{ "Shougo/ddc-filter-sorter_rank" },
+	{ "Shougo/ddc-filter-matcher_head" },
+	-- ddc matcher
+	{ "matsui54/ddc-matcher_fuzzy" },
+	-- ddc converter
+	{ "Shougo/ddc-filter-converter_remove_overlap" },
+	-- ddc-hover
+	{
+		"matsui54/denops-signature_help",
+		config = function()
+			-- denops-signature_help
+			vim.g.signature_help_config = {
+				contentsStyle = "full",
+				viewStyle = "floating",
+			}
+			vim.fn["signature_help#enable"]()
+		end,
+	},
+	{
+		"matsui54/denops-popup-preview.vim",
+		config = function()
+			vim.fn["popup_preview#enable"]()
+		end,
+	},
+
+	-- snipets
+	{ "hrsh7th/vim-vsnip" },
+
+	-- SKK
+	{
+		"vim-skk/denops-skkeleton.vim",
+		dependencies = { "vim-denops/denops.vim" },
+		config = function()
+			keymap("i", "<C-j>", "<Plug>(skkeleton-toggle)", opts)
+			keymap("c", "<C-j>", "<Plug>(skkeleton-toggle)", opts)
+			vim.api.nvim_exec(
+				[[
+    call skkeleton#config({
+      \  'globalJisyo': expand('~/.config/nvim/SKK-JISYO.L'),
+      \  'eggLikeNewline': v:true,
+      \ })
+      \]],
+				false
+			)
+			local prev_buffer_config
+			function _G.skkeleton_enable_pre()
+				prev_buffer_config = vim.fn["ddc#custom#get_buffer"]()
+				vim.fn["ddc#custom#patch_buffer"]({
+					completionMenu = "native",
+					sources = { "skkeleron" },
+				})
+			end
+			function _G.skkeleton_disable_pre()
+				vim.fn["ddc#custom#set_buffer"](prev_buffer_config)
+			end
+			vim.cmd([[
+      augroup skkeleton_callbacks
+        autocmd!
+        autocmd User skkeleton_enable_pre call v:lua.skkeleton_enable_pre()
+        autocmd User skkeleton_disable_pre call v:lua.skkeleton_disable_pre()
+      augroup END
+    ]])
+		end,
+	},
+	{
+		"delphinus/skkeleton_indicator.nvim",
+		config = function()
+			require("skkeleton_indicator").setup()
+		end,
+	},
+
+
+--------------------------------------------------
+	-- ddu
+	{
+		"Shougo/ddu.vim",
+    dependencies = {
+       -- core
+       "vim-denops/denops.vim",
+       "Shougo/ddu-commands.vim",
+
+       -- ui
+       "Shougo/ddu-ui-ff",
+       "Shougo/ddu-ui-filer",
+       "matsui54/ddu-vim-ui-select",
+
+       -- source
+       "Shougo/ddu-source-file",
+       "Shougo/ddu-source-file_rec",
+       "shun/ddu-source-rg",
+       "matsui54/ddu-source-help",
+       "shun/ddu-source-buffer",
+       "Shougo/ddu-source-action",
+        -- most recentry file
+       "kuuote/ddu-source-mr",
+       "lambdalisue/mr.vim",
+       "matsui54/ddu-source-file_external",
+       "uga-rosa/ddu-source-lsp",
+       "Shougo/ddu-source-line",
+       "Shougo/ddu-source-register",
+       "matsui54/ddu-source-command_history",
+       "kyoh86/ddu-source-command",
+       "mikanIchinose/ddu-source-markdown",
+
+       -- column
+       "Shougo/ddu-column-filename",
+
+       -- filter
+       "Shougo/ddu-filter-matcher_substring",
+       "yuki-yano/ddu-filter-fzf",
+
+       -- converter
+       "uga-rosa/ddu-filter-converter_devicon",
+
+       -- kind
+       "Shougo/ddu-kind-file"
+    },
+    config = function()
+      local lines = vim.opt.lines:get()
+      local height, row = math.floor(lines * 0.8), math.floor(lines * 0.1)
+      local columns = vim.opt.columns:get()
+      local width, col = math.floor(columns * 0.8), math.floor(columns * 0.1)
+--------------------------------------------------
+-- ddu ff (default)
+--------------------------------------------------
+      vim.fn["ddu#custom#patch_global"]({
+        ui = "ff",
+        uiParams = {
+          ff = {
+            --startAutoAction = true,
+            --autoAction = {
+            --  delay = 0,
+            --  name = "preview",
+            --},
+            split = "floating",
+            filterFloatingPosition = "top",
+            filterSplitDirection = "floating",
+            floatingBorder = 'rounded',
+            prompt = ">",
+            startFilter = true,
+
+            winHeight= height,
+            winWidth= width,
+            winRow= row,
+            winCol= col,
+            previewSplit = "vertical",
+            previewFloatingTitle = "Preview",
+            previewFloating= true,
+            previewHeight= height,
+            previewWidth= math.floor(width / 2),
+            --previewRow= 1,
+            --previewCol= '&columns / 2 + 1',
+            previewFloatingBorder = "rounded",
+            highlights = {
+              floating = "Pmenu",
+              floatingBorder = "Pmenu",
+            },
+          },
+        },
+        sources = {
+          {
+            name = "file_rec",
+            params = {
+              ignoredDirectories = {
+                ".git",
+                "node_modules",
+                "vendor",
+                ".next",
+                ".venv",
+                "__pycache__",
+                ".mypy_cache",
+              },
+            },
+          },
+        },
+        sourceOptions = {
+          _ = {
+            ignoreCase = true,
+            matchers = {
+              --"matcher_substring",
+              "matcher_fzf",
+            },
+            sorters = {
+              "sorter_fzf",
+            },
+            converters = {
+              "converter_devicon",
+            },
+            volatile = true,
+          },
+        },
+        filterParams = {
+          --matcher_substring = {
+          --  highlightMatched = "Title",
+          --},
+          matcher_fzf = {
+            highlightMatched = "Search",
+          },
+        },
+        kindOptions = {
+          file = {
+            defaultAction = "open",
+          },
+        },
+      })
+
+--------------------------------------------------
+-- ddu buffer
+--------------------------------------------------
+      vim.fn["ddu#custom#patch_local"]("buffer", {
+        sources = {
+          {name = "buffer"}
+        },
+        uiParams = {
+          ff = {startFilter = false},
+        },
+      })
+
+--------------------------------------------------
+-- ddu grep
+--------------------------------------------------
+      vim.fn["ddu#custom#patch_local"]("grep", {
+        sourceParams = {
+          rg = {
+            args = {"--column", "--no-heading", "--color", "never"},
+          },
+        },
+        uiParams = {
+          ff = {startFilter = false},
+        },
+      })
+
+--------------------------------------------------
+-- ddu grep_root
+--------------------------------------------------
+      vim.fn["ddu#custom#patch_local"]("grep_root", {
+        sources = {
+          { name = "file_rec" },
+        },
+        sourceOptions = {
+          file_rec = {
+            path = vim.fn.expand("~")
+          },
+        },
+        sourceParams = {
+          rg = {
+            args = {"--column", "--no-heading", "--color", "never"},
+          },
+        },
+        uiParams = {
+          ff = {startFilter = false},
+        },
+      })
+
+--------------------------------------------------
+-- ddu help-ff
+--------------------------------------------------
+      vim.fn["ddu#custom#patch_local"]("help-ff", {
+        --uiParams = {
+        --  ff = {
+        --    split = "vertical",
+        --    splitDirection = "topleft",
+        --    startFilter = true,
+        --  },
+        --},
+        sources = {
+          { name = "help" },
+        },
+        sourceOptions = {
+          help = {
+            defaultAction = "open",
+          },
+        },
+      })
+
+--------------------------------------------------
+-- ddu ff keymaps
+--------------------------------------------------
+
+      -- normal mode
+      vim.api.nvim_create_autocmd("filetype", {
+          pattern = "ddu-ff",
+          callback = function()
+            local opts = { noremap = true, silent = true, buffer = true }
+            vim.keymap.set({ "n" }, "<CR>", [[<Cmd>call ddu#ui#do_action("itemAction")<CR>]], opts)
+            vim.keymap.set({ "n" }, "q", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+            vim.keymap.set({ "n" }, "i", [[<Cmd>call ddu#ui#do_action("openFilterWindow")<CR>]], opts)
+            vim.keymap.set({ "n" }, "<Space>", [[<Cmd>call ddu#ui#do_action("toggleSelectItem")<CR>]], opts)
+            vim.keymap.set({ "n" }, "p", [[<Cmd>call ddu#ui#do_action("togglePreview")<CR>]], opts)
+            vim.keymap.set({ "n", "i" }, "<C-c>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+          end,
+        })
+
+      -- filtering mode
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "ddu-ff-filter",
+        callback = function ()
+          --local opts = { noremap = true, silent = true, buffer = true }
+          local opts = { noremap = true, buffer = true }
+          vim.keymap.set({ "n", "i" }, "<CR>", [[<Esc><Cmd>close<CR>]], opts)
+          vim.keymap.set({ "n" }, "q", [[<Esc><Cmd>close<CR>]], opts)
+          vim.keymap.set({ "n", "i" }, "<C-c>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+          vim.keymap.set({ "n", "i" }, "<C-N>", [[<Cmd>call ddu#ui#do_action("cursorNext")<CR>]], opts)
+          vim.keymap.set({ "n", "i" }, "<C-P>", [[<Cmd>call ddu#ui#do_action("cursorPrevious")<CR>]], opts)
+        end,
+      })
+
+--------------------------------------------------
+-- ddu filer
+--------------------------------------------------
+      vim.fn["ddu#custom#patch_local"]("filer", {
+        ui = "filer",
+        uiParams = {
+          filer = {
+            winWidth = 40,
+            split = "vertical",
+            splitDirection = "topleft",
+          },
+        },
+        sources = {
+          {
+            name = "file",
+            params = {},
+          }
+        },
+        sourceOptions = {
+          _ = {
+            columns = {"filename"},
+          },
+        },
+        kindOptions = {
+          file = {
+            defaultAction = "open",
+          },
+        },
+      })
+
+--------------------------------------------------
+-- ddu filer keymaps
+--------------------------------------------------
+
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "ddu-filer",
+        callback = function()
+            local opts = { noremap = true, silent = true, buffer = true }
+            --vim.keymap.set({ "n" }, "<CR>",
+            --  [[<Cmd>call ddu#ui#do_action("itemAction")<CR>]], opts)
+            vim.keymap.set({ "n" }, "<Space>",
+              [[<Cmd>call ddu#ui#do_action("toggleSelectionItem")<CR>]], opts)
+            vim.keymap.set({ "n" }, "o",
+              [[<Cmd>call ddu#ui#do_action("expandItem", {"mode": "toggle"})<CR>]],
+            { buffer = true, noremap =true })
+            vim.keymap.set({ "n" }, "q",
+              [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+            vim.keymap.set({ "n" }, "c",
+              [[<Cmd>call ddu#ui#do_action("chooseAction")<CR>]], opts)
+        end
+      })
+
+--------------------------------------------------
+--------------------------------------------------
+
+-- ff
+      -- file (default)
+      keymap("n", "<Space>uf", [[<Cmd>call ddu#start({})<CR>]], opts)
+      -- buffer
+      keymap("n", "<Space>ub", "<Cmd>call ddu#start({'name': 'buffer'})<CR>", opts)
+      --keymap("n", "<Space>ub", "<Cmd>call ddu#start({" ..
+      --"'sources': [{'name': 'buffer'}], " ..
+      --"})<CR>", opts)
+      -- grep
+      keymap("n", "<Space>ug", "<Cmd>call ddu#start({" ..
+      "'name': 'grep', " ..
+      "'sources': [{'name': 'rg', 'params': {'input': expand('<cword>')}}]" ..
+      "})<CR>", opts)
+      -- grep_root
+      keymap("n", "<Space>uG", "<Cmd>call ddu#start({" ..
+      "'name': 'grep_root', " ..
+      "'sources': [{'name': 'file_'}]" ..
+      "})<CR>", opts)
+      -- help-ff
+      vim.api.nvim_create_user_command("Help", function()
+        vim.fn["ddu#start"]({name = "help-ff"})
+      end, {})
+
+-- filer
+      keymap("n", "<Space>ue", "<Cmd>call ddu#start({" ..
+        "'name':'filer'," ..
+        "'searchPath':expand('%:p')" ..
+      "})<CR>", opts)
+
+    end
+	},
+  --ddu end
+
+--------------------------------------------------
+	-- fzf
+	{ "junegunn/fzf", build = "./install --all" },
+	"junegunn/fzf.vim",
+
+	-- display key bindeings
+	{
+		"folke/which-key.nvim",
+		lazy = true,
+		cmd = {
+			"WhichKey",
+		},
+		opts = {},
+	},
+
+--------------------------------------------------
+	-- DAP 使用する際に覚える
+	"mfussenegger/nvim-dap",
+	"rcarriga/nvim-dap-ui",
+	-- pip install debugpy が必要
+	{
+		"mfussenegger/nvim-dap-python",
+		lazy = true,
+		ft = "python",
+		config = function()
+			local venv = os.getenv("VIRTUAL_ENV")
+			command = string.format("%s/bin/python", venv)
+			require("dap-python").setup(command)
+		end,
+	},
+
+--------------------------------------------------
+	-- easy motion
+	{
+		"easymotion/vim-easymotion",
+		config = function()
+			keymap("n", "<Space><Space>", "<Plug>(easymotion-prefix)", opts)
+			--vim.g["EasyMotion_do_mapping"] = 0
+			keymap("n", "S", "<Plug>(easymotion-overwin-f2)", opts)
+			vim.g["EasyMotion_do_mapping_smartcase"] = 1
+		end,
+	},
+
+--------------------------------------------------
+	-- linter
+	{
+		"mfussenegger/nvim-lint",
+		config = function()
+			require("lint").linters_by_ft = {
+
+				python = { "flake8", "mypy" },
+				markdown = { "markdownlint" },
+				-- ~/.luacheckrcを作成してvim undefined errorを無視している
+				lua = { "LuaCheck" },
+			}
+
+			vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+				callback = function()
+					require("lint").try_lint()
+				end,
+			})
+		end,
+	},
+
+--------------------------------------------------
+	-- formatter
+	{
+		"mhartington/formatter.nvim",
+		config = function()
+			-- Utilities for creating configurations
+			local util = require("formatter.util")
+			-- Provides the Format, FormatWrite, FormatLock, and FormatWriteLock commands
+			require("formatter").setup({
+				-- Enable or disable logging
+				logging = true,
+				-- Set the log level
+				log_level = vim.log.levels.WARN,
+				-- All formatter configurations are opt-in
+				filetype = {
+					-- Formatter configurations for filetype "lua" go here
+					-- and will be executed in order
+					lua = {
+						-- "formatter.filetypes.lua" defines default configurations for the
+						-- "lua" filetype
+						require("formatter.filetypes.lua").stylua,
+						-- You can also define your own configuration
+						function()
+							-- Full specification of configurations is down below and in Vim help
+							-- files
+							return {
+								exe = "stylua",
+								args = {
+									"--search-parent-directories",
+									"--stdin-filepath",
+									util.escape_path(util.get_current_buffer_file_path()),
+									"--",
+									"-",
+								},
+								stdin = true,
+							}
+						end,
+					},
+					python = {
+						-- black
+						function()
+							return {
+								exe = "black",
+								args = { "-q", "-" },
+								stdin = true,
+							}
+						end,
+						-- isort
+						function()
+							return {
+								exe = "isort",
+								args = { "--stdout", "--profile", "black", "-" },
+								stdin = true,
+							}
+						end,
+					},
+					rust = {
+						-- rustfmt
+						function()
+							return {
+								exe = "rustfmt",
+								args = { "--emit=stdout" },
+								stdin = true,
+							}
+						end,
+					},
+					markdown = {
+						-- markdownlint
+						function()
+							return {
+								exe = "markdownlint",
+								args = { "--stdin" },
+								stdin = true,
+							}
+						end,
+					},
+					-- Use the special "*" filetype for defining formatter configurations on
+					-- any filetype
+					["*"] = {
+						-- "formatter.filetypes.any" defines default configurations for any
+						-- filetype
+						require("formatter.filetypes.any").remove_trailing_whitespace,
+					},
+				},
+			})
+		end,
+	},
+
+--------------------------------------------------
+	-- terminal
+	{ "kassio/neoterm", lazy = true },
+
+	{
+		"nvim-treesitter/nvim-treesitter",
+		config = function()
+			vim.cmd("silent TSUpdate")
+		end,
+	},
+
+--------------------------------------------------
+	-- 編集拡張系
+	{ "cohama/lexima.vim" },
+	{ "tpope/vim-surround" },
+	{ "tpope/vim-commentary" },
+
+--------------------------------------------------------------------------------
+}) -- plugins end
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- autocmd
+--------------------------------------------------------------------------------
+local augroup = vim.api.nvim_create_augroup -- Create/get autocommand group
+local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
+
+--------------------------------------------------------------------------------
+-- Remove whitespace on save
+--------------------------------------------------------------------------------
+autocmd("BufWritePre", {
+	pattern = "*",
+	command = ":%s/\\s\\+$//e",
+})
+
+--------------------------------------------------------------------------------
+-- Don't auto commenting new lines
+--------------------------------------------------------------------------------
+autocmd("BufEnter", {
+	pattern = "*",
+	command = "set fo-=c fo-=r fo-=o",
+})
+
+--------------------------------------------------------------------------------
+-- Restore cursor location when file is opened
+--------------------------------------------------------------------------------
+autocmd({ "BufReadPost" }, {
+	pattern = { "*" },
+	callback = function()
+		vim.api.nvim_exec('silent! normal! g`"zv', false)
+		require("nvim-treesitter.configs").setup({
+			-- A list of parser names, or "all" (the five listed parsers should always be installed)
+			ensure_installed = { "c", "lua", "vim", "vimdoc", "python", "rust" },
+
+			-- Install parsers synchronously (only applied to `ensure_installed`)
+			sync_install = false,
+
+			-- Automatically install missing parsers when entering buffer
+			-- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+			auto_install = true,
+
+			---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
+			-- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
+
+			highlight = {
+				enable = true,
+
+				-- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+				-- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+				-- Using this option may slow down your editor, and you may see some duplicate highlights.
+				-- Instead of true it can also be a list of languages
+				additional_vim_regex_highlighting = false,
+			},
+		})
+	end,
+})
+
+--------------------------------------------------------------------------------
+-- commandline window
+--------------------------------------------------------------------------------
+autocmd("CmdwinEnter", {
+  pattern = {":", "/", "?", "="},
+  callback = function()
+    vim.cmd([[silent g/^qa\?!\?$/de]])
+    vim.cmd([[silent g/^wq\?a\?!\?$/de]])
+    vim.cmd([[setlocal nonumber]])
+    vim.cmd([[setlocal signcolumn=no]])
+  end
+})
+
+--------------------------------------------------------------------------------
+-- ColorScheme
+--------------------------------------------------------------------------------
+-- カラースキームはtablineの後に設定しないとtablineが有効にならないっぽい（バグ？）
+-- 現在はairlinのtablineを使用していないため気にしなくてよい
+vim.cmd("autocmd ColorScheme * highlight Normal ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight Visual ctermfg=234 ctermbg=242 guifg=#17171b guibg=#6b7089")
+vim.cmd("autocmd ColorScheme * highlight NonText ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight LineNr ctermbg=none guifg=#515e97 guibg=none")
+vim.cmd("autocmd ColorScheme * highlight Folded ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight SignColumn ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight FoldColumn ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight DiagnosticSignError ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight DiagnosticSignWarn ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight DiagnosticSignInfo ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight DiagnosticSignHint ctermbg=none guibg=none")
+vim.cmd("autocmd ColorScheme * highlight Number ctermfg=109 guifg=#84a0c6")
+vim.cmd("autocmd ColorScheme * highlight lualine_c_normal ctermfg=109 guifg=#84a0c6")
+vim.cmd("autocmd ColorScheme * highlight TabLine ctermfg=245 ctermbg=233 guifg=#686f9a guibg=#0f1117")
+vim.cmd("autocmd ColorScheme * highlight TabLineFill ctermfg=233 ctermbg=233 guifg=#0f1117 guibg=#0f1117")
+vim.cmd("autocmd ColorScheme * highlight TabLineSel ctermfg=252 ctermbg=237 guifg=#9a9ca5 guibg=#2a3158")
+--vim.cmd("autocmd ColorScheme * highlight LspReferenceText " ..
+--"cterm=underline ctermfg=159 ctermbg=23 gui=underline guifg=#b3c3cc guibg=#384851")
+vim.cmd(
+	"autocmd ColorScheme * highlight LspReferenceText "
+		.. "cterm=underline ctermfg=159 ctermbg=23 gui=underline guifg=#b3c3cc guibg=#384851"
+)
+vim.cmd(
+	"autocmd ColorScheme * highlight LspReferenceRead "
+		.. "cterm=underline ctermfg=159 ctermbg=23 gui=underline guifg=#b3c3cc guibg=#384851"
+)
+vim.cmd(
+	"autocmd ColorScheme * highlight LspReferenceWrite "
+		.. "cterm=underline ctermfg=159 ctermbg=23 gui=underline guifg=#b3c3cc guibg=#384851"
+)
+vim.cmd("colorscheme iceberg")
+
+--------------------------------------------------------------------------------
+-- ddc
+--------------------------------------------------------------------------------
+
+vim.fn["ddc#custom#patch_global"]("ui", "pum")
+vim.fn["ddc#custom#patch_global"]("autoCompleteEvents", {
+	"InsertEnter",
+	"TextChangedI",
+	"TextChangedP",
+	"CmdlineChanged",
+	"CmdlineEnter",
+	"TextChangedT",
+})
+vim.fn["ddc#custom#patch_global"]("sources", {
+  "lsp",
+	"around",
+	--    'mocword',
+	"skkeleton",
+})
+vim.fn["ddc#custom#patch_global"]("sourceOptions", {
+	around = {
+		mark = "[A]",
+	},
+	mocword = {
+		mark = "[Moc]",
+		maxItems = 10,
+		isVolatile = true,
+	},
+	lsp = {
+		mark = "[LSP]",
+		forceCompletionPattern = { [[\.\w*|:\w*|->\w*]] },
+		sorters = { "sorter_lsp-kind" },
+		minAutoCompleteLength = 1,
+		--keywordPattern = {[[\k+]]},
+	},
+	["skkeleton"] = {
+		mark = "[SKK]",
+		matchers = { "skkeleton" },
+		sorters = {},
+	},
+	_ = {
+		matchers = { "matcher_fuzzy" },
+		sorters = { "sorter_fuzzy", "sorter_rank" },
+		converters = { "converter_remove_overlap", "converter_fuzzy" },
+		minAutoCompleteLength = 3,
+	},
+})
+
+vim.fn["ddc#custom#patch_global"]("sourceParams", {
+	["lsp"] = {
+		snippetEngine = vim.fn["denops#callback#register"](function(body)
+			vim.fn["vsnip#anonymous"](body)
+		end),
+		enableResolveItem = true,
+		enableAdditionalTextEdit = true,
+	},
+})
+
+vim.api.nvim_create_autocmd("InsertEnter", {
+	callback = function(ev)
+		local opt = { noremap = true }
+		vim.keymap.set(
+			{ "i" },
+			"<C-n>",
+			[[(pum#visible() ? '' : ddc#map#manual_complete()) . pum#map#select_relative(+1)]],
+			{ expr = true, noremap = false }
+		)
+		vim.keymap.set(
+			{ "i" },
+			"<C-p>",
+			[[(pum#visible() ? '' : ddc#map#manual_complete()) . pum#map#select_relative(-1)]],
+			{ expr = true, noremap = false }
+		)
+		vim.keymap.set({ "i" }, "<C-y>", [[<Cmd>call pum#map#confirm()<CR>]], opt)
+		vim.keymap.set({ "i" }, "<C-e>", [[<Cmd>call pum#map#cancel()<CR>]], opt)
+		vim.keymap.set({ "i" }, "<PageDown>", [[<Cmd>call pum#map#insert_relative_page(+1)<CR>]], opt)
+		vim.keymap.set({ "i" }, "<PageUp>", [[<Cmd>call pum#map#insert_relative_page(-1)<CR>]], opt)
+		vim.keymap.set({ "i" }, "<CR>", function()
+			if vim.fn["pum#entered"]() then
+				return "<Cmd>call pum#map#confirm()<CR>" or "<CR>"
+			else
+				return "<CR>"
+			end
+		end, { expr = true, noremap = false })
+		vim.keymap.set({ "i" }, "<C-m>", function()
+			if vim.fn["pum#visible"]() then
+				return "<Cmd>call ddc#map#manual_complete()<CR>"
+			else
+				return "<C-m>"
+			end
+		end, { expr = true, noremap = false })
+		vim.keymap.set({ "i", "s" }, "<C-l>", function()
+			return vim.fn["vsnip#available"](1) == 1 and "<Plug>(vsnip-expand-or-jump)" or "<C-l>"
+		end, { expr = true, noremap = false })
+		vim.keymap.set({ "i", "s" }, "<Tab>", function()
+			return vim.fn["vsnip#jumpable"](1) == 1 and "<Plug>(vsnip-jump-next)" or "<Tab>"
+		end, { expr = true, noremap = false })
+		vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
+			return vim.fn["vsnip#jumpable"](-1) == 1 and "<Plug>(vsnip-jump-prev)" or "<S-Tab>"
+		end, { expr = true, noremap = false })
+		vim.keymap.set({ "n", "s" }, "<s>", [[<Plug>(vsnip-select-text)]], { expr = true, noremap = false })
+		vim.keymap.set({ "n", "s" }, "<S>", [[<Plug>(vsnip-cut-text)]], { expr = true, noremap = false })
+	end,
+})
+vim.g.vsnip_filetypes = {}
+vim.fn["ddc#enable_terminal_completion"]()
+vim.fn["ddc#enable"]()
+--------------------------------------------------------------------------------
+-- ddc config end
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- pum option
+--------------------------------------------------------------------------------
+-- 書き方例
+--vim.fn["pum#set_option"]({horizontal_menu = true})
+
+
+--------------------------------------------------------------------------------
+-- keymaps
+--------------------------------------------------------------------------------
+keymap("", "<Space>", "<Nop>", opts)
+keymap("n", "<Space>q", ":<C-U>qa<CR>", opts)
+keymap("n", "<Space><Space>q", ":<C-U>qa!<CR>", opts)
+-- Modes
+--   normal_mode = 'n',
+--   insert_mode = 'i',
+--   visual_mode = 'v',
+--   visual_block_mode = 'x',
+--   term_mode = 't',
+--   command_mode = 'c',
+-- keymap("", "", "", opts)
+
+-- Normal
+--------------------------------------------------
+-- ウィンドウ設定
+--------------------------------------------------
+keymap("n", "<Space>c", ":<C-u>clo<CR>", opts)
+keymap("n", "<Space>o", ":<C-u>only<CR>", opts)
+keymap("n", "<C-h>", "<C-w>h", opts)
+--keymap("n", "<C-j>", "<C-w>j", opts)
+--keymap("n", "<C-k>", "<C-w>k", opts)
+keymap("n", "<C-l>", "<C-w>l", opts)
+
+--------------------------------------------------
+-- move
+--------------------------------------------------
+vim.api.nvim_set_keymap("n", "j", "gj", { noremap = true })
+vim.api.nvim_set_keymap("n", "k", "gk", { noremap = true })
+
+--------------------------------------------------
+-- タブ
+--------------------------------------------------
+keymap("n", "<Space>ta", ":$tabnew<CR>", opts)
+keymap("n", "<Space>tc", ":tabclose<CR>", opts)
+keymap("n", "<Space>to", ":tabonly<CR>", opts)
+keymap("n", "<Space>tn", ":tabn<CR>", opts)
+keymap("n", "<Space>tp", ":tabp<CR>", opts)
+keymap("n", "<C-N>", ":tabn<CR>", opts)
+keymap("n", "<C-P>", ":tabp<CR>", opts)
+keymap("n", "<Space>tmn", ":-tabmove<CR>", opts)
+keymap("n", "<Space>tmp", ":+tabmove<CR>", opts)
+
+-- move tab
+keymap("n", "[t", "gT", opts)
+keymap("n", "]t", "gt", opts)
+
+-- 引数リスト移動
+keymap("n", "[a", ":prev<CR>", opts)
+keymap("n", "]a", ":next<CR>", opts)
+
+-- バッファ移動
+keymap("n", "[b", ":bp<CR>", opts)
+keymap("n", "]b", ":bn<CR>", opts)
+
+-- Select all
+keymap("n", "<C-a>", "gg<S-v>G", opts)
+
+-- increment/ decrement
+keymap("n", "-", "<C-X>", opts)
+keymap("n", "+", "<C-A>", opts)
+
+-- Do not yank with x
+keymap("n", "x", '"_x', opts)
+
+-- 行の端に行く
+keymap("", "H", "^", opts)
+keymap("", "L", "$", opts)
+
+-- 行末までのヤンクにする
+keymap("n", "Y", "y$", opts)
+
+-- ESC*2 でハイライトやめる
+keymap("n", "<Esc><Esc>", ":<C-u>noh<Return>", opts)
+keymap("n", "<C-[><C-[>", ":<C-u>noh<Return>", opts)
+
+-- fzf
+keymap("n", "<Space>ff", ":<C-u>Files<CR>", opts)
+keymap("n", "<Space>fb", ":<C-u>Buffers<CR>", opts)
+keymap("n", "<Space>fc", ":<C-u>Commands<CR>", opts)
+keymap("n", "<Space>fh", ":<C-u>History<CR>", opts)
+keymap("n", "<Space>fm", ":<C-u>Maps<CR>", opts)
+keymap("n", "<Space>f/", ":<C-u>History/<CR>", opts)
+keymap("n", "<Space>f:", ":<C-u>History:<CR>", opts)
+keymap("n", "<Space>fr", ":<C-u>Rg<CR>", opts)
+keymap("n", "<Space>fl", ":<C-u>Lines<CR>", opts)
+keymap("n", "<Space>fL", ":<C-u>BLines<CR>", opts)
+keymap("n", "<Space>fH", ":<C-u>Helptags<CR>", opts)
+
+-- Insert --
+
+keymap("i", "<C-F>", "<Right>", opts)
+keymap("i", "<C-b>", "<Left>", opts)
+
+-- 貼り付け
+keymap("i", "<C-r><C-r>", '<C-r>"', opts)
+
+-- Visual --
+-- Stay in indent mode
+keymap("v", "<", "<gv", opts)
+keymap("v", ">", ">gv", opts)
+
+-- ビジュアルモード時vで行末まで選択
+keymap("v", "v", "$h", opts)
+
+-- 0番レジスタを使いやすくした
+keymap("v", "<C-p>", '"0p', opts)
+
+-- Command --
+keymap("c", "%%", "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", { noremap = true, silent = true, expr = true })
+
+-- dap keymap
+vim.api.nvim_set_keymap("n", "<F5>", ":DapContinue<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<F10>", ":DapStepOver<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<F11>", ":DapStepInto<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<F12>", ":DapStepOut<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<leader>db", ":DapToggleBreakpoint<CR>", { silent = true })
+vim.api.nvim_set_keymap( "n", "<leader>dB",
+	':lua require("dap").set_breakpoint(nil, nil, vim.fn.input("Breakpoint condition: "))<CR>',
+	{ silent = true }
+)
+vim.api.nvim_set_keymap(
+	"n",
+	"<leader>lp",
+	':lua require("dap").set_breakpoint(nil, nil, vim.fn.input("Log point message: "))<CR>',
+	{ silent = true }
+)
+vim.api.nvim_set_keymap("n", "<leader>dr", ':lua require("dap").repl.open()<CR>', { silent = true })
+vim.api.nvim_set_keymap("n", "<leader>dl", ':lua require("dap").run_last()<CR>', { silent = true })
