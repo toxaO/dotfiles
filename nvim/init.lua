@@ -4,15 +4,12 @@ vim.cmd("autocmd!")
 require("keymaps").setup()
 require("options").setup()
 require("util").setup()
+require("plugins").setup()
 
 --------------------------------------------------------------------------------
 -- base
 --------------------------------------------------------------------------------
 
---------------------------------------------------
--- keymap alias
-local opts = { noremap = true, silent = true }
-local keymap = vim.api.nvim_set_keymap
 
 
 ----------------------------------------------------
@@ -87,25 +84,25 @@ local keymap = vim.api.nvim_set_keymap
 --------------------------------------------------------------------------------
 
 --------------------------------------------------
--- lazy.vim
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		"--branch=stable", -- latest stable release
-		lazypath,
-	})
-end
-vim.opt.rtp:prepend(lazypath)
+---- lazy.vim
+--local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+--if not vim.loop.fs_stat(lazypath) then
+--	vim.fn.system({
+--		"git",
+--		"clone",
+--		"--filter=blob:none",
+--		"https://github.com/folke/lazy.nvim.git",
+--		"--branch=stable", -- latest stable release
+--		lazypath,
+--	})
+--end
+--vim.opt.rtp:prepend(lazypath)
+--
+--plugins = require("plugins")
+--require("lazy").setup({
 
-plugins = require("plugins")
-require("lazy").setup({
 
-
-  plugins
+--  plugins
 --
 ----------------------------------------------------
 --	-- core
@@ -913,7 +910,7 @@ require("lazy").setup({
 --	{ "tpope/vim-commentary" },
 --
 --------------------------------------------------------------------------------
-}) -- plugins end
+--}) -- plugins end
 --------------------------------------------------------------------------------
 
 
@@ -1155,6 +1152,11 @@ vim.fn["ddc#enable"]()
 --------------------------------------------------------------------------------
 -- keymaps
 --------------------------------------------------------------------------------
+--------------------------------------------------
+-- keymap alias
+local opts = { noremap = true, silent = true }
+local keymap = vim.api.nvim_set_keymap
+
 keymap("", "<Space>", "<Nop>", opts)
 keymap("n", "<Space>q", ":<C-U>qa<CR>", opts)
 keymap("n", "<Space><Space>q", ":<C-U>qa!<CR>", opts)
