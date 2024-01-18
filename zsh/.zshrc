@@ -444,6 +444,7 @@ alias rm='rm -I'
 alias rmi='rm -i'
 alias .za='source ~/.zshrc'
 alias .d='cd ~/dotfiles/mydotfiles'
+alias c.n='cd ~/dotfiles/mydotfiles/nvim'
 alias nt='_open_filetypes_nvim'
 
 # python alias
