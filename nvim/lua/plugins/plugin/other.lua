@@ -1,9 +1,4 @@
-local g = vim.g
-local fn = vim.fn
-local api = vim.api
-local keymap = vim.keymap
-
-local M = {
+return {
 
 	{ "vim-jp/vimdoc-ja", lazy = true, keys = {
 		{ "h", mode = "c" },
@@ -811,5 +806,3 @@ local M = {
 ------------------------------------------------------------------------------
 
 }
-
-return M

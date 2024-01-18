@@ -6,8 +6,7 @@ require("autocmd").setup()
 require("options").setup()
 require("util").setup()
 require("plugins").setup()
-
--- autocmdの設定の後にする必要あり
+-- autocmdとpluginsの設定の後にする必要あり
 require("colorscheme").setup()
 
 local augroup = vim.api.nvim_create_augroup -- Create/get autocommand group
