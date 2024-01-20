@@ -4,7 +4,6 @@ vim.cmd("autocmd!")
 require("keymaps").setup()
 require("autocmd").setup()
 require("options").setup()
-require("util").setup()
 require("plugins").setup()
 -- autocmdとpluginsの設定の後にする必要あり
 require("colorscheme").setup()
