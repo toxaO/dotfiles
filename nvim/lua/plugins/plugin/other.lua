@@ -226,15 +226,19 @@ return {
 		config = function()
 			vim.api.nvim_set_keymap("i", "<C-j>", "<Plug>(skkeleton-toggle)", { noremap=true, silent=true })
 			vim.api.nvim_set_keymap("c", "<C-j>", "<Plug>(skkeleton-toggle)", { noremap=true, silent=true })
-			vim.api.nvim_exec(
-				[[
-    call skkeleton#config({
-      \  'globalJisyo': expand('~/.config/nvim/SKK-JISYO.L'),
-      \  'eggLikeNewline': v:true,
-      \ })
-      \]],
-				false
-			)
+      vim.fn["skkeleton#config"]({
+        globalDictionaries = {"~/.config/nvim/SKK-JISYO.L"},
+        eggLikeNewline = true,
+      })
+--			vim.api.nvim_exec(
+--				[[
+--    call skkeleton#config({
+--      \  'globalDictionaries': expand('~/.config/nvim/SKK-JISYO.L'),
+--      \  'eggLikeNewline': v:true,
+--      \ })
+--      \]],
+--				false
+--			)
 			local prev_buffer_config
 			function _G.skkeleton_enable_pre()
 				prev_buffer_config = vim.fn["ddc#custom#get_buffer"]()
