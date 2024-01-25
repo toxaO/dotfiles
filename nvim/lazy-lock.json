@@ -26,6 +26,7 @@
   "ddu-filter-converter_devicon": { "branch": "main", "commit": "8bbf0a0457beb8defdd41abe0d6ea2fe877fa96c" },
   "ddu-filter-fzf": { "branch": "main", "commit": "9b9f54cbcdb0baedfe766cae5c8ec4c74bdb79ad" },
   "ddu-filter-matcher_substring": { "branch": "main", "commit": "3704a0b12affd8d3114c81c90e6b4cd7f7ef5115" },
+  "ddu-filter-sorter_alpha": { "branch": "main", "commit": "728f0b4e54be1617e5ace548d4d28175026792fc" },
   "ddu-kind-file": { "branch": "main", "commit": "3863465fac299ab4d2a694c65c68fe3b66f11743" },
   "ddu-source-action": { "branch": "main", "commit": "9cb7628321a3d352983d33dd7ad91006aa8b10a7" },
   "ddu-source-buffer": { "branch": "main", "commit": "1c98710753160bcd6e18f71236e8f96d4cbd00a5" },
