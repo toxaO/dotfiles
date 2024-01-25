@@ -267,374 +267,170 @@ return {
 	},
 
 
---------------------------------------------------
-	-- ddu
-	{
-		"Shougo/ddu.vim",
-    dependencies = {
-       -- core
-       "vim-denops/denops.vim",
-       "Shougo/ddu-commands.vim",
-
-       -- ui
-       "Shougo/ddu-ui-ff",
-       "Shougo/ddu-ui-filer",
-       "matsui54/ddu-vim-ui-select",
-
-       -- source
-       "Shougo/ddu-source-file",
-       "Shougo/ddu-source-file_rec",
-       "shun/ddu-source-rg",
-       "matsui54/ddu-source-help",
-       "shun/ddu-source-buffer",
-       "Shougo/ddu-source-action",
-        -- most recentry file
-       "kuuote/ddu-source-mr",
-       "lambdalisue/mr.vim",
-       "matsui54/ddu-source-file_external",
-       "uga-rosa/ddu-source-lsp",
-       "Shougo/ddu-source-line",
-       "Shougo/ddu-source-register",
-       "matsui54/ddu-source-command_history",
-       "kyoh86/ddu-source-command",
-       "mikanIchinose/ddu-source-markdown",
-
-       -- column
-       "Shougo/ddu-column-filename",
-
-       -- filter
-       "Shougo/ddu-filter-matcher_substring",
-       "yuki-yano/ddu-filter-fzf",
-
-       -- converter
-       "uga-rosa/ddu-filter-converter_devicon",
-
-       -- kind
-       "Shougo/ddu-kind-file"
-    },
-    config = function()
-      local lines = vim.opt.lines:get()
-      local height, row = math.floor(lines * 0.8), math.floor(lines * 0.1)
-      local columns = vim.opt.columns:get()
-      local width, col = math.floor(columns * 0.8), math.floor(columns * 0.1)
---------------------------------------------------
--- ddu ff (default)
---------------------------------------------------
-      vim.fn["ddu#custom#patch_global"]({
-        ui = "ff",
-        uiParams = {
-          ff = {
-            --startAutoAction = true,
-            --autoAction = {
-            --  delay = 0,
-            --  name = "preview",
-            --},
-            split = "floating",
-            filterFloatingPosition = "top",
-            filterSplitDirection = "floating",
-            floatingBorder = 'rounded',
-            prompt = ">",
-            startFilter = true,
-
-            winHeight= height,
-            winWidth= width,
-            winRow= row,
-            winCol= col,
-            previewSplit = "vertical",
-            previewFloatingTitle = "Preview",
-            previewFloating= true,
-            previewHeight= height,
-            previewWidth= math.floor(width / 2),
-            --previewRow= 1,
-            --previewCol= '&columns / 2 + 1',
-            previewFloatingBorder = "rounded",
-            highlights = {
-              floating = "Pmenu",
-              floatingBorder = "Pmenu",
-            },
-          },
-        },
-        sources = {
-          {
-            name = "file_rec",
-            params = {
-              ignoredDirectories = {
-                ".git",
-                "node_modules",
-                "vendor",
-                ".next",
-                ".venv",
-                "__pycache__",
-                ".mypy_cache",
-              },
-            },
-          },
-        },
-        sourceOptions = {
-          _ = {
-            ignoreCase = true,
-            matchers = {
-              --"matcher_substring",
-              "matcher_fzf",
-            },
-            sorters = {
-              "sorter_fzf",
-            },
-            converters = {
-              "converter_devicon",
-            },
-            volatile = true,
-          },
-        },
-        filterParams = {
-          --matcher_substring = {
-          --  highlightMatched = "Title",
-          --},
-          matcher_fzf = {
-            highlightMatched = "Search",
-          },
-        },
-        kindOptions = {
-          file = {
-            defaultAction = "open",
-          },
-          action = {
-            defaultAction = "do",
-          },
-        },
-      })
-
---------------------------------------------------
--- ddu buffer
---------------------------------------------------
-      vim.fn["ddu#custom#patch_local"]("buffer", {
-        sources = {
-          {name = "buffer"}
-        },
-        uiParams = {
-          ff = {startFilter = false},
-        },
-      })
-
---------------------------------------------------
--- ddu grep
---------------------------------------------------
-      vim.fn["ddu#custom#patch_local"]("grep", {
-        sourceParams = {
-          rg = {
-            args = {"--column", "--no-heading", "--color", "never"},
-          },
-        },
-        uiParams = {
-          ff = {startFilter = false},
-        },
-      })
-
---------------------------------------------------
--- ddu grep_root
---------------------------------------------------
-      vim.fn["ddu#custom#patch_local"]("grep_root", {
-        sources = {
-          { name = "file_rec" },
-        },
-        sourceOptions = {
-          file_rec = {
-            path = vim.fn.expand("~")
-          },
-        },
-        sourceParams = {
-          rg = {
-            args = {"--column", "--no-heading", "--color", "never"},
-          },
-        },
-        uiParams = {
-          ff = {startFilter = false},
-        },
-      })
-
---------------------------------------------------
--- ddu help-ff
---------------------------------------------------
-      vim.fn["ddu#custom#patch_local"]("help-ff", {
-        --uiParams = {
-        --  ff = {
-        --    split = "vertical",
-        --    splitDirection = "topleft",
-        --    startFilter = true,
-        --  },
-        --},
-        sources = {
-          { name = "help" },
-        },
-        sourceOptions = {
-          help = {
-            defaultAction = "open",
-          },
-        },
-      })
-
---------------------------------------------------
--- ddu ff keymaps
---------------------------------------------------
-
-      -- normal mode
-
-			local ddu_ff_keymap = vim.api.nvim_create_augroup("ddu_ff_keymap", { clear = true })
-      vim.api.nvim_create_autocmd("filetype", {
-        group = ddu_ff_keymap,
-        pattern = "ddu-ff",
-        callback = function()
-          local opts = { noremap = true, silent = true, buffer = true }
-          vim.keymap.set({ "n" }, "<CR>", [[<Cmd>call ddu#ui#do_action("itemAction")<CR>]], opts)
-          vim.keymap.set({ "n" }, "t", [[<Cmd>call ddu#ui#do_action("itemAction", {"name": "open", "params": {"command": "tabe",}})<CR>]], opts)
-          vim.keymap.set({ "n" }, "s", [[<Cmd>call ddu#ui#do_action("itemAction", {"name": "open", "params": {"command": "split",}})<CR>]], opts)
-          vim.keymap.set({ "n" }, "v", [[<Cmd>call ddu#ui#do_action("itemAction", {"name": "open", "params": {"command": "vsplit",}})<CR>]], opts)
-          vim.keymap.set({ "n" }, "q", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
-          vim.keymap.set({ "n" }, "i", [[<Cmd>call ddu#ui#do_action("openFilterWindow")<CR>]], opts)
-          vim.keymap.set({ "n" }, "<Space>", [[<Cmd>call ddu#ui#do_action("toggleSelectItem")<CR>]], opts)
-          vim.keymap.set({ "n" }, "p", [[<Cmd>call ddu#ui#do_action("togglePreview")<CR>]], opts)
-          vim.keymap.set({ "n" }, "<C-c>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
-          vim.keymap.set({ "n" }, "<Esc>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
-          vim.keymap.set({ "n" }, "a", [[<Cmd>call ddu#ui#do_action("chooseAction")<CR>]], opts)
-          vim.keymap.set({ "n" }, "<C-N>", [[<Cmd>call ddu#ui#do_action("cursorNext")<CR>]], opts)
-          vim.keymap.set({ "n" }, "<C-P>", [[<Cmd>call ddu#ui#do_action("cursorPrevious")<CR>]], opts)
-        end,
-      })
-
-      -- filtering mode
-      vim.api.nvim_create_autocmd("FileType", {
-        group = ddu_ff_keymap,
-        pattern = "ddu-ff-filter",
-        callback = function ()
-          --local opts = { noremap = true, silent = true, buffer = true }
-          local opts = { noremap = true, buffer = true }
-          vim.keymap.set({ "n", "i" }, "<CR>", [[<Esc><Cmd>close<CR>]], opts)
-          vim.keymap.set({ "n" }, "q", [[<Esc><Cmd>close<CR>]], opts)
-          vim.keymap.set({ "n", "i" }, "<C-c>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
-          vim.keymap.set({ "n", "i" }, "<C-N>", [[<Cmd>call ddu#ui#do_action("cursorNext")<CR>]], opts)
-          vim.keymap.set({ "n", "i" }, "<C-P>", [[<Cmd>call ddu#ui#do_action("cursorPrevious")<CR>]], opts)
-        end,
-      })
-
---------------------------------------------------
--- ddu action_select
---------------------------------------------------
-      --vim.fn["ddu#custom#patch_local"]("action_select", {
-      --  ui = "ui_select",
-      --  sources = {
-      --    {
-      --      name = "actions",
-      --      params = {},
-      --    }
-      --  },
-      --  sourceOptions = {
-      --    _ = {
-      --      columns = {"filename"},
-      --    },
-      --  },
-      --  --kindOptions = {
-      --  --  file = {
-      --  --    defaultAction = "open",
-      --  --  },
-      --  --},
-      --})
-
-
---------------------------------------------------
--- ddu filer
---------------------------------------------------
-      vim.fn["ddu#custom#patch_local"]("filer", {
-        ui = "filer",
-        uiParams = {
-          filer = {
-            winWidth = 40,
-            split = "vertical",
-            splitDirection = "topleft",
-          },
-        },
-        sources = {
-          {
-            name = "file",
-            params = {},
-          }
-        },
-        sourceOptions = {
-          _ = {
-            columns = {"filename"},
-          },
-        },
-        kindOptions = {
-          ui_select = {
-            defaultAction = "select",
-          },
-        },
-        resume = true,
-      })
-
---------------------------------------------------
--- ddu filer keymaps
---------------------------------------------------
-
-			local ddu_filer_keymap = vim.api.nvim_create_augroup("ddu_filer_keymap", { clear = true })
-      vim.api.nvim_create_autocmd("FileType", {
-        group = ddu_filer_keymap,
-        pattern = "ddu-filer",
-        callback = function()
-            local opts = { noremap = true, silent = true, buffer = true }
-            vim.keymap.set({ "n" }, "<CR>",
-              [[<Cmd>call ddu#ui#do_action("itemAction")<CR>]], opts)
-            vim.keymap.set({ "n" }, "<Space>",
-              [[<Cmd>call ddu#ui#do_action("toggleSelectItem")<CR>]], opts)
-            vim.keymap.set({ "n" }, "o",
-              [[<Cmd>call ddu#ui#do_action("expandItem", {"mode": "toggle"})<CR>]],
-            { buffer = true, noremap =true })
-            vim.keymap.set({ "n" }, "q",
-              [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
-            vim.keymap.set({ "n" }, "<C-C>",
-              [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
-            vim.keymap.set({ "n" }, "a",
-              [[<Cmd>call ddu#ui#do_action("chooseAction")<CR>]], opts)
-        end
-      })
-
---------------------------------------------------
---------------------------------------------------
-
--- ff
-      -- file (default)
-      vim.api.nvim_set_keymap("n", "<Space>uf", [[<Cmd>call ddu#start({})<CR>]], { noremap=true, silent=true})
-      -- buffer
-      vim.api.nvim_set_keymap("n", "<Space>ub", "<Cmd>call ddu#start({'name': 'buffer'})<CR>", { noremap=true, silent=true})
-      --keymap("n", "<Space>ub", "<Cmd>call ddu#start({" ..
-      --"'sources': [{'name': 'buffer'}], " ..
-      --"})<CR>", { noremap=true, silent=true})
-      -- grep
-      vim.api.nvim_set_keymap("n", "<Space>ug", "<Cmd>call ddu#start({" ..
-      "'name': 'grep', " ..
-      "'sources': [{'name': 'rg', 'params': {'input': expand('<cword>')}}]" ..
-      "})<CR>", { noremap=true, silent=true})
-      -- grep_root
-      vim.api.nvim_set_keymap("n", "<Space>uG", "<Cmd>call ddu#start({" ..
-      "'name': 'grep_root', " ..
-      "'sources': [{'name': 'file_rec'}]" ..
-      "})<CR>", { noremap=true, silent=true})
-      -- help-ff
-      vim.api.nvim_set_keymap("n", "<Space>uh", "<Cmd>call ddu#start({" ..
-      "'name': 'help-ff', " ..
-      "})<CR>", { noremap=true, silent=true})
-      vim.api.nvim_create_user_command("Help", function()
-        vim.fn["ddu#start"]({name = "help-ff"})
-      end, {})
-
--- filer
-      vim.api.nvim_set_keymap("n", "<Space>ue", "<Cmd>call ddu#start({" ..
-        "'name':'filer'," ..
-        "'searchPath':expand('%:p')" ..
-      "})<CR>", { noremap=true, silent=true})
-
-    end
-	},
-  --ddu end
+----------------------------------------------------
+--	-- ddu
+----------------------------------------------------
+---- ddu ff keymaps
+----------------------------------------------------
+--
+--      -- normal mode
+--
+--			local ddu_ff_keymap = vim.api.nvim_create_augroup("ddu_ff_keymap", { clear = true })
+--      vim.api.nvim_create_autocmd("filetype", {
+--        group = ddu_ff_keymap,
+--        pattern = "ddu-ff",
+--        callback = function()
+--          local opts = { noremap = true, silent = true, buffer = true }
+--          vim.keymap.set({ "n" }, "<CR>", [[<Cmd>call ddu#ui#do_action("itemAction")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "t", [[<Cmd>call ddu#ui#do_action("itemAction", {"name": "open", "params": {"command": "tabe",}})<CR>]], opts)
+--          vim.keymap.set({ "n" }, "s", [[<Cmd>call ddu#ui#do_action("itemAction", {"name": "open", "params": {"command": "split",}})<CR>]], opts)
+--          vim.keymap.set({ "n" }, "v", [[<Cmd>call ddu#ui#do_action("itemAction", {"name": "open", "params": {"command": "vsplit",}})<CR>]], opts)
+--          vim.keymap.set({ "n" }, "q", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "i", [[<Cmd>call ddu#ui#do_action("openFilterWindow")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "<Space>", [[<Cmd>call ddu#ui#do_action("toggleSelectItem")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "p", [[<Cmd>call ddu#ui#do_action("togglePreview")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "<C-c>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "<Esc>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "a", [[<Cmd>call ddu#ui#do_action("chooseAction")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "<C-N>", [[<Cmd>call ddu#ui#do_action("cursorNext")<CR>]], opts)
+--          vim.keymap.set({ "n" }, "<C-P>", [[<Cmd>call ddu#ui#do_action("cursorPrevious")<CR>]], opts)
+--        end,
+--      })
+--
+--      -- filtering mode
+--      vim.api.nvim_create_autocmd("FileType", {
+--        group = ddu_ff_keymap,
+--        pattern = "ddu-ff-filter",
+--        callback = function ()
+--          --local opts = { noremap = true, silent = true, buffer = true }
+--          local opts = { noremap = true, buffer = true }
+--          vim.keymap.set({ "n", "i" }, "<CR>", [[<Esc><Cmd>close<CR>]], opts)
+--          vim.keymap.set({ "n" }, "q", [[<Esc><Cmd>close<CR>]], opts)
+--          vim.keymap.set({ "n", "i" }, "<C-c>", [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+--          vim.keymap.set({ "n", "i" }, "<C-N>", [[<Cmd>call ddu#ui#do_action("cursorNext")<CR>]], opts)
+--          vim.keymap.set({ "n", "i" }, "<C-P>", [[<Cmd>call ddu#ui#do_action("cursorPrevious")<CR>]], opts)
+--        end,
+--      })
+--
+----------------------------------------------------
+---- ddu action_select
+----------------------------------------------------
+--      --vim.fn["ddu#custom#patch_local"]("action_select", {
+--      --  ui = "ui_select",
+--      --  sources = {
+--      --    {
+--      --      name = "actions",
+--      --      params = {},
+--      --    }
+--      --  },
+--      --  sourceOptions = {
+--      --    _ = {
+--      --      columns = {"filename"},
+--      --    },
+--      --  },
+--      --  --kindOptions = {
+--      --  --  file = {
+--      --  --    defaultAction = "open",
+--      --  --  },
+--      --  --},
+--      --})
+--
+--
+----------------------------------------------------
+---- ddu filer
+----------------------------------------------------
+--      vim.fn["ddu#custom#patch_local"]("filer", {
+--        ui = "filer",
+--        uiParams = {
+--          filer = {
+--            winWidth = 40,
+--            split = "vertical",
+--            splitDirection = "topleft",
+--          },
+--        },
+--        sources = {
+--          {
+--            name = "file",
+--            params = {},
+--          }
+--        },
+--        sourceOptions = {
+--          _ = {
+--            columns = {"filename"},
+--          },
+--        },
+--        kindOptions = {
+--          ui_select = {
+--            defaultAction = "select",
+--          },
+--        },
+--        resume = true,
+--      })
+--
+----------------------------------------------------
+---- ddu filer keymaps
+----------------------------------------------------
+--
+--			local ddu_filer_keymap = vim.api.nvim_create_augroup("ddu_filer_keymap", { clear = true })
+--      vim.api.nvim_create_autocmd("FileType", {
+--        group = ddu_filer_keymap,
+--        pattern = "ddu-filer",
+--        callback = function()
+--            local opts = { noremap = true, silent = true, buffer = true }
+--            vim.keymap.set({ "n" }, "<CR>",
+--              [[<Cmd>call ddu#ui#do_action("itemAction")<CR>]], opts)
+--            vim.keymap.set({ "n" }, "<Space>",
+--              [[<Cmd>call ddu#ui#do_action("toggleSelectItem")<CR>]], opts)
+--            vim.keymap.set({ "n" }, "o",
+--              [[<Cmd>call ddu#ui#do_action("expandItem", {"mode": "toggle"})<CR>]],
+--            { buffer = true, noremap =true })
+--            vim.keymap.set({ "n" }, "q",
+--              [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+--            vim.keymap.set({ "n" }, "<C-C>",
+--              [[<Cmd>call ddu#ui#do_action("quit")<CR>]], opts)
+--            vim.keymap.set({ "n" }, "a",
+--              [[<Cmd>call ddu#ui#do_action("chooseAction")<CR>]], opts)
+--        end
+--      })
+--
+----------------------------------------------------
+----------------------------------------------------
+--
+---- ff
+--      -- file (default)
+--      vim.api.nvim_set_keymap("n", "<Space>uf", [[<Cmd>call ddu#start({})<CR>]], { noremap=true, silent=true})
+--      -- buffer
+--      vim.api.nvim_set_keymap("n", "<Space>ub", "<Cmd>call ddu#start({'name': 'buffer'})<CR>", { noremap=true, silent=true})
+--      --keymap("n", "<Space>ub", "<Cmd>call ddu#start({" ..
+--      --"'sources': [{'name': 'buffer'}], " ..
+--      --"})<CR>", { noremap=true, silent=true})
+--      -- grep
+--      vim.api.nvim_set_keymap("n", "<Space>ug", "<Cmd>call ddu#start({" ..
+--      "'name': 'grep', " ..
+--      "'sources': [{'name': 'rg', 'params': {'input': expand('<cword>')}}]" ..
+--      "})<CR>", { noremap=true, silent=true})
+--      -- grep_root
+--      vim.api.nvim_set_keymap("n", "<Space>uG", "<Cmd>call ddu#start({" ..
+--      "'name': 'grep_root', " ..
+--      "'sources': [{'name': 'file_rec'}]" ..
+--      "})<CR>", { noremap=true, silent=true})
+--      -- help-ff
+--      vim.api.nvim_set_keymap("n", "<Space>uh", "<Cmd>call ddu#start({" ..
+--      "'name': 'help-ff', " ..
+--      "})<CR>", { noremap=true, silent=true})
+--      vim.api.nvim_create_user_command("Help", function()
+--        vim.fn["ddu#start"]({name = "help-ff"})
+--      end, {})
+--
+---- filer
+--      vim.api.nvim_set_keymap("n", "<Space>ue", "<Cmd>call ddu#start({" ..
+--        "'name':'filer'," ..
+--        "'searchPath':expand('%:p')" ..
+--      "})<CR>", { noremap=true, silent=true})
+--
+--    end
+--	},
+--  --ddu end
 
 --------------------------------------------------
 	-- fzf
