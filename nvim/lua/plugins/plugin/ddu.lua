@@ -127,6 +127,8 @@ return {
         kindOptions = {
          file = {defaultAction = "open"},
          action = {defaultAction = "do"},
+         help = {defaultAction = "open"},
+         ui_select = {defaultAction = "do"},
         }, -- /kindOptions
       }) -- /default
 
@@ -185,10 +187,13 @@ return {
 
         -- help --
       fn["ddu#custom#patch_local"]("help",{
-        sources = {{name = "help"}},
+        sources = {{name = "help",}},
+        sourceParams = {
+          helpLang = "ja",
+        },
       }) -- /help --
 
-      -- /ff
+      -- /ff --
 
       -- filer --
 
@@ -216,12 +221,21 @@ return {
           keymap.set("n", "q", function()
             fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
-
-          keymap.set("n", "l", function()
-            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "vsplit" }, quit = true })
+          keymap.set("n", "<C-C>", function()
+            fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
-          keymap.set("n", "L", function()
-            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "split" }, quit = true })
+          keymap.set("n", "a", function()
+            fn["ddu#ui#do_action"]("chooseAction")
+          end, km_opts.bn)
+
+          keymap.set("n", "v", function()
+            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "vsplit" } })
+          end, km_opts.bn)
+          keymap.set("n", "s", function()
+            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "split" } })
+          end, km_opts.bn)
+          keymap.set("n", "t", function()
+            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
           end, km_opts.bn)
         end,
       })
@@ -232,6 +246,9 @@ return {
         pattern = "ddu-ff-filter",
         callback = function()
           keymap.set({ "n", "i" }, "<CR>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
+          keymap.set({ "n", "i" }, "<C-C>", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
         end,
       })
           -- /ff filtering keymaps --
