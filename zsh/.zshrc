@@ -89,11 +89,17 @@ function rprompt-git-current-branch {
   blue='033m%}'
   reset='%{\e[0m%}'   # reset
 
-  if [ ! -e  ".git" ]; then
+  #if [ ! -e  ".git" ]; then
+  #  # git 管理されていないディレクトリは何も返さない
+  #  return
+  #fi
+  #branch_name=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
+  local insideProject=`git rev-parse --is-inside-work-tree 2>/dev/null`
+  if [ ! "${insideProject}" = "true" ]; then
     # git 管理されていないディレクトリは何も返さない
     return
   fi
-  branch_name=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
+  branch_name=`git symbolic-ref --short HEAD 2> /dev/null`
   st=`git status 2> /dev/null`
   if [[ -n `echo "$st" | grep "^nothing to"` ]]; then
     # 全て commit されてクリーンな状態
