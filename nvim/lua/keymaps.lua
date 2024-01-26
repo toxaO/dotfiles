@@ -80,9 +80,8 @@ keymap("", "L", "$", opts)
 -- 行末までのヤンクにする
 keymap("n", "Y", "y$", opts)
 
--- ESC*2 でハイライトやめる
-keymap("n", "<Esc><Esc>", ":<C-u>noh<Return>", opts)
-keymap("n", "<C-[><C-[>", ":<C-u>noh<Return>", opts)
+-- g/でハイライトやめる
+keymap("n", "g/", ":<C-u>noh<Return>", opts)
 
 -- fzf
 keymap("n", "<Space>ff", ":<C-u>Files<CR>", opts)

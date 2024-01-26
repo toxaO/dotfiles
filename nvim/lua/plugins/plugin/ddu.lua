@@ -44,6 +44,7 @@ return {
 
        -- column
        "Shougo/ddu-column-filename",
+       "tamago3keran/ddu-column-devicon_filename",
 
        -- filter
        "Shougo/ddu-filter-matcher_substring",
@@ -193,9 +194,43 @@ return {
         },
       }) -- /help --
 
-      -- /ff --
+      -- /ff setting --
 
-      -- filer --
+      -- filer setting --
+      fn["ddu#custom#patch_local"]("filer", {
+        ui = "filer",
+        uiParams = {
+          filer = {
+            winWidth = 40,
+            split = "vertical",
+            splitDirection = "topleft",
+          },
+          devicon_filename = {
+            span = 2,
+            padding = 2,
+            iconWidth = 2,
+            useLinkIcon = "grayout",
+            sort = "filename",
+            sortTreesFirst = true,
+          },
+        },
+        sources = {
+          {name = "file"}
+        },
+        sourceOptions = {
+          filer = {
+            columns = {"devicon_filename"},
+          },
+        },
+        sourceParams = {},
+        actionOptions = {
+          narrow = {
+            quit = false,
+          },
+        },
+        resume = true,
+      })
+      -- /filer setting --
 
       -- ddu keymaps --
         -- ff keymaps --
@@ -224,6 +259,10 @@ return {
           keymap.set("n", "<C-C>", function()
             fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
+          keymap.set("n", "<Esc>", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
+          --api.nvim_buf_del_keymap(0, "n", "<Esc><Esc>")
           keymap.set("n", "a", function()
             fn["ddu#ui#do_action"]("chooseAction")
           end, km_opts.bn)
@@ -249,6 +288,7 @@ return {
           keymap.set({ "n", "i" }, "<C-C>", function()
             fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
+          keymap.set({ "n" }, "<Esc>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
         end,
       })
           -- /ff filtering keymaps --
