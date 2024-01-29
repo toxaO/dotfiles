@@ -578,6 +578,7 @@ return {
 	{ "cohama/lexima.vim" },
 	{ "tpope/vim-surround" },
 	{ "tpope/vim-commentary" },
+  {"gbrlsnchs/winpick.nvim"},
 
 ------------------------------------------------------------------------------
 

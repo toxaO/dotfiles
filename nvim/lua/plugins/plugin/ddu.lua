@@ -45,6 +45,7 @@ return {
        -- column
        "Shougo/ddu-column-filename",
        "tamago3keran/ddu-column-devicon_filename",
+       "ryota2357/ddu-column-icon_filename",
 
        -- filter
        "Shougo/ddu-filter-matcher_substring",
@@ -57,7 +58,8 @@ return {
        "uga-rosa/ddu-filter-converter_devicon",
 
        -- kind
-       "Shougo/ddu-kind-file"
+       "Shougo/ddu-kind-file",
+       "Shougo/ddu-kind-word",
     }, -- /dependencies
 
     config = function ()
@@ -69,7 +71,10 @@ return {
 
       -- ddu default --
       fn["ddu#custom#patch_global"]({
+        -- default ui --
         ui = "ff",
+
+        -- ui-ff params --
         uiParams = {
           ff = {
             split = "floating",
@@ -102,11 +107,9 @@ return {
               delay = 0,
               name = "preview",
             },
+          }, -- /ui-ff params
+        }, -- /ui params
 
-          }, -- /uiParams-ff
-          filer = {
-          }, -- /uiParams-filer
-        }, -- /uiParams
         sourceOptions = {
           _ = {
             ignoreCase = true,
@@ -137,8 +140,11 @@ return {
         -- buffer --
       fn["ddu#custom#patch_local"]("buffer",{
         sources = {{name = "buffer"}},
+        sourceOptions = {
+          buffer = {sorters = {},},
+        },
         uiParams = {
-          ff = {startFilter = false},
+          ff = {},
         }
       }) -- /buffer --
 
@@ -204,12 +210,6 @@ return {
             winWidth = 40,
             split = "vertical",
             splitDirection = "topleft",
-          },
-          devicon_filename = {
-            span = 2,
-            padding = 2,
-            iconWidth = 2,
-            useLinkIcon = "grayout",
             sort = "filename",
             sortTreesFirst = true,
           },
@@ -218,11 +218,18 @@ return {
           {name = "file"}
         },
         sourceOptions = {
-          filer = {
+          ["_"] = {
             columns = {"devicon_filename"},
+            converters = {},
           },
         },
         sourceParams = {},
+        columnParams = {
+          devicon_filename = {
+            indentationWidth = 1,
+            iconWidth = 3,
+          },
+        },
         actionOptions = {
           narrow = {
             quit = false,
@@ -250,7 +257,7 @@ return {
           keymap.set("n", "i", function()
             fn["ddu#ui#do_action"]("openFilterWindow")
           end, km_opts.bn)
-          keymap.set("n", "p", function()
+          keymap.set("n", "P", function()
             fn["ddu#ui#do_action"]("preview")
           end, km_opts.bn)
           keymap.set("n", "q", function()
@@ -267,12 +274,15 @@ return {
             fn["ddu#ui#do_action"]("chooseAction")
           end, km_opts.bn)
 
+          -- "v" --
           keymap.set("n", "v", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "vsplit" } })
           end, km_opts.bn)
+          -- "s" --
           keymap.set("n", "s", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "split" } })
           end, km_opts.bn)
+          -- "t" --
           keymap.set("n", "t", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
           end, km_opts.bn)
@@ -288,12 +298,147 @@ return {
           keymap.set({ "n", "i" }, "<C-C>", function()
             fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
-          keymap.set({ "n" }, "<Esc>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
+          --keymap.set({ "n" }, "<Esc>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
+          keymap.set("n", "<Esc>", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
         end,
       })
           -- /ff filtering keymaps --
         -- /ff keymaps --
+
         -- filer keymaps --
+			local ddu_filer_keymap = vim.api.nvim_create_augroup("ddu_filer_keymap", { clear = true })
+      vim.api.nvim_create_autocmd("filetype", {
+        group = ddu_filer_keymap,
+        pattern = "ddu-filer",
+        callback = function()
+          -- <CR> --
+          keymap.set("n", "<CR>", function()
+            return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
+            or ddu.do_action("itemAction", { quit = true })
+          end, km_opts.bn)
+          -- <Space> --
+          keymap.set("n", "<Space>", function()
+            fn["ddu#ui#do_action"]("toggleSelectItem")
+          end, km_opts.bn)
+          -- "i" --
+          keymap.set("n", "i", function()
+            fn["ddu#ui#do_action"]("openFilterWindow")
+          end, km_opts.bn)
+          -- "o" --
+          keymap.set("n", "o", function()
+            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle"})
+          end, km_opts.bn)
+          -- "O" --
+          keymap.set("n", "O", function()
+            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle", maxLevel = -1})
+          end, km_opts.bn)
+          -- "v" --
+          keymap.set("n", "v", function()
+            return ddu.item.is_tree() and ddu.do_action("expandItem")
+            or ddu.do_action("itemAction", { name = "open", params = { command = "vsplit" } })
+          end, km_opts.bn)
+          -- "s" --
+          keymap.set("n", "s", function()
+            return ddu.item.is_tree() and ddu.do_action("expandItem")
+            or ddu.do_action("itemAction", { name = "open", params = { command = "split" } })
+          end, km_opts.bn)
+          -- "t" --
+          keymap.set("n", "t", function()
+            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
+          end, km_opts.bn)
+          -- "P" --
+          keymap.set("n", "P", function()
+            fn["ddu#ui#do_action"]("preview")
+          end, km_opts.bn)
+          -- "q" --
+          keymap.set("n", "q", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
+          -- <C-C> --
+          keymap.set("n", "<C-C>", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
+          -- <Esc> --
+          keymap.set("n", "<Esc>", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
+          -- "a" --
+          keymap.set("n", "a", function()
+            fn["ddu#ui#do_action"]("chooseAction")
+          end, km_opts.bn)
+          -- "R" --
+          keymap.set("n", "R", function()
+            ddu.do_action("refreshItems")
+          end, km_opts.bn)
+          -- "r" --
+          keymap.set("n", "r", function()
+            ddu.do_action("rename")
+          end, km_opts.bn)
+          -- "C" --
+          keymap.set("n", "C", function()
+            ddu.do_action("itemAction", { name = "cd" })
+          end, km_opts.bn)
+          -- "c" --
+          keymap.set("n", "c", function()
+            ddu.do_action("itemAction", { name = "copy" })
+          end, km_opts.bn)
+          -- "x" --
+          keymap.set("n", "x", function()
+            ddu.do_action("itemAction", { name = "cut" })
+          end, km_opts.bn)
+          -- "p" --
+          keymap.set("n", "p", function()
+            ddu.do_action("itemAction", { name = "paste" })
+          end, km_opts.bn)
+          -- "m" --
+          keymap.set("n", "m", function()
+            ddu.do_action("itemAction", { name = "move" })
+          end, km_opts.bn)
+          -- "n" --
+          keymap.set("n", "b", function()
+            ddu.do_action("itemAction", { name = "newFile" })
+          end, km_opts.bn)
+          -- "N" --
+          keymap.set("n", "B", function()
+            ddu.do_action("itemAction", { name = "newDirectory" })
+          end, km_opts.bn)
+          -- "y" --
+          keymap.set("n", "y", function()
+            ddu.do_action("itemAction", { name = "yank" })
+          end, km_opts.bn)
+          -- "d" --
+          keymap.set("n", "d", function()
+            ddu.do_action("itemAction", { name = "delete" })
+          end, km_opts.bn)
+          -- "^" --
+          keymap.set("n", "^", function()
+            ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand(g.my_initvim_path) } })
+          end, km_opts.bn)
+          -- "\" --
+          keymap.set("n", "\\", function()
+            ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~/repos") } })
+          end, km_opts.bn)
+          -- "|" --
+          keymap.set("n", "|", function()
+            ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~/repos") } })
+          end, km_opts.bn)
+          -- "~" --
+          keymap.set("n", "~", function()
+            ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~") } })
+          end, km_opts.bn)
+          -- "=" --
+          keymap.set("n", "=", function()
+            ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~/Documents") } })
+          end, km_opts.bn)
+          -- <BS> --
+          keymap.set("n", "<BS>", function()
+            ddu.do_action("itemAction", { name = "narrow", params = { path = ".." } })
+          end, km_opts.bn)
+
+        end,
+      })
         -- /filer keymaps --
       -- /ddu keymaps --
 

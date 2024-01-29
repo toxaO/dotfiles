@@ -3,15 +3,14 @@ local fn = vim.fn
 local api = vim.api
 local keymap = vim.keymap
 
-local opts = { noremap = true, silent = true }
-local keymap = vim.api.nvim_set_keymap
+local km_opts = require("const.keymap")
 
 local M = {}
 
 function M.setup()
-keymap("", "<Space>", "<Nop>", opts)
-keymap("n", "<Space>q", ":<C-U>qa<CR>", opts)
-keymap("n", "<Space><Space>q", ":<C-U>qa!<CR>", opts)
+keymap.set("", "<Space>", "<Nop>", km_opts.ns)
+keymap.set("n", "<Space>q", ":<C-U>qa<CR>", km_opts.ns)
+keymap.set("n", "<Space><Space>q", ":<C-U>qa!<CR>", km_opts.ns)
 -- Modes
 --   normal_mode = 'n',
 --   insert_mode = 'i',
@@ -19,123 +18,139 @@ keymap("n", "<Space><Space>q", ":<C-U>qa!<CR>", opts)
 --   visual_block_mode = 'x',
 --   term_mode = 't',
 --   command_mode = 'c',
--- keymap("", "", "", opts)
 
 -- Normal
 --------------------------------------------------
--- ウィンドウ設定
+-- winddow
 --------------------------------------------------
-keymap("n", "<Space>c", ":<C-u>clo<CR>", opts)
-keymap("n", "<Space>o", ":<C-u>only<CR>", opts)
-keymap("n", "<C-h>", "<C-w>h", opts)
---keymap("n", "<C-j>", "<C-w>j", opts)
---keymap("n", "<C-k>", "<C-w>k", opts)
-keymap("n", "<C-l>", "<C-w>l", opts)
+keymap.set("n", "<Space>c", ":<C-u>clo<CR>", km_opts.ns)
+keymap.set("n", "<Space>o", ":<C-u>only<CR>", km_opts.ns)
 
 --------------------------------------------------
--- move
+-- cursor move
 --------------------------------------------------
-vim.api.nvim_set_keymap("n", "j", "gj", { noremap = true })
-vim.api.nvim_set_keymap("n", "k", "gk", { noremap = true })
+keymap.set("n", "j", "gj", { noremap = true })
+keymap.set("n", "k", "gk", { noremap = true })
 
 --------------------------------------------------
--- タブ
+-- tab
 --------------------------------------------------
-keymap("n", "<Space>ta", ":$tabnew<CR>", opts)
-keymap("n", "<Space>tc", ":tabclose<CR>", opts)
-keymap("n", "<Space>to", ":tabonly<CR>", opts)
-keymap("n", "<Space>tn", ":tabn<CR>", opts)
-keymap("n", "<Space>tp", ":tabp<CR>", opts)
-keymap("n", "<C-N>", ":bnext<CR>", opts)
-keymap("n", "<C-P>", ":bprevious<CR>", opts)
-keymap("n", "<Space>tmn", ":-tabmove<CR>", opts)
-keymap("n", "<Space>tmp", ":+tabmove<CR>", opts)
+keymap.set("n", "<C-T>t", ":$tabnew<cr>", km_opts.ns)
+keymap.set("n", "<C-T>c", ":tabclose<CR>", km_opts.ns)
+keymap.set("n", "<C-T>o", ":tabonly<CR>", km_opts.ns)
+keymap.set("n", "<C-T>n", ":tabn<CR>", km_opts.ns)
+keymap.set("n", "<C-T>p", ":tabp<CR>", km_opts.ns)
 
--- move tab
-keymap("n", "[t", "gT", opts)
-keymap("n", "]t", "gt", opts)
+--------------------------------------------------
+-- args
+--------------------------------------------------
+keymap.set("n", "<C-N>", ":next<CR>", km_opts.ns)
+keymap.set("n", "<C-P>", ":previous<CR>", km_opts.ns)
 
+--------------------------------------------------
+-- move maps
+--------------------------------------------------
 -- 引数リスト移動
-keymap("n", "[a", ":prev<CR>", opts)
-keymap("n", "]a", ":next<CR>", opts)
+keymap.set("n", "[a", ":prev<CR>", km_opts.ns)
+keymap.set("n", "]a", ":next<CR>", km_opts.ns)
 
 -- バッファ移動
-keymap("n", "[b", ":bp<CR>", opts)
-keymap("n", "]b", ":bn<CR>", opts)
+keymap.set("n", "[b", ":bp<CR>", km_opts.ns)
+keymap.set("n", "]b", ":bn<CR>", km_opts.ns)
 
+-- move tab
+keymap.set("n", "[t", "gT", km_opts.ns)
+keymap.set("n", "]t", "gt", km_opts.ns)
+
+
+--------------------------------------------------
+-- utils
+--------------------------------------------------
 -- Select all
-keymap("n", "<C-a>", "gg<S-v>G", opts)
+keymap.set("n", "<C-a>", "gg<S-v>G", km_opts.ns)
 
 -- increment/ decrement
-keymap("n", "-", "<C-X>", opts)
-keymap("n", "+", "<C-A>", opts)
+keymap.set("n", "-", "<C-X>", km_opts.ns)
+keymap.set("n", "+", "<C-A>", km_opts.ns)
 
 -- Do not yank with x
-keymap("n", "x", '"_x', opts)
+keymap.set("n", "x", '"_x', km_opts.ns)
 
 -- 行の端に行く
-keymap("", "H", "^", opts)
-keymap("", "L", "$", opts)
+keymap.set("", "H", "^", km_opts.ns)
+keymap.set("", "L", "$", km_opts.ns)
 
 -- 行末までのヤンクにする
-keymap("n", "Y", "y$", opts)
+keymap.set("n", "Y", "y$", km_opts.ns)
 
 -- g/でハイライトやめる
-keymap("n", "g/", ":<C-u>noh<Return>", opts)
+keymap.set("n", "g/", ":<C-u>noh<Return>", km_opts.ns)
 
--- fzf
-keymap("n", "<Space>ff", ":<C-u>Files<CR>", opts)
-keymap("n", "<Space>fb", ":<C-u>Buffers<CR>", opts)
-keymap("n", "<Space>fc", ":<C-u>Commands<CR>", opts)
-keymap("n", "<Space>fh", ":<C-u>History<CR>", opts)
-keymap("n", "<Space>fm", ":<C-u>Maps<CR>", opts)
-keymap("n", "<Space>f/", ":<C-u>History/<CR>", opts)
-keymap("n", "<Space>f:", ":<C-u>History:<CR>", opts)
-keymap("n", "<Space>fr", ":<C-u>Rg<CR>", opts)
-keymap("n", "<Space>fl", ":<C-u>Lines<CR>", opts)
-keymap("n", "<Space>fL", ":<C-u>BLines<CR>", opts)
-keymap("n", "<Space>fH", ":<C-u>Helptags<CR>", opts)
+---- fzf
+--keymap.set("n", "<Space>ff", ":<C-u>Files<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fb", ":<C-u>Buffers<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fc", ":<C-u>Commands<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fh", ":<C-u>History<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fm", ":<C-u>Maps<CR>", km_opts.ns)
+--keymap.set("n", "<Space>f/", ":<C-u>History/<CR>", km_opts.ns)
+--keymap.set("n", "<Space>f:", ":<C-u>History:<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fr", ":<C-u>Rg<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fl", ":<C-u>Lines<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fL", ":<C-u>BLines<CR>", km_opts.ns)
+--keymap.set("n", "<Space>fH", ":<C-u>Helptags<CR>", km_opts.ns)
 
--- Insert --
+-- insert cursor move --
 
-keymap("i", "<C-F>", "<Right>", opts)
-keymap("i", "<C-b>", "<Left>", opts)
+keymap.set("i", "<C-F>", "<Right>", km_opts.ns)
+keymap.set("i", "<C-b>", "<Left>", km_opts.ns)
 
 -- 貼り付け
-keymap("i", "<C-r><C-r>", '<C-r>"', opts)
+keymap.set("i", "<C-r><C-r>", '<C-r>"', km_opts.ns)
 
 -- Visual --
 -- Stay in indent mode
-keymap("v", "<", "<gv", opts)
-keymap("v", ">", ">gv", opts)
+keymap.set("v", "<", "<gv", km_opts.ns)
+keymap.set("v", ">", ">gv", km_opts.ns)
 
 -- ビジュアルモード時vで行末まで選択
-keymap("v", "v", "$h", opts)
+keymap.set("v", "v", "$h", km_opts.ns)
 
 -- 0番レジスタを使いやすくした
-keymap("v", "<C-p>", '"0p', opts)
+keymap.set("v", "<C-p>", '"0p', km_opts.ns)
 
--- Command --
-keymap("c", "%%", "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", { noremap = true, silent = true, expr = true })
+----------------------------------------------------------------------------------------------------
+-- ddu mapping -------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+keymap.set("n", "<Space>b",":call ddu#start({'name': 'buffer'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>h",":call ddu#start({'name': 'help'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>g",":call ddu#start({'name': 'project_grep'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>f",":call ddu#start({'name': 'project'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>e",":call ddu#start({'name': 'filer'})<CR>", km_opts.ns)
+----------------------------------------------------------------------------------------------------
+-- /ddu mapping ------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+-- Command Mode用 --
+keymap.set("c", "%%", "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", { noremap = true, silent = true, expr = true })
 
 -- dap keymap
-vim.api.nvim_set_keymap("n", "<F5>", ":DapContinue<CR>", { silent = true })
-vim.api.nvim_set_keymap("n", "<F10>", ":DapStepOver<CR>", { silent = true })
-vim.api.nvim_set_keymap("n", "<F11>", ":DapStepInto<CR>", { silent = true })
-vim.api.nvim_set_keymap("n", "<F12>", ":DapStepOut<CR>", { silent = true })
-vim.api.nvim_set_keymap("n", "<leader>db", ":DapToggleBreakpoint<CR>", { silent = true })
-vim.api.nvim_set_keymap( "n", "<leader>dB",
+keymap.set("n", "<F5>", ":DapContinue<CR>", { silent = true })
+keymap.set("n", "<F10>", ":DapStepOver<CR>", { silent = true })
+keymap.set("n", "<F11>", ":DapStepInto<CR>", { silent = true })
+keymap.set("n", "<F12>", ":DapStepOut<CR>", { silent = true })
+keymap.set("n", "<leader>db", ":DapToggleBreakpoint<CR>", { silent = true })
+keymap.set( "n", "<leader>dB",
 	':lua require("dap").set_breakpoint(nil, nil, vim.fn.input("Breakpoint condition: "))<CR>',
 	{ silent = true }
 )
-vim.api.nvim_set_keymap(
+keymap.set(
 	"n",
 	"<leader>lp",
 	':lua require("dap").set_breakpoint(nil, nil, vim.fn.input("Log point message: "))<CR>',
 	{ silent = true }
 )
-vim.api.nvim_set_keymap("n", "<leader>dr", ':lua require("dap").repl.open()<CR>', { silent = true })
-vim.api.nvim_set_keymap("n", "<leader>dl", ':lua require("dap").run_last()<CR>', { silent = true })
+keymap.set("n", "<leader>dr", ':lua require("dap").repl.open()<CR>', { silent = true })
+keymap.set("n", "<leader>dl", ':lua require("dap").run_last()<CR>', { silent = true })
 end
 
 return M
