@@ -11,6 +11,33 @@ local km_opts = require("const.keymap")
 local augroup = vim.api.nvim_create_augroup -- Create/get autocommand group
 local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 
+
+-- ddu custom functions --
+local function toggle(array, needle)
+  local idx = -1
+  for k, v in ipairs(array) do
+    if v == needle then idx = k end
+  end
+  if idx ~= -1 then
+    table.remove(array, idx)
+  else
+    table.insert(array, needle)
+  end
+  print(vim.inspect(array))
+  return array
+end
+
+local function toggleHidden(ui_name, source_name)
+  local cur = vim.fn['ddu#custom#get_current'](ui_name)
+  local opts = cur['sourceOptions'] or {}
+  local opts_all = opts[source_name] or {}
+  local matchers = opts_all['matchers'] or {}
+  print(vim.inspect(matchers))
+  return toggle(matchers, 'matcher_hidden')
+end
+
+-- /ddu custom functions --
+
 return {
 
   {"Shougo/ddu.vim",
@@ -50,6 +77,7 @@ return {
        -- filter
        "Shougo/ddu-filter-matcher_substring",
        "yuki-yano/ddu-filter-fzf",
+       "Shougo/ddu-filter-matcher_hidden",
 
        -- sorter
        "Shougo/ddu-filter-sorter_alpha",
@@ -113,9 +141,13 @@ return {
         sourceOptions = {
           _ = {
             ignoreCase = true,
-            matchers = {"matcher_substring"},
+            matchers = {
+              "matcher_substring",
+              "matcher_hidden",
+            },
             sorters = {"sorter_alpha"},
             converters = {"converter_devicon"},
+            volatile = true,
           }, --/sourceOptions-default
         }, -- /sourceOptions
 
@@ -219,7 +251,8 @@ return {
         },
         sourceOptions = {
           ["_"] = {
-            columns = {"devicon_filename"},
+            --columns = {"devicon_filename"},
+            columns = {"icon_filename"},
             converters = {},
           },
         },
@@ -228,6 +261,14 @@ return {
           devicon_filename = {
             indentationWidth = 1,
             iconWidth = 3,
+          },
+          icon_filename = {
+            span = 2,
+            padding = 2,
+            iconWidth = 2,
+            useLinkIcon = "grayout",
+            sort = "filename",
+            sortTreesFirst = true,
           },
         },
         actionOptions = {
@@ -318,13 +359,21 @@ return {
             return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
             or ddu.do_action("itemAction", { quit = true })
           end, km_opts.bn)
-          -- <Space> --
-          keymap.set("n", "<Space>", function()
+          -- "l" --
+          keymap.set("n", "l", function()
             fn["ddu#ui#do_action"]("toggleSelectItem")
+          end, km_opts.bn)
+          -- "L" --
+          keymap.set("n", "L", function()
+            fn["ddu#ui#do_action"]("clearSelectAllItems")
+          end, km_opts.bn)
+          -- "*" --
+          keymap.set("n", "*", function()
+            fn["ddu#ui#do_action"]("toggleAllItems")
           end, km_opts.bn)
           -- "i" --
           keymap.set("n", "i", function()
-            fn["ddu#ui#do_action"]("openFilterWindow")
+            fn["ddu#ui#do_action"]("inputAction")
           end, km_opts.bn)
           -- "o" --
           keymap.set("n", "o", function()
@@ -368,10 +417,6 @@ return {
           keymap.set("n", "a", function()
             fn["ddu#ui#do_action"]("chooseAction")
           end, km_opts.bn)
-          -- "R" --
-          keymap.set("n", "R", function()
-            ddu.do_action("refreshItems")
-          end, km_opts.bn)
           -- "r" --
           keymap.set("n", "r", function()
             ddu.do_action("rename")
@@ -382,7 +427,7 @@ return {
           end, km_opts.bn)
           -- "c" --
           keymap.set("n", "c", function()
-            ddu.do_action("itemAction", { name = "copy" })
+            fn["ddu#ui#multi_actions"]({ {"itemAction", {name = "copy"}}, {"clearSelectAllItems"} })
           end, km_opts.bn)
           -- "x" --
           keymap.set("n", "x", function()
@@ -397,11 +442,11 @@ return {
             ddu.do_action("itemAction", { name = "move" })
           end, km_opts.bn)
           -- "n" --
-          keymap.set("n", "b", function()
+          keymap.set("n", "n", function()
             ddu.do_action("itemAction", { name = "newFile" })
           end, km_opts.bn)
           -- "N" --
-          keymap.set("n", "B", function()
+          keymap.set("n", "N", function()
             ddu.do_action("itemAction", { name = "newDirectory" })
           end, km_opts.bn)
           -- "y" --
@@ -410,8 +455,28 @@ return {
           end, km_opts.bn)
           -- "d" --
           keymap.set("n", "d", function()
+            ddu.do_action("itemAction", { name = "trash" })
+          end, km_opts.bn)
+          -- "D" --
+          keymap.set("n", "D", function()
             ddu.do_action("itemAction", { name = "delete" })
           end, km_opts.bn)
+          -- "<C-l>" --
+          keymap.set("n", "<C-L>", function()
+            ddu.do_action("checkItems")
+          end, km_opts.bn)
+          -- "." --
+          vim.keymap.set('n', '.', function()
+            ddu.do_action('updateOptions', {
+              sourceOptions = {
+                file = {
+                  matchers = toggleHidden(vim.b.ddu_ui_name, "file")
+                },
+              },
+            })
+            ddu.do_action("checkItems")
+          end, km_opts.ebs)
+
           -- "^" --
           keymap.set("n", "^", function()
             ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand(g.my_initvim_path) } })
@@ -430,7 +495,7 @@ return {
           end, km_opts.bn)
           -- "=" --
           keymap.set("n", "=", function()
-            ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~/Documents") } })
+            ddu.do_action("itemAction", { name = "narrow", params = { path = fn["getcwd"]() } })
           end, km_opts.bn)
           -- <BS> --
           keymap.set("n", "<BS>", function()
