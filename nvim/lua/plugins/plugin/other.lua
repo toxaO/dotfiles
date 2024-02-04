@@ -563,22 +563,10 @@ return {
 	},
 
 --------------------------------------------------
-	-- terminal
-	{ "kassio/neoterm", lazy = true },
-
-	{
-		"nvim-treesitter/nvim-treesitter",
-		config = function()
-			vim.cmd("silent TSUpdate")
-		end,
-	},
-
---------------------------------------------------
 	-- 編集拡張系
 	{ "cohama/lexima.vim" },
 	{ "tpope/vim-surround" },
 	{ "tpope/vim-commentary" },
-  {"gbrlsnchs/winpick.nvim"},
 
 ------------------------------------------------------------------------------
 

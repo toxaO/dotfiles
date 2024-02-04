@@ -1,4 +1,5 @@
 local g = vim.g
+local b = vim.b
 local fn = vim.fn
 local api = vim.api
 local keymap = vim.keymap
@@ -68,6 +69,7 @@ return {
        "matsui54/ddu-source-command_history",
        "kyoh86/ddu-source-command",
        "mikanIchinose/ddu-source-markdown",
+       "suudon0014/ddu-source-arglist",
 
        -- column
        "Shougo/ddu-column-filename",
@@ -143,12 +145,15 @@ return {
             ignoreCase = true,
             matchers = {
               "matcher_substring",
-              "matcher_hidden",
             },
             sorters = {"sorter_alpha"},
             converters = {"converter_devicon"},
-            volatile = true,
           }, --/sourceOptions-default
+          buffer = {sorters = {},},
+          file_rec = {
+            matchers = {"matcher_fzf"},
+            sorters = {"sorter_fzf"},
+          }, -- /sourceOptions-file_rec
         }, -- /sourceOptions
 
         filterParams = {
@@ -172,19 +177,40 @@ return {
         -- buffer --
       fn["ddu#custom#patch_local"]("buffer",{
         sources = {{name = "buffer"}},
-        sourceOptions = {
-          buffer = {sorters = {},},
-        },
-        uiParams = {
-          ff = {},
-        }
       }) -- /buffer --
+
+        -- args --
+      fn["ddu#custom#patch_local"]("args",{
+        sources = {{name = "arglist"}},
+      }) -- /args --
+
+        -- file_rec --
+      fn["ddu#custom#patch_local"]("file_rec",{
+        sources = {
+          {name = "file_rec"},
+        },
+        sourceParams = {
+          file_rec = {
+            ignoreDirectories = {
+              ".git",
+              "node_modules",
+              "vendor",
+              ".next",
+              ".venv",
+              "__pycache__",
+              ".mypy_cache",
+            },
+          },
+        },
+      }) -- /file_rec --
 
        -- project all file --
       fn["ddu#custom#patch_local"]("project", {
-        sources = {{name = "file_rec"},},
+        sources = {
+          {name = "file_rec"},
+        },
         sourceOptions = {
-          file_rec = {path = myutils.fs.get_project_root_current_buf()}
+--          file_rec = {path = fn["expand"](myutils.fs.get_project_root_current_buf())}
         },
         sourceParams = {
           file_rec = {
@@ -203,13 +229,19 @@ return {
 
         -- project grep --
       fn["ddu#custom#patch_local"]("project_grep", {
+        uiParams = {
+          ff = {
+            ignoreEmpty = false,
+            autoResize = false,
+          },
+        },
         sources = {
           {name = "file_rec"},
           {name = "rg"},
         },
         sourceOptions = {
           file_rec = {
-            path = myutils.fs.get_project_root_current_buf()
+ --           path = myutils.fs.get_project_root_current_buf()
           },
           rg = {
             matchers = {},
@@ -277,6 +309,7 @@ return {
           },
         },
         resume = true,
+        sync = true,
       })
       -- /filer setting --
 
@@ -292,9 +325,65 @@ return {
           keymap.set("n", "<CR>", function()
             fn["ddu#ui#do_action"]("itemAction")
           end, km_opts.bn)
-          keymap.set("n", "<Space>", function()
+          -- selection --
+          keymap.set("n", "l", function()
             fn["ddu#ui#do_action"]("toggleSelectItem")
           end, km_opts.bn)
+          keymap.set("n", "L", function()
+            fn["ddu#ui#do_action"]("clearSelectAllItems")
+          end, km_opts.bn)
+          keymap.set("n", "*", function()
+            fn["ddu#ui#do_action"]("toggleSelectItem")
+          end, km_opts.bn)
+          -- /selection --
+          -- cursor --
+          keymap.set("n", "j", function()
+            b.multiCursorSelection = 0
+            b.SelectStartLine = 0
+            fn["ddu#ui#do_action"]("cursorNext")
+          end, km_opts.bn)
+          keymap.set("n", "k", function()
+            b.multiCursorSelection = 0
+            b.SelectStartLine = 0
+            fn["ddu#ui#do_action"]("cursorPrevious")
+          end, km_opts.bn)
+          -- /cursor --
+          -- shift cursor --
+          keymap.set("n", "J", function()
+            -- 選択開始の状態 --
+            if b.SelectStartLine == 0 then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始より上にいる --
+            elseif fn["getpos"](".")[2] < b.SelectStartLine then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+            -- カーソルが選択開始以下にいる --
+            elseif b.SelectStartLine <= fn["getpos"](".")[2] then
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+            end
+          end, km_opts.bn)
+          keymap.set("n", "K", function()
+            -- 選択開始 --
+            if b.SelectStartLine == 0 then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始以上にいる --
+            elseif fn["getpos"](".")[2] <= b.SelectStartLine then
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始より下にいる --
+            elseif b.SelectStartLine < fn["getpos"](".")[2] then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+            end
+          end, km_opts.bn)
+          -- /shift cursor --
           keymap.set("n", "i", function()
             fn["ddu#ui#do_action"]("openFilterWindow")
           end, km_opts.bn)
@@ -354,34 +443,11 @@ return {
         group = ddu_filer_keymap,
         pattern = "ddu-filer",
         callback = function()
+          -- open --
           -- <CR> --
           keymap.set("n", "<CR>", function()
             return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
             or ddu.do_action("itemAction", { quit = true })
-          end, km_opts.bn)
-          -- "l" --
-          keymap.set("n", "l", function()
-            fn["ddu#ui#do_action"]("toggleSelectItem")
-          end, km_opts.bn)
-          -- "L" --
-          keymap.set("n", "L", function()
-            fn["ddu#ui#do_action"]("clearSelectAllItems")
-          end, km_opts.bn)
-          -- "*" --
-          keymap.set("n", "*", function()
-            fn["ddu#ui#do_action"]("toggleAllItems")
-          end, km_opts.bn)
-          -- "i" --
-          keymap.set("n", "i", function()
-            fn["ddu#ui#do_action"]("inputAction")
-          end, km_opts.bn)
-          -- "o" --
-          keymap.set("n", "o", function()
-            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle"})
-          end, km_opts.bn)
-          -- "O" --
-          keymap.set("n", "O", function()
-            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle", maxLevel = -1})
           end, km_opts.bn)
           -- "v" --
           keymap.set("n", "v", function()
@@ -396,6 +462,86 @@ return {
           -- "t" --
           keymap.set("n", "t", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
+          end, km_opts.bn)
+          -- /open --
+          -- selection --
+          -- "l" --
+          keymap.set("n", "l", function()
+            fn["ddu#ui#do_action"]("toggleSelectItem")
+          end, km_opts.bn)
+          -- "L" --
+          keymap.set("n", "L", function()
+            fn["ddu#ui#do_action"]("clearSelectAllItems")
+          end, km_opts.bn)
+          -- "*" --
+          keymap.set("n", "*", function()
+            fn["ddu#ui#do_action"]("toggleAllItems")
+          end, km_opts.bn)
+          -- /selection --
+          -- cursor --
+          keymap.set("n", "j", function()
+            b.multiCursorSelection = 0
+            b.SelectStartLine = 0
+            fn["ddu#ui#do_action"]("cursorNext")
+          end, km_opts.bn)
+          keymap.set("n", "k", function()
+            b.multiCursorSelection = 0
+            b.SelectStartLine = 0
+            fn["ddu#ui#do_action"]("cursorPrevious")
+          end, km_opts.bn)
+          -- /cursor --
+          -- shift cursor --
+          keymap.set("n", "J", function()
+            -- 選択開始の状態 --
+            if b.SelectStartLine == 0 then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始より上にいる --
+            elseif fn["getpos"](".")[2] < b.SelectStartLine then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+            -- カーソルが選択開始以下にいる --
+            elseif b.SelectStartLine <= fn["getpos"](".")[2] then
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+            end
+          end, km_opts.bn)
+          keymap.set("n", "K", function()
+            -- 選択開始 --
+            if b.SelectStartLine == 0 then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始以上にいる --
+            elseif fn["getpos"](".")[2] <= b.SelectStartLine then
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始より下にいる --
+            elseif b.SelectStartLine < fn["getpos"](".")[2] then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+            end
+          end, km_opts.bn)
+          -- /shift cursor --
+          -- action --
+          -- "a" --
+          keymap.set("n", "a", function()
+            fn["ddu#ui#do_action"]("chooseAction")
+          end, km_opts.bn)
+          -- "i" --
+          keymap.set("n", "i", function()
+            fn["ddu#ui#do_action"]("inputAction")
+          end, km_opts.bn)
+          -- "o" --
+          keymap.set("n", "o", function()
+            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle"})
+          end, km_opts.bn)
+          -- "O" --
+          keymap.set("n", "O", function()
+            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle", maxLevel = -1})
           end, km_opts.bn)
           -- "P" --
           keymap.set("n", "P", function()
@@ -412,10 +558,6 @@ return {
           -- <Esc> --
           keymap.set("n", "<Esc>", function()
             fn["ddu#ui#do_action"]("quit")
-          end, km_opts.bn)
-          -- "a" --
-          keymap.set("n", "a", function()
-            fn["ddu#ui#do_action"]("chooseAction")
           end, km_opts.bn)
           -- "r" --
           keymap.set("n", "r", function()
@@ -451,7 +593,7 @@ return {
           end, km_opts.bn)
           -- "y" --
           keymap.set("n", "y", function()
-            ddu.do_action("itemAction", { name = "yank" })
+            fn["ddu#ui#multi_actions"]({ {"itemAction", {name = "yank"}}, {"clearSelectAllItems"} })
           end, km_opts.bn)
           -- "d" --
           keymap.set("n", "d", function()
@@ -475,7 +617,9 @@ return {
               },
             })
             ddu.do_action("checkItems")
+            ddu.do_action("redraw")
           end, km_opts.ebs)
+          -- /action --
 
           -- "^" --
           keymap.set("n", "^", function()

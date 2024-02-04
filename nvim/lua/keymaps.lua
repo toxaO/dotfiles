@@ -1,4 +1,5 @@
 local g = vim.g
+local b = vim.b
 local fn = vim.fn
 local api = vim.api
 local keymap = vim.keymap
@@ -36,10 +37,15 @@ keymap.set("n", "k", "gk", { noremap = true })
 -- tab
 --------------------------------------------------
 keymap.set("n", "<C-T>t", ":$tabnew<cr>", km_opts.ns)
+keymap.set("n", "<C-T><C-T>", ":$tabnew<cr>", km_opts.ns)
 keymap.set("n", "<C-T>c", ":tabclose<CR>", km_opts.ns)
+keymap.set("n", "<C-T><C-C>", ":tabclose<CR>", km_opts.ns)
 keymap.set("n", "<C-T>o", ":tabonly<CR>", km_opts.ns)
+keymap.set("n", "<C-T><C-O>", ":tabonly<CR>", km_opts.ns)
 keymap.set("n", "<C-T>n", ":tabn<CR>", km_opts.ns)
+keymap.set("n", "<C-T><C-N>", ":tabn<CR>", km_opts.ns)
 keymap.set("n", "<C-T>p", ":tabp<CR>", km_opts.ns)
+keymap.set("n", "<C-T><C-P>", ":tabp<CR>", km_opts.ns)
 
 --------------------------------------------------
 -- args
@@ -121,11 +127,31 @@ keymap.set("v", "<C-p>", '"0p', km_opts.ns)
 ----------------------------------------------------------------------------------------------------
 -- ddu mapping -------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-keymap.set("n", "<Space>b",":call ddu#start({'name': 'buffer'})<CR>", km_opts.ns)
-keymap.set("n", "<Space>h",":call ddu#start({'name': 'help'})<CR>", km_opts.ns)
-keymap.set("n", "<Space>g",":call ddu#start({'name': 'project_grep'})<CR>", km_opts.ns)
-keymap.set("n", "<Space>f",":call ddu#start({'name': 'project'})<CR>", km_opts.ns)
-keymap.set("n", "<Space>e",":call ddu#start({'name': 'filer'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>p",function()
+  fn["ddu#start"]({
+    name = "file_rec",
+    sourceOptions = {
+      _ = {
+        path = fn["expand"](b.project_root)
+      },
+    },
+  })
+end, km_opts.ns)
+keymap.set("n", "<Space>h",":call ddu#start(#{name: 'help'})<CR>", km_opts.ns)
+keymap.set("n", "<Space>g",function()
+  fn["ddu#start"]({
+    name = "project_grep",
+    sourceOptions = {
+      _ = {
+        path = fn["expand"](b.project_root)
+      },
+    },
+  })
+end, km_opts.ns)
+keymap.set("n", "<Space>e",":call ddu#start(#{name: 'filer'})<CR>", km_opts.ns)
 ----------------------------------------------------------------------------------------------------
 -- /ddu mapping ------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------

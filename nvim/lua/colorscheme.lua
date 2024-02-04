@@ -27,6 +27,10 @@ function M.setup()
   vim.cmd("autocmd my_colorscheme ColorScheme * highlight TabLine ctermfg=245 ctermbg=233 guifg=#686f9a guibg=#0f1117")
   vim.cmd("autocmd my_colorscheme ColorScheme * highlight TabLineFill ctermfg=233 ctermbg=233 guifg=#0f1117 guibg=#0f1117")
   vim.cmd("autocmd my_colorscheme ColorScheme * highlight TabLineSel ctermfg=252 ctermbg=237 guifg=#9a9ca5 guibg=#2a3158")
+
+-- floating window --
+  vim.cmd("autocmd my_colorscheme ColorScheme * highlight FloatBorder ctermfg=109 guifg=#89b8c2")
+
   vim.cmd(
   "autocmd my_colorscheme ColorScheme * highlight LspReferenceText "
   .. "cterm=underline ctermfg=159 ctermbg=23 gui=underline guifg=#b3c3cc guibg=#384851"
