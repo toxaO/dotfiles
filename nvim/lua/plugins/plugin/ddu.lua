@@ -33,7 +33,7 @@ local function toggleHidden(ui_name, source_name)
   local opts = cur['sourceOptions'] or {}
   local opts_all = opts[source_name] or {}
   local matchers = opts_all['matchers'] or {}
-  print(vim.inspect(matchers))
+  --print(vim.inspect(matchers))
   return toggle(matchers, 'matcher_hidden')
 end
 
@@ -276,6 +276,14 @@ return {
             splitDirection = "topleft",
             sort = "filename",
             sortTreesFirst = true,
+
+            -- preview setting
+            previewSplit = "vertical",
+            previewFloatingTitle = "Preview",
+            previewFloating= true,
+            previewHeight= height,
+            previewWidth= math.floor(width / 2),
+            previewFloatingBorder = "rounded",
           },
         },
         sources = {
@@ -340,18 +348,18 @@ return {
           keymap.set("n", "j", function()
             b.multiCursorSelection = 0
             b.SelectStartLine = 0
-            fn["ddu#ui#do_action"]("cursorNext")
+            fn["ddu#ui#do_action"]("cursorNext", {loop = true})
           end, km_opts.bn)
           keymap.set("n", "k", function()
             b.multiCursorSelection = 0
             b.SelectStartLine = 0
-            fn["ddu#ui#do_action"]("cursorPrevious")
+            fn["ddu#ui#do_action"]("cursorPrevious", {loop = true})
           end, km_opts.bn)
           -- /cursor --
           -- shift cursor --
           keymap.set("n", "J", function()
             -- 選択開始の状態 --
-            if b.SelectStartLine == 0 then
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
               b.SelectStartLine = fn["getpos"](".")[2]
               ddu.do_action("toggleSelectItem")
               ddu.do_action("cursorNext")
@@ -368,7 +376,7 @@ return {
           end, km_opts.bn)
           keymap.set("n", "K", function()
             -- 選択開始 --
-            if b.SelectStartLine == 0 then
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
               b.SelectStartLine = fn["getpos"](".")[2]
               ddu.do_action("toggleSelectItem")
               ddu.do_action("cursorPrevious")
@@ -388,7 +396,7 @@ return {
             fn["ddu#ui#do_action"]("openFilterWindow")
           end, km_opts.bn)
           keymap.set("n", "P", function()
-            fn["ddu#ui#do_action"]("preview")
+            fn["ddu#ui#do_action"]("togglePreview")
           end, km_opts.bn)
           keymap.set("n", "q", function()
             fn["ddu#ui#do_action"]("quit")
@@ -482,22 +490,23 @@ return {
           keymap.set("n", "j", function()
             b.multiCursorSelection = 0
             b.SelectStartLine = 0
-            fn["ddu#ui#do_action"]("cursorNext")
+            fn["ddu#ui#do_action"]("cursorNext", {loop = true})
           end, km_opts.bn)
           keymap.set("n", "k", function()
             b.multiCursorSelection = 0
             b.SelectStartLine = 0
-            fn["ddu#ui#do_action"]("cursorPrevious")
+            fn["ddu#ui#do_action"]("cursorPrevious", {loop = true})
           end, km_opts.bn)
           -- /cursor --
           -- shift cursor --
           keymap.set("n", "J", function()
             -- 選択開始の状態 --
-            if b.SelectStartLine == 0 then
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
               b.SelectStartLine = fn["getpos"](".")[2]
               ddu.do_action("toggleSelectItem")
               ddu.do_action("cursorNext")
               ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
             -- カーソルが選択開始より上にいる --
             elseif fn["getpos"](".")[2] < b.SelectStartLine then
               ddu.do_action("toggleSelectItem")
@@ -506,19 +515,22 @@ return {
             elseif b.SelectStartLine <= fn["getpos"](".")[2] then
               ddu.do_action("cursorNext")
               ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
             end
           end, km_opts.bn)
           keymap.set("n", "K", function()
             -- 選択開始 --
-            if b.SelectStartLine == 0 then
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
               b.SelectStartLine = fn["getpos"](".")[2]
               ddu.do_action("toggleSelectItem")
               ddu.do_action("cursorPrevious")
               ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
             -- カーソルが選択開始以上にいる --
             elseif fn["getpos"](".")[2] <= b.SelectStartLine then
               ddu.do_action("cursorPrevious")
               ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
             -- カーソルが選択開始より下にいる --
             elseif b.SelectStartLine < fn["getpos"](".")[2] then
               ddu.do_action("toggleSelectItem")
@@ -545,7 +557,7 @@ return {
           end, km_opts.bn)
           -- "P" --
           keymap.set("n", "P", function()
-            fn["ddu#ui#do_action"]("preview")
+            fn["ddu#ui#do_action"]("togglePreview")
           end, km_opts.bn)
           -- "q" --
           keymap.set("n", "q", function()
@@ -650,6 +662,19 @@ return {
       })
         -- /filer keymaps --
       -- /ddu keymaps --
+
+      fn["ddu#custom#action"]("kind", "file", "argadd", function(args)
+        local arglist = {}
+        for _, item in ipairs(args.items) do
+          local path = item.action.path
+          if item.action.isDirectory then
+            path = path .. "/**"
+          end
+          table.insert(arglist, path)
+        end
+        vim.cmd.args(arglist)
+        return 4
+      end)
 
     end -- /config
   }, -- /plugin name

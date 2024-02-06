@@ -441,16 +441,15 @@ export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
 # --------------------------------------------------
 # 自作alias
 alias nv='nvim'
+alias .f='~/dotfiles'
+alias .fm='~/dotfiles/mydotfiles'
 alias .z='nvim ~/.zshrc'
 alias .v='vim ~/.vimrc'
-#alias .nv='nvim ~/.config/nvim/init.lua'
 alias .nv='nvim ~/.config/nvim/init.lua ~/.config/nvim/lua/**/*.*'
 alias .e='nvim .envrc'
 alias rm='rm -I'
 alias rmi='rm -i'
 alias .za='source ~/.zshrc'
-alias .d='cd ~/dotfiles/mydotfiles'
-alias c.n='cd ~/dotfiles/mydotfiles/nvim'
 alias nt='_open_filetypes_nvim'
 
 # python alias
