@@ -1,8 +1,6 @@
 return {
 
-	{ "vim-jp/vimdoc-ja", lazy = true, keys = {
-		{ "h", mode = "c" },
-	} },
+	{ "vim-jp/vimdoc-ja"},
 
 	"cocopon/iceberg.vim",
 	{
@@ -191,10 +189,8 @@ return {
 	{
 		"easymotion/vim-easymotion",
 		config = function()
-			vim.api.nvim_set_keymap("n", "<Space><Space>", "<Plug>(easymotion-prefix)", { noremap=true, silent=true})
-			--vim.g["EasyMotion_do_mapping"] = 0
-			vim.api.nvim_set_keymap("n", "S", "<Plug>(easymotion-overwin-f2)", { noremap=true, silent=true})
-			vim.g["EasyMotion_do_mapping_smartcase"] = 1
+			vim.g["EasyMotion_do_mapping"] = 0
+			vim.g["EasyMotion_smartcase"] = 1
 		end,
 	},
 

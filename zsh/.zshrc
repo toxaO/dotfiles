@@ -441,6 +441,8 @@ export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
 # --------------------------------------------------
 # 自作alias
 alias nv='nvim'
+alias ns='nvim -S'
+alias ns.='nvim -S ~/dotfiles/mydotfiles/Session.vim'
 alias .f='~/dotfiles'
 alias .fm='~/dotfiles/mydotfiles'
 alias .z='nvim ~/.zshrc'
