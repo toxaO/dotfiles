@@ -45,7 +45,7 @@ function M.setup()
   --------------------------------------------------
   -- easymotion
   --------------------------------------------------
-	keymap.set("n", "<Space>s", "<Plug>(easymotion-overwin-f2)", { noremap=true, silent=true})
+	keymap.set("n", "s", "<Plug>(easymotion-overwin-f2)", { noremap=true, silent=true})
 
   --------------------------------------------------
   -- cursor move
@@ -68,6 +68,7 @@ function M.setup()
   keymap.set("n", "<C-T>p", ":tabp<CR>", km_opts.ns)
   keymap.set("n", "<C-T><C-P>", ":tabp<CR>", km_opts.ns)
   keymap.set("n", "<C-P>", ":tabp<CR>", km_opts.ns)
+  keymap.set("n", "<C-T><C-R>", ":<C-U>TabRename ", km_opts.n)
 
   --------------------------------------------------
   -- args
@@ -149,31 +150,38 @@ function M.setup()
   ----------------------------------------------------------------------------------------------------
   -- ddu mapping -------------------------------------------------------------------------------------
   ----------------------------------------------------------------------------------------------------
-  keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.ns)
-  keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.ns)
-  keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.ns)
-  keymap.set("n", "<Space>p",function()
-    fn["ddu#start"]({
-      name = "file_rec",
-      sourceOptions = {
-        _ = {
-          path = fn["expand"](b.project_root)
-        },
-      },
-    })
-  end, km_opts.ns)
-  keymap.set("n", "<Space>h",":call ddu#start(#{name: 'help'})<CR>", km_opts.ns)
-  keymap.set("n", "<Space>g",function()
-    fn["ddu#start"]({
-      name = "project_grep",
-      sourceOptions = {
-        _ = {
-          path = fn["expand"](b.project_root)
-        },
-      },
-    })
-  end, km_opts.ns)
-  keymap.set("n", "<Space>e",":call ddu#start(#{name: 'filer'})<CR>", km_opts.ns)
+  -- 一旦ddu.luaへ移動 --
+  --keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.ns)
+  --keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.ns)
+  --keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.ns)
+  --keymap.set("n", "<Space>p",function()
+  --  fn["ddu#start"]({
+  --    name = "file_rec",
+  --    sourceOptions = {
+  --      _ = {
+  --        path = fn["expand"](b.project_root)
+  --      },
+  --    },
+  --  })
+  --end, km_opts.ns)
+  --keymap.set("n", "<Space>h",":call ddu#start(#{name: 'help'})<CR>", km_opts.ns)
+  --keymap.set("n", "<Space>g",function()
+  --  fn["ddu#start"]({
+  --    name = "project_grep",
+  --    sourceOptions = {
+  --      _ = {
+  --        path = fn["expand"](b.project_root)
+  --      },
+  --    },
+  --  })
+  --end, km_opts.ns)
+  --keymap.set("n", "<Space>e",":call ddu#start(#{name: 'filer'})<CR>", km_opts.ns)
+  --keymap.set("n", "<Space>e", function()
+  --  fn["ddu#start"]({
+  --    name = "filer-" .. + fn["win_getid"](),
+  --    ui
+  --  })
+  --end, km_opts.ns)
   ----------------------------------------------------------------------------------------------------
   -- /ddu mapping ------------------------------------------------------------------------------------
   ----------------------------------------------------------------------------------------------------

@@ -10,6 +10,7 @@ return {
 			require("lualine").setup()
 		end,
 	},
+  {"tsuyoshicho/transparency.vim"},
 	{
 		"nanozuki/tabby.nvim",
 		config = function()
@@ -311,6 +312,32 @@ return {
 	{ "tpope/vim-surround" },
 	{ "tpope/vim-commentary" },
 
+--------------------------------------------------
+  -- window frame color
+  {
+    "nvim-zh/colorful-winsep.nvim",
+    config = function()
+      require("colorful-winsep").setup({
+      highlight = {
+        bg = "#17171b",
+        fg = "#d4d5db",
+      },
+      -- timer refresh rate
+      interval = 30,
+      -- This plugin will not be activated for filetype in the following table.
+      no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
+      -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
+      symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+      close_event = function()
+        -- Executed after closing the window separator
+      end,
+      create_event = function()
+        -- Executed after creating the window separator
+      end,
+    })
+    end,
+    event = { "WinNew" },
+  },
 ------------------------------------------------------------------------------
 
 }

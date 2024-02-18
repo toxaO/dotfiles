@@ -38,6 +38,7 @@ function M.setup()
     showcmd = true,
     cmdheight = 2,
     wildmenu = true,
+    laststatus = 3, -- global status line
     signcolumn = "yes", -- 数字行左側の表示領域を常に表示
     wrap = true, -- 画面領域ないの折り返し
     wrapscan = true, -- 検索画ファイル末尾まで進んだら、ファイル先頭から再び検索する。

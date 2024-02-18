@@ -73,6 +73,7 @@ return {
       "suudon0014/ddu-source-arglist",
       "Shougo/ddu-source-dummy",
       "kamecha/ddu-source-tab",
+      "kyoh86/ddu-source-quickfix_history",
 
 
       -- column
@@ -168,6 +169,7 @@ return {
             ignoreCase = true,
             matchers = {
               "matcher_substring",
+              "matcher_hidden",
             },
             sorters = {"sorter_alpha"},
             converters = {"converter_devicon"},
@@ -290,58 +292,61 @@ return {
       -- /ff setting --
 
       -- filer setting --
-      fn["ddu#custom#patch_local"]("filer", {
-        ui = "filer",
-        uiParams = {
-          filer = {
-            winWidth = 40,
-            split = "vertical",
-            splitDirection = "topleft",
-            sort = "filename",
-            sortTreesFirst = true,
+        -- filer ui params --
 
-            -- preview setting
-            previewSplit = "vertical",
-            previewFloatingTitle = "Preview",
-            previewFloating= true,
-            previewHeight= height,
-            previewWidth= math.floor(width / 2),
-            previewFloatingBorder = "rounded",
-          },
+      local filer_ui = {
+        filer = {
+          winWidth = 40,
+          split = "vertical",
+          splitDirection = "topleft",
+          sort = "filename",
+          sortTreesFirst = true,
+
+          -- preview setting
+          previewSplit = "vertical",
+          previewFloatingTitle = "Preview",
+          previewFloating= true,
+          previewHeight= height,
+          previewWidth= math.floor(width / 2),
+          previewFloatingBorder = "rounded"}}
+
+      local filer_sourceOptions = {
+        ["_"] = {
+          --columns = {"devicon_filename"},
+          columns = {"icon_filename"},
+          converters = {},
         },
-        sources = {
-          {name = "file"}
+      }
+
+      local filer_columnParams = {
+        icon_filename = {
+          span = 2,
+          padding = 2,
+          iconWidth = 2,
+          useLinkIcon = "grayout",
+          sort = "filename",
+          sortTreesFirst = true,
         },
-        sourceOptions = {
-          ["_"] = {
-            --columns = {"devicon_filename"},
-            columns = {"icon_filename"},
-            converters = {},
-          },
-        },
+      }
+
+      local filer_actionOptions = {
+          narrow = { quit = false, },
+          cd = {quit = false},
+        }
+
+      local filer_default = {
+        ui = "filer",
+        uiParams = filer_ui ,
+        sources = { {name = "file"} },
+        sourceOptions =  filer_sourceOptions ,
         sourceParams = {},
-        columnParams = {
-          devicon_filename = {
-            indentationWidth = 1,
-            iconWidth = 3,
-          },
-          icon_filename = {
-            span = 2,
-            padding = 2,
-            iconWidth = 2,
-            useLinkIcon = "grayout",
-            sort = "filename",
-            sortTreesFirst = true,
-          },
-        },
-        actionOptions = {
-          narrow = {
-            quit = false,
-          },
-        },
+        columnParams = filer_columnParams,
+        actionOptions = filer_actionOptions,
         resume = true,
         sync = true,
-      })
+      }
+
+      fn["ddu#custom#patch_local"]("filer", filer_default)
       -- /filer setting --
 
       -- ddu keymaps --
@@ -478,6 +483,7 @@ return {
           -- <CR> --
           keymap.set("n", "<CR>", function()
             return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
+            and fn["ddu#ui#do_action"]("cursorNext")
             or ddu.do_action("itemAction", { quit = true })
           end, km_opts.bn)
           -- "v" --
@@ -568,7 +574,16 @@ return {
           end, km_opts.bn)
           -- "i" --
           keymap.set("n", "i", function()
-            fn["ddu#ui#do_action"]("inputAction")
+            local path = fn["fnamemodify"](fn["input"]("cwd: ", b.ddu_ui_filer_path .. "/", "file"), ":p")
+              fn["ddu#ui#do_action"]("itemAction",
+                  {
+                    name = "narrow",
+                    params = {
+                      path = path,
+                    }
+                  }
+                )
+            fn["ddu#ui#do_action"]("cursorNext")
           end, km_opts.bn)
           -- "o" --
           keymap.set("n", "o", function()
@@ -699,6 +714,48 @@ return {
         return 4
       end)
 
+      keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.ns)
+      keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.ns)
+      keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.ns)
+      keymap.set("n", "<Space>p",function()
+        fn["ddu#start"]({
+          name = "file_rec",
+          sourceOptions = {
+            _ = {
+              path = fn["expand"](b.project_root)
+            },
+          },
+        })
+      end, km_opts.ns)
+      keymap.set("n", "<Space>h",":call ddu#start(#{name: 'help'})<CR>", km_opts.ns)
+      keymap.set("n", "<Space>g",function()
+        fn["ddu#start"]({
+          name = "project_grep",
+          sourceOptions = {
+            _ = {
+              path = fn["expand"](b.project_root)
+            },
+          },
+        })
+      end, km_opts.ns)
+
+      -- filer start --
+      keymap.set("n", "<Space>e", function()
+        local filer_name = vim.t.ddu_ui_filer_path or fn["getcwd"]()
+        filer_default.name = "filer_" .. fn["win_getid"]()
+        filer_default.sourceOptions.file = {path = filer_name}
+        fn["ddu#start"]( filer_default )
+        fn["ddu#ui#do_action"]("cursorNext")
+      end, km_opts.ns)
+
+      -- autocmd --
+      autocmd({"BufEnter", "TabEnter", "WinEnter", "CursorHold", "FocusGained"},
+        {
+          group = my_augroup,
+          pattern = "*",
+          command = "call ddu#ui#do_action('checkItems')"
+        }
+      )
     end -- /config
   }, -- /plugin name
 }
