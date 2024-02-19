@@ -8,6 +8,8 @@ local opt = vim.opt
 local myutils = require("utils")
 local km_opts = require("const.keymap")
 
+local ddc = require("plugins.plugin.config.ddc")
+
 local augroup = vim.api.nvim_create_augroup -- Create/get autocommand group
 local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 
@@ -23,8 +25,7 @@ return{
       "Shougo/ddc-ui-native" ,
     },
     config = function ()
-      require("plugins.plugin.config.ddc").setup()
-
+      ddc.setup()
     end
   },
 

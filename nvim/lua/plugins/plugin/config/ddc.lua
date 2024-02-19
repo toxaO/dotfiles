@@ -60,9 +60,9 @@ function M.setup()
 
   vim.fn["ddc#custom#patch_global"]("sourceParams", {
     ["lsp"] = {
-      snippetEngine = vim.fn["denops#callback#register"](function(body)
+      --snippetEngine = vim.fn["denops#callback#register"](function(body)
         --vim.fn["vsnip#anonymous"](body)
-      end),
+      --end),
       enableResolveItem = true,
       enableAdditionalTextEdit = true,
     },

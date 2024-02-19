@@ -352,6 +352,8 @@ return {
 
       -- ddu keymaps --
         -- common keymaps --
+      local function common_keymap()
+      end
         -- /common keymaps --
         -- ff keymaps --
           -- ff normal keymaps --
