@@ -7,11 +7,21 @@ local keymap = vim.keymap
 
 local M = {}
 
+-- ignore colorful_winsep
+local function ignore_winsep(winid, bufnr, _)
+  if fn["getwininfo"](winid)[1]["height"] == 1
+  or fn["getwininfo"](winid)[1]["width"] == 1 then
+    return false
+  else
+    return true
+  end
+end
+
 function M.setup()
   M.winpick = require("winpick")
   M.winpick.setup({
     border = "double",
-    filter = nil,
+    filter = ignore_winsep,
     prompt = "Pick a window: ",
     format_label = M.winpick.defaults.format_label,
   })

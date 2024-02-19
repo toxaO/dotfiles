@@ -351,6 +351,8 @@ return {
       -- /filer setting --
 
       -- ddu keymaps --
+        -- common keymaps --
+        -- /common keymaps --
         -- ff keymaps --
           -- ff normal keymaps --
 
@@ -359,8 +361,13 @@ return {
         group = ddu_ff_keymap,
         pattern = "ddu-ff",
         callback = function()
+          --keymap.set("n", "<CR>", function()
+          --  fn["ddu#ui#do_action"]("itemAction")
+          --end, km_opts.bn)
           keymap.set("n", "<CR>", function()
-            fn["ddu#ui#do_action"]("itemAction")
+            return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
+            and fn["ddu#ui#do_action"]("cursorNext")
+            or ddu.do_action("itemAction", { quit = true })
           end, km_opts.bn)
           -- selection --
           keymap.set("n", "l", function()
@@ -453,6 +460,10 @@ return {
           keymap.set("n", "t", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
           end, km_opts.bn)
+          -- "w" --
+          keymap.set("n", "w", function()
+            fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
+          end, km_opts.bn)
         end,
       })
           -- /ff normal keymaps --
@@ -501,7 +512,12 @@ return {
           keymap.set("n", "t", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
           end, km_opts.bn)
+          -- "w" --
+          keymap.set("n", "w", function()
+            fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
+          end, km_opts.bn)
           -- /open --
+
           -- selection --
           -- "l" --
           keymap.set("n", "l", function()
@@ -715,7 +731,7 @@ return {
         return 4
       end)
 
-      fn["ddu#custom#action"]("kind", "file", "filer_window_choose", function(args)
+      fn["ddu#custom#action"]("kind", "file", "window_choose", function(args)
         return ddu.window_choose(args)
       end)
 
