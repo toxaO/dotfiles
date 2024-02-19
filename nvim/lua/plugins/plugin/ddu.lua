@@ -262,7 +262,7 @@ return {
           },
         },
         sources = {
-          {name = "file_rec"},
+          --{name = "file_rec"},
           {name = "rg"},
         },
         sourceOptions = {

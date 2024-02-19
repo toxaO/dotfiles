@@ -311,6 +311,14 @@ return {
 	{ "cohama/lexima.vim" },
 	{ "tpope/vim-surround" },
 	{ "tpope/vim-commentary" },
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {},
+    config = function()
+      require("ibl").setup()
+    end
+  },
 
 --------------------------------------------------
   -- window frame color
