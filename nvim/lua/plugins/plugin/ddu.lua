@@ -175,6 +175,7 @@ return {
             converters = {"converter_devicon"},
           }, --/sourceOptions-default
           buffer = {sorters = {},},
+          action = {matchers = {}},
           file_rec = {
             matchers = {"matcher_fzf"},
             sorters = {"sorter_fzf"},
