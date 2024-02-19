@@ -714,6 +714,10 @@ return {
         return 4
       end)
 
+      fn["ddu#custom#action"]("kind", "file", "filer_window_choose", function(args)
+        return ddu.window_choose(args)
+      end)
+
       keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.ns)
       keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.ns)
       keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.ns)
