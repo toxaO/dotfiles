@@ -277,7 +277,7 @@ return {
         sourceParams = {
           rg = {
             args = {"--column", "--no-heading", "--color", "never"},
-            input = fn["expand"]("<cword>"),
+            --input = fn["expand"]("<cword>"),
           },
         },
       }) -- /project grep
@@ -759,6 +759,7 @@ return {
               path = fn["expand"](b.project_root)
             },
           },
+          input = fn["expand"]("<cword>"),
         })
       end, km_opts.ns)
 
