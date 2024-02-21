@@ -658,6 +658,19 @@ return {
             fn["ddu#ui#do_action"]("cursorNext")
           end, km_opts.bn)
 
+          -- "f" --
+          keymap.set("n", "f",function()
+            local path = fn["ddu#ui#get_item"]()["action"]["path"]
+            fn["ddu#ui#do_action"]("quit")
+            fn["ddu#start"]({
+              name = "file_rec",
+              sourceOptions = {
+                _ = {
+                  path = path
+                },
+              }
+            })
+          end, km_opts.ns)
 
           -- "^" --
           keymap.set("n", "^", function()
