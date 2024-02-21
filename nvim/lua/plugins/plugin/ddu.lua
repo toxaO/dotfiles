@@ -353,35 +353,13 @@ return {
       -- ddu keymaps --
         -- common keymaps --
       local function common_keymap()
-      end
-        -- /common keymaps --
-        -- ff keymaps --
-          -- ff normal keymaps --
-
-			local ddu_ff_keymap = vim.api.nvim_create_augroup("ddu_ff_keymap", { clear = true })
-      vim.api.nvim_create_autocmd("filetype", {
-        group = ddu_ff_keymap,
-        pattern = "ddu-ff",
-        callback = function()
-          --keymap.set("n", "<CR>", function()
-          --  fn["ddu#ui#do_action"]("itemAction")
-          --end, km_opts.bn)
+          -- <CR> open --
           keymap.set("n", "<CR>", function()
             return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
             and fn["ddu#ui#do_action"]("cursorNext")
             or ddu.do_action("itemAction", { quit = true })
           end, km_opts.bn)
-          -- selection --
-          keymap.set("n", "l", function()
-            fn["ddu#ui#do_action"]("toggleSelectItem")
-          end, km_opts.bn)
-          keymap.set("n", "L", function()
-            fn["ddu#ui#do_action"]("clearSelectAllItems")
-          end, km_opts.bn)
-          keymap.set("n", "*", function()
-            fn["ddu#ui#do_action"]("toggleSelectItem")
-          end, km_opts.bn)
-          -- /selection --
+
           -- cursor --
           keymap.set("n", "j", function()
             b.multiCursorSelection = 0
@@ -394,255 +372,78 @@ return {
             fn["ddu#ui#do_action"]("cursorPrevious", {loop = true})
           end, km_opts.bn)
           -- /cursor --
-          -- shift cursor --
-          keymap.set("n", "J", function()
-            -- 選択開始の状態 --
-            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
-              b.SelectStartLine = fn["getpos"](".")[2]
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorNext")
-              ddu.do_action("toggleSelectItem")
-            -- カーソルが選択開始より上にいる --
-            elseif fn["getpos"](".")[2] < b.SelectStartLine then
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorNext")
-            -- カーソルが選択開始以下にいる --
-            elseif b.SelectStartLine <= fn["getpos"](".")[2] then
-              ddu.do_action("cursorNext")
-              ddu.do_action("toggleSelectItem")
-            end
-          end, km_opts.bn)
-          keymap.set("n", "K", function()
-            -- 選択開始 --
-            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
-              b.SelectStartLine = fn["getpos"](".")[2]
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorPrevious")
-              ddu.do_action("toggleSelectItem")
-            -- カーソルが選択開始以上にいる --
-            elseif fn["getpos"](".")[2] <= b.SelectStartLine then
-              ddu.do_action("cursorPrevious")
-              ddu.do_action("toggleSelectItem")
-            -- カーソルが選択開始より下にいる --
-            elseif b.SelectStartLine < fn["getpos"](".")[2] then
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorPrevious")
-            end
-          end, km_opts.bn)
-          -- /shift cursor --
-          keymap.set("n", "i", function()
-            fn["ddu#ui#do_action"]("openFilterWindow")
-          end, km_opts.bn)
-          keymap.set("n", "P", function()
-            fn["ddu#ui#do_action"]("togglePreview")
-          end, km_opts.bn)
-          keymap.set("n", "q", function()
-            fn["ddu#ui#do_action"]("quit")
-          end, km_opts.bn)
-          keymap.set("n", "<C-C>", function()
-            fn["ddu#ui#do_action"]("quit")
-          end, km_opts.bn)
-          keymap.set("n", "<Esc>", function()
-            fn["ddu#ui#do_action"]("quit")
-          end, km_opts.bn)
-          --api.nvim_buf_del_keymap(0, "n", "<Esc><Esc>")
-          keymap.set("n", "a", function()
-            fn["ddu#ui#do_action"]("chooseAction")
-          end, km_opts.bn)
 
-          -- "v" --
-          keymap.set("n", "v", function()
-            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "vsplit" } })
-          end, km_opts.bn)
-          -- "s" --
-          keymap.set("n", "s", function()
-            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "split" } })
-          end, km_opts.bn)
-          -- "t" --
-          keymap.set("n", "t", function()
-            fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
-          end, km_opts.bn)
-          -- "w" --
-          keymap.set("n", "w", function()
-            fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
-          end, km_opts.bn)
-        end,
-      })
-          -- /ff normal keymaps --
-          -- ff filtering keymaps --
-      vim.api.nvim_create_autocmd("filetype", {
-        group = ddu_ff_keymap,
-        pattern = "ddu-ff-filter",
-        callback = function()
-          keymap.set({ "n", "i" }, "<CR>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
-          keymap.set({ "n", "i" }, "<C-C>", function()
-            fn["ddu#ui#do_action"]("quit")
-          end, km_opts.bn)
-          --keymap.set({ "n" }, "<Esc>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
-          keymap.set("n", "<Esc>", function()
-            fn["ddu#ui#do_action"]("quit")
-          end, km_opts.bn)
-        end,
-      })
-          -- /ff filtering keymaps --
-        -- /ff keymaps --
-
-        -- filer keymaps --
-			local ddu_filer_keymap = vim.api.nvim_create_augroup("ddu_filer_keymap", { clear = true })
-      vim.api.nvim_create_autocmd("filetype", {
-        group = ddu_filer_keymap,
-        pattern = "ddu-filer",
-        callback = function()
-          -- open --
-          -- <CR> --
-          keymap.set("n", "<CR>", function()
-            return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
-            and fn["ddu#ui#do_action"]("cursorNext")
-            or ddu.do_action("itemAction", { quit = true })
-          end, km_opts.bn)
-          -- "v" --
+          -- "v" vsplit --
           keymap.set("n", "v", function()
             return ddu.item.is_tree() and ddu.do_action("expandItem")
             or ddu.do_action("itemAction", { name = "open", params = { command = "vsplit" } })
           end, km_opts.bn)
-          -- "s" --
+          -- "s" split --
           keymap.set("n", "s", function()
             return ddu.item.is_tree() and ddu.do_action("expandItem")
             or ddu.do_action("itemAction", { name = "open", params = { command = "split" } })
           end, km_opts.bn)
-          -- "t" --
+          -- "t" tabnew --
           keymap.set("n", "t", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
           end, km_opts.bn)
-          -- "w" --
+
+          -- "w" window choose --
           keymap.set("n", "w", function()
             fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
           end, km_opts.bn)
-          -- /open --
 
-          -- selection --
-          -- "l" --
-          keymap.set("n", "l", function()
-            fn["ddu#ui#do_action"]("toggleSelectItem")
-          end, km_opts.bn)
-          -- "L" --
-          keymap.set("n", "L", function()
-            fn["ddu#ui#do_action"]("clearSelectAllItems")
-          end, km_opts.bn)
-          -- "*" --
-          keymap.set("n", "*", function()
-            fn["ddu#ui#do_action"]("toggleAllItems")
-          end, km_opts.bn)
-          -- /selection --
-          -- cursor --
-          keymap.set("n", "j", function()
-            b.multiCursorSelection = 0
-            b.SelectStartLine = 0
-            fn["ddu#ui#do_action"]("cursorNext", {loop = true})
-          end, km_opts.bn)
-          keymap.set("n", "k", function()
-            b.multiCursorSelection = 0
-            b.SelectStartLine = 0
-            fn["ddu#ui#do_action"]("cursorPrevious", {loop = true})
-          end, km_opts.bn)
-          -- /cursor --
-          -- shift cursor --
-          keymap.set("n", "J", function()
-            -- 選択開始の状態 --
-            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
-              b.SelectStartLine = fn["getpos"](".")[2]
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorNext")
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorNext")
-            -- カーソルが選択開始より上にいる --
-            elseif fn["getpos"](".")[2] < b.SelectStartLine then
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorNext")
-            -- カーソルが選択開始以下にいる --
-            elseif b.SelectStartLine <= fn["getpos"](".")[2] then
-              ddu.do_action("cursorNext")
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorNext")
-            end
-          end, km_opts.bn)
-          keymap.set("n", "K", function()
-            -- 選択開始 --
-            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
-              b.SelectStartLine = fn["getpos"](".")[2]
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorPrevious")
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorPrevious")
-            -- カーソルが選択開始以上にいる --
-            elseif fn["getpos"](".")[2] <= b.SelectStartLine then
-              ddu.do_action("cursorPrevious")
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorPrevious")
-            -- カーソルが選択開始より下にいる --
-            elseif b.SelectStartLine < fn["getpos"](".")[2] then
-              ddu.do_action("toggleSelectItem")
-              ddu.do_action("cursorPrevious")
-            end
-          end, km_opts.bn)
-          -- /shift cursor --
-          -- action --
-          -- "a" --
-          keymap.set("n", "a", function()
-            fn["ddu#ui#do_action"]("chooseAction")
-          end, km_opts.bn)
-          -- "i" --
-          keymap.set("n", "i", function()
-            local path = fn["fnamemodify"](fn["input"]("cwd: ", b.ddu_ui_filer_path .. "/", "file"), ":p")
-              fn["ddu#ui#do_action"]("itemAction",
-                  {
-                    name = "narrow",
-                    params = {
-                      path = path,
-                    }
-                  }
-                )
-            fn["ddu#ui#do_action"]("cursorNext")
-          end, km_opts.bn)
-          -- "o" --
-          keymap.set("n", "o", function()
-            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle"})
-          end, km_opts.bn)
-          -- "O" --
-          keymap.set("n", "O", function()
-            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle", maxLevel = -1})
-          end, km_opts.bn)
-          -- "P" --
-          keymap.set("n", "P", function()
+          -- "p" preview --
+          keymap.set("n", "p", function()
             fn["ddu#ui#do_action"]("togglePreview")
           end, km_opts.bn)
-          -- "q" --
+          -- "q" quit --
           keymap.set("n", "q", function()
             fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
-          -- <C-C> --
-          keymap.set("n", "<C-C>", function()
+          -- <C-C> cancel --
+          keymap.set({"n", "i"}, "<C-C>", function()
             fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
-          -- <Esc> --
+          --  <Esc> Escape --
           keymap.set("n", "<Esc>", function()
             fn["ddu#ui#do_action"]("quit")
           end, km_opts.bn)
-          -- "r" --
+
+          -- "a" choose action --
+          keymap.set("n", "a", function()
+            fn["ddu#ui#do_action"]("chooseAction")
+          end, km_opts.bn)
+
+          -- "o" expand --
+          keymap.set("n", "o", function()
+            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle"})
+          end, km_opts.bn)
+          -- "O" all expand --
+          keymap.set("n", "O", function()
+            fn["ddu#ui#do_action"]("expandItem", {mode = "toggle", maxLevel = -1})
+          end, km_opts.bn)
+          -- "r" rename --
           keymap.set("n", "r", function()
             ddu.do_action("rename")
           end, km_opts.bn)
-          -- "C" --
+          -- "C" cd --
           keymap.set("n", "C", function()
+            local path = fn["ddu#ui#get_item"]()["action"]["path"]
+            print('change to "' .. path .. '" !')
             ddu.do_action("itemAction", { name = "cd" })
           end, km_opts.bn)
-          -- "c" --
+          -- "c" copy --
           keymap.set("n", "c", function()
             fn["ddu#ui#multi_actions"]({ {"itemAction", {name = "copy"}}, {"clearSelectAllItems"} })
           end, km_opts.bn)
-          -- "x" --
+          -- "x" cut --
           keymap.set("n", "x", function()
             ddu.do_action("itemAction", { name = "cut" })
+          end, km_opts.bn)
+          -- "X" excution --
+          keymap.set("n", "X", function()
+            ddu.do_action("itemAction", { name = "executeSystem" })
           end, km_opts.bn)
           -- "p" --
           keymap.set("n", "p", function()
@@ -689,6 +490,174 @@ return {
             ddu.do_action("redraw")
           end, km_opts.ebs)
           -- /action --
+      end -- /common keymaps
+
+        -- ff keymaps --
+          -- ff normal keymaps --
+
+			local ddu_ff_keymap = vim.api.nvim_create_augroup("ddu_ff_keymap", { clear = true })
+      vim.api.nvim_create_autocmd("filetype", {
+        group = ddu_ff_keymap,
+        pattern = "ddu-ff",
+        callback = function()
+          -- common --
+          common_keymap()
+          -- selection --
+          keymap.set("n", "l", function()
+            fn["ddu#ui#do_action"]("toggleSelectItem")
+          end, km_opts.bn)
+          keymap.set("n", "L", function()
+            fn["ddu#ui#do_action"]("clearSelectAllItems")
+          end, km_opts.bn)
+          keymap.set("n", "*", function()
+            fn["ddu#ui#do_action"]("toggleSelectItem")
+          end, km_opts.bn)
+          -- /selection --
+          -- shift cursor --
+          keymap.set("n", "J", function()
+            -- 選択開始の状態 --
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始より上にいる --
+            elseif fn["getpos"](".")[2] < b.SelectStartLine then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+            -- カーソルが選択開始以下にいる --
+            elseif b.SelectStartLine <= fn["getpos"](".")[2] then
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+            end
+          end, km_opts.bn)
+          keymap.set("n", "K", function()
+            -- 選択開始 --
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始以上にいる --
+            elseif fn["getpos"](".")[2] <= b.SelectStartLine then
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+            -- カーソルが選択開始より下にいる --
+            elseif b.SelectStartLine < fn["getpos"](".")[2] then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+            end
+          end, km_opts.bn)
+          -- /shift cursor --
+
+          keymap.set("n", "i", function()
+            fn["ddu#ui#do_action"]("openFilterWindow")
+          end, km_opts.bn)
+
+        end,
+      })
+          -- /ff normal keymaps --
+          -- ff filtering keymaps --
+      vim.api.nvim_create_autocmd("filetype", {
+        group = ddu_ff_keymap,
+        pattern = "ddu-ff-filter",
+        callback = function()
+          keymap.set({ "n", "i" }, "<CR>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
+          keymap.set({ "n", "i" }, "<C-C>", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
+          --keymap.set({ "n" }, "<Esc>", [[<Esc><Cmd>close<CR>]], km_opts.bn)
+          keymap.set("n", "<Esc>", function()
+            fn["ddu#ui#do_action"]("quit")
+          end, km_opts.bn)
+        end,
+      })
+          -- /ff filtering keymaps --
+        -- /ff keymaps --
+
+        -- filer keymaps --
+			local ddu_filer_keymap = vim.api.nvim_create_augroup("ddu_filer_keymap", { clear = true })
+      vim.api.nvim_create_autocmd("filetype", {
+        group = ddu_filer_keymap,
+        pattern = "ddu-filer",
+        callback = function()
+          -- common --
+          common_keymap()
+          -- "w" --
+          keymap.set("n", "w", function()
+            fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
+          end, km_opts.bn)
+          -- /open --
+
+          -- selection --
+          -- "l" --
+          keymap.set("n", "l", function()
+            fn["ddu#ui#do_action"]("toggleSelectItem")
+          end, km_opts.bn)
+          -- "L" --
+          keymap.set("n", "L", function()
+            fn["ddu#ui#do_action"]("clearSelectAllItems")
+          end, km_opts.bn)
+          -- "*" --
+          keymap.set("n", "*", function()
+            fn["ddu#ui#do_action"]("toggleAllItems")
+          end, km_opts.bn)
+          -- /selection --
+          -- shift cursor --
+          keymap.set("n", "J", function()
+            -- 選択開始の状態 --
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+            -- カーソルが選択開始より上にいる --
+            elseif fn["getpos"](".")[2] < b.SelectStartLine then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+            -- カーソルが選択開始以下にいる --
+            elseif b.SelectStartLine <= fn["getpos"](".")[2] then
+              ddu.do_action("cursorNext")
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorNext")
+            end
+          end, km_opts.bn)
+          keymap.set("n", "K", function()
+            -- 選択開始 --
+            if b.SelectStartLine == 0 or b.SelectStartLine == nil then
+              b.SelectStartLine = fn["getpos"](".")[2]
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+            -- カーソルが選択開始以上にいる --
+            elseif fn["getpos"](".")[2] <= b.SelectStartLine then
+              ddu.do_action("cursorPrevious")
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+            -- カーソルが選択開始より下にいる --
+            elseif b.SelectStartLine < fn["getpos"](".")[2] then
+              ddu.do_action("toggleSelectItem")
+              ddu.do_action("cursorPrevious")
+            end
+          end, km_opts.bn)
+          -- /shift cursor --
+
+          -- "i" --
+          keymap.set("n", "i", function()
+            local path = fn["fnamemodify"](fn["input"]("cwd: ", b.ddu_ui_filer_path .. "/", "file"), ":p")
+              fn["ddu#ui#do_action"]("itemAction",
+                  {
+                    name = "narrow",
+                    params = {
+                      path = path,
+                    }
+                  }
+                )
+            fn["ddu#ui#do_action"]("cursorNext")
+          end, km_opts.bn)
+
 
           -- "^" --
           keymap.set("n", "^", function()

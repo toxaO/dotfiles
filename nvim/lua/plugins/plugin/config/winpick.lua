@@ -24,6 +24,7 @@ function M.setup()
     filter = ignore_winsep,
     prompt = "Pick a window: ",
     format_label = M.winpick.defaults.format_label,
+    chars = {"a", "s", "d", "f", "g", "h", "j", "k", "l", ";"},
   })
 end
 

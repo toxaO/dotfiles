@@ -32,6 +32,11 @@ bindkey -v
 # The following lines were added by compinstall
 zstyle :compinstall filename '/home/tokumasa/.zshrc'
 
+if [ -e ~/.zsh/completions ]; then
+  fpath=(~/.zsh/completions $fpath)
+fi
+
+
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
@@ -65,6 +70,12 @@ virtualenv_info() {
         fi
     fi
 }
+
+#------------------------------------------------------------
+# docker completion
+#------------------------------------------------------------
+#plugins=( docker docker-compose)
+
 
 # -----------------------------------------------------------
 # git用zsh補完機能の設定
@@ -261,6 +272,7 @@ function precmd() {
 
 # 環境変数----------------------------------------------
 export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
+fpath=(~/.zsh/completion $fpath)
 
 # 補完で小文字でも大文字にマッチさせる
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
