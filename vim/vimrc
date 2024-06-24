@@ -1,0 +1,73 @@
+"vim defaults
+source $VIMRUNTIME/defaults.vim
+
+"日本語設定----------------------------------------
+set encoding=UTF-8
+scriptencoding utf-8
+
+" leaderキーのセット
+:map <Space> ""
+let mapleader="\<Space>"
+
+"行番号を表示
+set number
+"ハイライトサーチデフォルトon
+set hlsearch
+" 編集中の行をハイライト
+set cursorline
+" 大文字小文字の区別を無視
+set ignorecase
+" 最初の1文字入力から検索開始
+set incsearch
+" コマンド履歴を1000件保存
+set history=1000
+" 候補の表示方法
+set wildmenu
+" 入力中のコマンドを表示
+set showcmd
+" 互換off
+set nocompatible
+" シンタックスハイライト
+syntax on
+" カッコの対応関係を一瞬表示
+set showmatch
+" backspaceの挙動変更
+set backspace=indent,eol,start
+"レジスタを指定せずにヤンクした時、*レジスタに登録する
+set clipboard=unnamed,autoselect
+" 不可視文字を表示する
+set list
+" タブを >--- 半スペを . で表示する
+set listchars=tab:>-,trail:.
+"カラースキーム
+set background=dark
+set termguicolors
+
+"normal mode
+noremap <S-h> ^
+noremap <C-h> 0
+noremap <S-l> $
+
+"insert mode
+inoremap <C-B> <Left>
+inoremap <C-F> <Right>
+inoremap <C-A> <C-o>^
+inoremap <C-E> <C-o>$
+
+"基本のインデント設定
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set expandtab
+set autoindent
+set smartindent
+
+filetype plugin indent on
+" ファイルタイプによるインデント設定
+augroup fileTypeIndent
+autocmd!
+autocmd BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4
+augroup END
+
+" ハイライトを消す
+nnoremap <Esc><Esc> :noh<CR>
