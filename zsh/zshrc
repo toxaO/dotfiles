@@ -231,6 +231,9 @@ function precmd() {
 # export PATH=$HOME/.cargo/bin:$PATH
 # 自作コマンド
 export PATH=$HOME/mycommands:$PATH
+# deno ubuntu用
+export DENO_INSTALL="$HOME/.deno" >> $HOME/.zshrc
+export PATH="$DENO_INSTALL/bin:$PATH" >> $HOME/.zshrc
 # （確かnvimのddcのやつ）
 export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
 # 重複の削除
