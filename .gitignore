@@ -25,6 +25,7 @@
 !/tmux/tmux.conf
 
 !/nvim/
+/nvim/lazy-lock.json
 !/nvim/init.lua
 !/nvim/lua/
 !/nvim/lua/**
