@@ -356,62 +356,6 @@ setopt nonomatch
 #基本エディタの設定
 export VISUAL=/usr/bin/vim
 
-#macの場合にmemo用のフォルダへ移行
-case `uname -n` in
-	'MacBook-Air.local' )
-		alias memo="cd ~/Nextcloud/md_memo";;
-esac
-
-#.DS_Store消去
-alias delds='find . -name ".DS_Store" -type f -ls -delete'
-
-# itermのアーキテクチャエイリアス
-alias x86='arch -x86_64 zsh'
-alias arm='arch -arm64e zsh'
-
-# homebrewのパス
-if [ "$(uname -m)" = "arm64" ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-  export PATH="/opt/homebrew/bin:$PATH"
-else
-  eval "$(/usr/local/bin/brew shellenv)"
-fi
-
-#pyenv
-if [ "$(uname -m)" = "arm64" ]; then
-  export PYENV_ROOT="$HOME/.pyenv_arm64"
-  export PATH="$HOME/.pyenv_arm64/bin:$PATH"
-else
-  export PYENV_ROOT="$HOME/.pyenv_x86"
-  export PATH="$HOME/.pyenv_x86/bin:$PATH"
-fi
-eval "$(pyenv init -)"
-eval "$(pyenv init --path)"
-
-# tcl-tkの設定---------------------------------------
-# ---------------------------------------------------
-#export PATH="/usr/local/opt/tcl-tk/bin:$PATH"
-#export LDFLAGS="-L/usr/local/opt/tcl-tk/lib"
-#export CPPFLAGS="-I/usr/local/opt/tcl-tk/include"
-#export PKG_CONFIG_PATH="/usr/local/opt/tcl-tk/lib/pkgconfig"
-#typeset -U PATH
-#
-#export TCLTK_LIBS="-L/opt/homebrew/opt/tcl-tk/lib -ltcl8.6 -ltk8.6"
-#export TCLTK_CFLAGS="-I/opt/homebrew/opt/tcl-tk/include"
-# --------------------------------------------------
-# --------------------------------------------------
-
-# curlの設定
-# --------------------------------------------------
-# --------------------------------------------------
-export PATH="/opt/homebrew/opt/curl/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
-export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
-# --------------------------------------------------
-# --------------------------------------------------
-
-
 # alias --------------------------------------------
 # --------------------------------------------------
 # 自作alias
@@ -438,11 +382,7 @@ alias mva='source ~/.venv/bin/activate'
 alias da='deactivate'
 
 # vim
-alias vim='/opt/homebrew/bin/vim'
 alias dein='nvim ~/.vim/dein.toml'
-
-# nvim
-alias nvim='/opt/homebrew/bin/nvim'
 
 # tmux
 alias tm='tmux'
@@ -500,12 +440,14 @@ alias nf='nvim $(fzf)'
 
 # qmk ----------------------------------------------
 # tab補完
+if [ -e ~/repos/qmk_firmware ]; then
 autoload -Uz bashcompinit && bashcompinit
 source ~/repos/qmk_firmware/util/qmk_tab_complete.sh
 
 function cpBuilt(){
     rsync -av --include='*.uf2' --include='*.hex' --exclude='*' ~/MyKeyBoards/qmk_firmware/.build/ ~/MyKeyBoards/build/
 }
+fi
 
 # keyballのcompile
 function kbc(){
@@ -603,14 +545,6 @@ function deactivate () {
 # --------------------------------------------------
 
 
-# --------------------------------------------------
-# --------------------------------------------------
-# direnvの設定
-export EDITOR="/opt/homebrew/bin/nvim"
-eval "$(direnv hook zsh)"
-# --------------------------------------------------
-# --------------------------------------------------
-
 
 # __init__.pyiの作成関数----------------------------
 generate_stub_for_module() {
@@ -649,3 +583,66 @@ generate_stub_for_module() {
 # https://github.com/atweiden/fzf-extras
 [[ -e "$HOME/.fzf-extras/fzf-extras.zsh" ]] \
   && source "$HOME/.fzf-extras/fzf-extras.zsh"
+
+case ${OSTYPE} in
+  darwin*)
+    # ここに Mac 向けの設定
+
+# itermのアーキテクチャエイリアス
+alias x86='arch -x86_64 zsh'
+alias arm='arch -arm64e zsh'
+
+#.DS_Store消去
+alias delds='find . -name ".DS_Store" -type f -ls -delete'
+
+#pyenv
+if [ "$(uname -m)" = "arm64" ]; then
+  export PYENV_ROOT="$HOME/.pyenv_arm64"
+  export PATH="$HOME/.pyenv_arm64/bin:$PATH"
+else
+  export PYENV_ROOT="$HOME/.pyenv_x86"
+  export PATH="$HOME/.pyenv_x86/bin:$PATH"
+fi
+eval "$(pyenv init -)"
+eval "$(pyenv init --path)"
+
+# homebrewのパス
+if [ "$(uname -m)" = "arm64" ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+  export PATH="/opt/homebrew/bin:$PATH"
+else
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# curlの設定
+# --------------------------------------------------
+# --------------------------------------------------
+export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
+# --------------------------------------------------
+# --------------------------------------------------
+
+# vim
+alias vim='/opt/homebrew/bin/vim'
+
+# nvim
+alias nvim='/opt/homebrew/bin/nvim'
+
+# --------------------------------------------------
+# --------------------------------------------------
+# direnvの設定
+export EDITOR="/opt/homebrew/bin/nvim"
+eval "$(direnv hook zsh)"
+# --------------------------------------------------
+# --------------------------------------------------
+
+
+    ;;
+
+  linux*)
+    # ここに Linux 向けの設定
+    ;;
+esac
+
