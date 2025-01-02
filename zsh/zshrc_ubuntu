@@ -1,0 +1,651 @@
+#!/bin/zsh
+# -----------------------------------------------------------
+# prezto初期設定
+# Executes commands at the start of an interactive session.
+#
+# Authors:
+#   Sorin Ionescu <sorin.ionescu@gmail.com>
+#
+
+# Source Prezto.
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
+
+# Customize to your needs...
+# -----------------------------------------------------------
+
+# -----------------------------------------------------------
+#コマンド履歴保存数
+HISTFILE=~/.histfile
+HISTSIZE=100000
+SAVEHIST=100000
+
+# emacs mode
+bindkey -e
+#------------------------------------------------------------
+
+#------------------------------------------------------------
+# プロンプト
+# venv prompt
+color='%{\e[38;5;' #  文字色を設定
+green='114m%}'
+red='001m%}'
+yellow='227m%}'
+blue='033m%}'
+reset='%{\e[0m%}'   # reset
+#python='\ue73c '
+python='\Uf0320 '
+virtualenv_info() {
+    # Check if in a virtual environment
+    if [[ -n $VIRTUAL_ENV ]]; then
+        local venv_name=$(basename "${VIRTUAL_ENV}")
+        local venv_patient_dir=$(basename "$(dirname "${VIRTUAL_ENV}")")
+
+        if [[ $VIRTUAL_ENV == "$HOME/.venv" ]]; then
+          #1: ~/.venv
+          echo "${color}${green}${python}${reset}"
+        elif [[ $venv_name == ".venv" ]]; then
+          #2: ../foo/.venv
+          echo "${color}${yellow}${python}${venv_patient_dir}${reset}"
+        else
+          #3: ../foo/var_env
+          echo "${color}${yellow}${python}${venv_name}${reset}"
+        fi
+    fi
+}
+
+# -----------------------------------------------------------
+# gitに関するプロンプト
+# 参考https://tomiylab.com/2020/03/prompt/
+# https://dev.macha795.com/zsh-prompt-customize/
+# https://bottoms-programming.com/archives/apple-silicon-termina-git-branch-name.html
+# git ブランチ名を色付きで表示させるメソッド
+function rprompt-git-current-branch {
+  local branch_name st branch_status
+
+  branch='\ue0a0'
+  color='%{\e[38;5;' #  文字色を設定
+  green='114m%}'
+  red='001m%}'
+  yellow='227m%}'
+  blue='033m%}'
+  reset='%{\e[0m%}'   # reset
+
+  #if [ ! -e  ".git" ]; then
+  #  # git 管理されていないディレクトリは何も返さない
+  #  return
+  #fi
+  #branch_name=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
+  local insideProject=`git rev-parse --is-inside-work-tree 2>/dev/null`
+  if [ ! "${insideProject}" = "true" ]; then
+    # git 管理されていないディレクトリは何も返さない
+    return
+  fi
+  branch_name=`git symbolic-ref --short HEAD 2> /dev/null`
+  st=`git status 2> /dev/null`
+  if [[ -n `echo "$st" | grep "^nothing to"` ]]; then
+    # 全て commit されてクリーンな状態
+    branch_status="${color}${green}${branch}"
+  elif [[ -n `echo "$st" | grep "^Untracked files"` ]]; then
+    # git 管理されていないファイルがある状態
+    branch_status="${color}${red}${branch}?"
+  elif [[ -n `echo "$st" | grep "^Changes not staged for commit"` ]]; then
+    # git add されていないファイルがある状態
+    branch_status="${color}${red}${branch}+"
+  elif [[ -n `echo "$st" | grep "^Changes to be committed"` ]]; then
+    # git commit されていないファイルがある状態
+    branch_status="${color}${yellow}${branch}!"
+  elif [[ -n `echo "$st" | grep "^rebase in progress"` ]]; then
+    # コンフリクトが起こった状態
+    echo "${color}${red}${branch}!(no branch)${reset}"
+    return
+  else
+    # 上記以外の状態の場合
+    branch_status="${color}${blue}${branch}"
+  fi
+  # ブランチ名を色付きで表示する
+  echo "${branch_status}$branch_name${reset}"
+}
+
+# プロンプトが表示されるたびにプロンプト文字列を評価、置換する
+setopt prompt_subst
+
+# プロンプトの右側にメソッドの結果を表示させる
+RPROMPT='`virtualenv_info` `rprompt-git-current-branch`'
+
+# -----------------------------------------------------------
+
+# -----------------------------------------------------------
+#プロンプトの設定
+#左側プロンプトカラー
+function left-prompt {
+  clock_t='217m%}'      #clock text color
+  clock_b='016m%}'      #clock background color
+  name_t='153m%}'      # user name text clolr
+  name_b='016m%}'    # user name background color
+  machine_t='141m%}'  #machine text color
+  machine_b='016m%}'  #machine text color
+  path_t='255m%}'     # path text clolr
+  path_b='031m%}'   # path background color
+  arrow='087m%}'   # arrow color
+  text_color='%{\e[38;5;'    # set text color
+  back_color='%{\e[30;48;5;' # set background color
+  reset='%{\e[0m%}'   # reset
+  sharp='\uE0B0'      # triangle
+
+  #マシンでの条件分岐
+  case "`uname -n`" in
+    "tokuserver" )
+		  machine_t='014m%}'  #machine text color
+		  machine_b='016m%}';;
+	  # "tokuserver" )
+		  # machine_t='196m%}'  #machine text color
+		  # machine_b='016m%}';;  #machine text color
+  esac
+
+  clock="${back_color}${clock_b}${text_color}${clock_t}"
+  user="${back_color}${name_b}${text_color}${name_t}"
+  machine="${back_color}${machine_b}${text_color}${machine_t}"
+  dir="${back_color}${path_b}${text_color}${path_t}"
+
+  echo "${clock}%* ${user}%n %# ${reset}${machine}%m${back_color}${path_b}${text_color}${name_b}${sharp} ${dir}%~${reset}${text_color}${path_b}${sharp}${reset}
+%{%F{cyan}%}❯%{%F{magenta}%}❯%{%F{blue}%}❯ "
+}
+ PROMPT=`left-prompt`
+
+# コマンドの実行ごとに改行(定義しておくだけで効果アリ)
+function precmd() {
+    # Print a newline before the prompt, unless it's the
+    # first prompt in the process.
+    if [ -z "$NEW_LINE_BEFORE_PROMPT" ]; then
+        NEW_LINE_BEFORE_PROMPT=1
+    elif [ "$NEW_LINE_BEFORE_PROMPT" -eq 1 ]; then
+        echo ""
+    fi
+}
+
+# -----------------------------------------------------------
+
+# -----------------------------------------------------------
+# バインドキーviモード
+# bindkey -v
+
+#vim mode 色の設定用
+#text_color='%{\e[38;5;'    # set text color
+#back_color='%{\e[30;48;5;' # set background color
+#reset='%{\e[0m%}'   # reset
+#sharp='\uE0B0'      # triangle
+#
+#INS_t='231m%}'      #INS mode text color
+#INS_b='074m%}'      #INS background color
+#NOR_t='231m%}'      #NOR mode text color
+#NOR_b='065m%}'      #NOR background color
+#VIS_t='231m%}'      #VIS mode text color
+#VIS_b='210m%}'      #VIS background color
+#INS_COLOR="${back_color}${INS_b}${text_color}${INS_t}"
+#NOR_COLOR="${back_color}${NOR_b}${text_color}${NOR_t}"
+#VIS_COLOR="${back_color}${VIS_b}${text_color}${VIS_t}"
+
+#vim modeの表示
+# PROMPT_INS=`left-prompt`$'\n'`echo "${INS_COLOR}[INS]${reset}${text_color}${INS_b}${sharp} "`
+# PROMPT_NOR=`left-prompt`$'\n'`echo "${NOR_COLOR}[NOR]${reset}${text_color}${NOR_b}${sharp} "`
+# PROMPT_VIS=`left-prompt`$'\n'`echo "${VIS_COLOR}[VIS]${reset}${text_color}${VIS_b}${sharp} "`
+# PROMPT=$PROMPT_INS
+
+# function zle-line-pre-redraw {
+#   if [[ $REGION_ACTIVE -ne 0 ]]; then
+#     NEW_PROMPT=$PROMPT_VIS
+#   elif [[ $KEYMAP = vicmd ]]; then
+#     NEW_PROMPT=$PROMPT_NOR
+#   elif [[ $KEYMAP = main ]]; then
+#     NEW_PROMPT=$PROMPT_INS
+#   fi
+#   if [[ $PROMPT = $NEW_PROMPT ]]; then
+#     return
+#   fi
+#   PROMPT=$NEW_PROMPT
+#   zle reset-prompt
+# }
+
+# function zle-keymap-select zle-line-init {
+#   case $KEYMAP in
+#     vicmd)
+#     PROMPT=$PROMPT_NOR
+#     ;;
+#     main|viins)
+#     PROMPT=$PROMPT_INS
+#     ;;
+#   esac
+#   zle reset-prompt
+# }
+
+# zle -N zle-line-init
+# zle -N zle-keymap-select
+# 下のコマンドがあるとsyntax-highlightが阻害されてる
+# zle -N zle-line-pre-redraw
+# -----------------------------------------------------------
+
+# 環境変数----------------------------------------------
+# export PATH=$HOME/.local/share/nvim/lazy/fzf/bin:$PATH
+# export PATH=$HOME/.cargo/bin:$PATH
+# 自作コマンド
+export PATH=$HOME/mycommands:$PATH
+# deno ubuntu用
+export DENO_INSTALL="$HOME/.deno" >> $HOME/.zshrc
+export PATH="$DENO_INSTALL/bin:$PATH" >> $HOME/.zshrc
+# （確かnvimのddcのやつ）
+export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
+# 重複の削除
+typeset -U path PATH
+
+# 補完で小文字でも大文字にマッチさせる
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+# 補完候補を詰めて表示
+setopt list_packed
+# 補完候補一覧をカラー表示
+zstyle ':completion:*' list-colors ''
+# コマンドのスペルを訂正
+setopt correct
+# ビープ音を鳴らさない
+setopt no_beep
+
+#256色の確認関数:colorlist
+colorlist() {
+	for color in {000..015}; do
+		print -nP "%F{$color}$color %f"
+	done
+	printf "\n"
+	for color in {016..255}; do
+		print -nP "%F{$color}$color %f"
+		if [ $(($((color-16))%6)) -eq 5 ]; then
+			printf "\n"
+		fi
+	done
+}
+
+#peco function
+function peco-select-history() {
+  BUFFER=$(\history -n 1 | tac | peco)
+  CURSOR=$#BUFFER
+  zle clear-screen
+}
+zle -N peco-select-history
+
+function peco-lscd {
+    local dir="$( find . -maxdepth 1 -type d | sed -e 's;\./;;' | peco )"
+    if [ ! -z "$dir" ] ; then
+        cd "$dir"
+    fi
+}
+
+# search a destination from cdr list
+function peco-get-destination-from-cdr() {
+  cdr -l | \
+  sed -e 's/^[[:digit:]]*[[:blank:]]*//' | \
+  peco --query "$LBUFFER"
+}
+
+### cdrを使えるように設定
+#autoload -Uz add-zsh-hock
+#autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
+
+# cdr, add-zsh-hook を有効にする
+autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
+add-zsh-hook chpwd chpwd_recent_dirs
+
+# cdr の設定
+zstyle ':completion:*' recent-dirs-insert both
+zstyle ':chpwd:*' recent-dirs-max 500
+zstyle ':chpwd:*' recent-dirs-default true
+zstyle ':chpwd:*' recent-dirs-file "$HOME/.cache/shell/chpwd-recent-dirs"
+zstyle ':chpwd:*' recent-dirs-pushd true
+
+
+### 過去に移動したことのあるディレクトリを選択。ctrl-@にバインド
+function peco-cdr() {
+  local destination="$(peco-get-destination-from-cdr)"
+  if [ -n "$destination" ]; then
+    BUFFER="cd $destination"
+    zle accept-line
+  else
+    zle reset-prompt
+  fi
+}
+zle -N peco-cdr
+
+
+#キーバインド
+bindkey -M viins '^?'  backward-delete-char
+bindkey -M viins '^A'  beginning-of-line
+bindkey -M viins '^B'  backward-char
+bindkey -M viins '^@'  peco-cdr
+bindkey -M viins '^D'  delete-char-or-list
+bindkey -M viins '^E'  end-of-line
+bindkey -M viins '^F'  forward-char
+bindkey -M viins '^H'  backward-delete-char
+bindkey -M viins '^K'  kill-line
+bindkey -M viins '^N'  down-line-or-history
+bindkey -M viins '^P'  up-line-or-history
+bindkey -M viins '^R'  history-incremental-pattern-search-backward
+bindkey '^r' peco-select-history
+bindkey -M viins '^U'  backward-kill-line
+bindkey -M viins '^W'  backward-kill-word
+bindkey -M viins '^Y'  yank
+bindkey "jj" vi-cmd-mode #jjでvim normal mode
+bindkey -M visual 'jj' deactivate-region #jjでvim visualから抜ける
+
+#キーバインド2
+#bindkey -M viins '^H'  backward-char
+#bindkey -M viins '^J'  down-line-or-history
+#bindkey -M viins '^K'  up-line-or-history
+#bindkey -M viins '^L'  forward-char
+bindkey -M viins '^Z'  undo
+bindkey -M viins '^Y'  redo
+#bindkey -M viins '^I'  vi-change-whole-line
+#bindkey -M viins '^B'  backward-kill-line
+#bindkey -M viins '^N'  kill-line
+#bindkey -M viins ''
+
+# グロブ表現避け (*等)-------------------------------
+# ---------------------------------------------------
+setopt nonomatch
+# ---------------------------------------------------
+# ---------------------------------------------------
+
+#基本エディタの設定
+export VISUAL=/usr/bin/vim
+
+#macの場合にmemo用のフォルダへ移行
+case `uname -n` in
+	'MacBook-Air.local' )
+		alias memo="cd ~/Nextcloud/md_memo";;
+esac
+
+#.DS_Store消去
+alias delds='find . -name ".DS_Store" -type f -ls -delete'
+
+# itermのアーキテクチャエイリアス
+alias x86='arch -x86_64 zsh'
+alias arm='arch -arm64e zsh'
+
+# homebrewのパス
+if [ "$(uname -m)" = "arm64" ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+  export PATH="/opt/homebrew/bin:$PATH"
+else
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+#pyenv
+if [ "$(uname -m)" = "arm64" ]; then
+  export PYENV_ROOT="$HOME/.pyenv_arm64"
+  export PATH="$HOME/.pyenv_arm64/bin:$PATH"
+else
+  export PYENV_ROOT="$HOME/.pyenv_x86"
+  export PATH="$HOME/.pyenv_x86/bin:$PATH"
+fi
+eval "$(pyenv init -)"
+eval "$(pyenv init --path)"
+
+# tcl-tkの設定---------------------------------------
+# ---------------------------------------------------
+#export PATH="/usr/local/opt/tcl-tk/bin:$PATH"
+#export LDFLAGS="-L/usr/local/opt/tcl-tk/lib"
+#export CPPFLAGS="-I/usr/local/opt/tcl-tk/include"
+#export PKG_CONFIG_PATH="/usr/local/opt/tcl-tk/lib/pkgconfig"
+#typeset -U PATH
+#
+#export TCLTK_LIBS="-L/opt/homebrew/opt/tcl-tk/lib -ltcl8.6 -ltk8.6"
+#export TCLTK_CFLAGS="-I/opt/homebrew/opt/tcl-tk/include"
+# --------------------------------------------------
+# --------------------------------------------------
+
+# curlの設定
+# --------------------------------------------------
+# --------------------------------------------------
+export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
+# --------------------------------------------------
+# --------------------------------------------------
+
+
+# alias --------------------------------------------
+# --------------------------------------------------
+# 自作alias
+alias nv='nvim'
+alias ns='nvim -S'
+alias .ns='nvim -S ~/dotfiles/mydotfiles/Session.vim'
+alias .f='~/dotfiles'
+alias .fm='~/dotfiles/mydotfiles'
+alias c.='~/dotfiles'
+alias c.m='~/dotfiles/mydotfiles'
+alias .z='nvim ~/.zshrc'
+alias .v='vim ~/.vimrc'
+alias .nv='nvim ~/.config/nvim/init.lua ~/.config/nvim/lua/**/*.*'
+alias .e='nvim .envrc'
+alias rm='rm -I'
+alias rmi='rm -i'
+alias .za='source ~/.zshrc'
+alias nt='_open_filetypes_nvim'
+
+# python alias
+alias pip='pip3'
+alias py='python'
+alias mva='source ~/.venv/bin/activate'
+alias da='deactivate'
+
+# vim
+alias vim='/opt/homebrew/bin/vim'
+alias dein='nvim ~/.vim/dein.toml'
+
+# nvim
+alias nvim='/opt/homebrew/bin/nvim'
+
+# tmux
+alias tm='tmux'
+alias ta='tmux attach-session -t'
+alias .t='nv ~/.config/tmux/tmux.conf'
+
+# git関連alia
+alias co='git checkout'
+alias br='git branch'
+alias gl='git log --oneline -n 10'
+alias ga='git add .'
+alias gc='git commit -m'
+alias gs='git status'
+alias gm='git merge'
+alias gls='git ls-files'
+
+# config
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+# --------------------------------------------------
+# --------------------------------------------------
+
+# --------------------------------------------------
+# my functions
+# --------------------------------------------------
+
+# open specific file type by nvim
+# ファイルタイプを指定して全てnvimで開く関数
+function _open_filetypes_nvim() {
+    files=()
+  for i in $@; do
+    files=($files **/*.$i)
+  done
+  nvim $files
+}
+
+# cd git root
+function git-root() {
+  if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    cd `pwd`/`git rev-parse --show-cdup`
+  fi
+}
+
+
+# --------------------------------------------------
+# myfunctions end
+# --------------------------------------------------
+
+# fzf-----------------------------------------------
+# --------------------------------------------------
+alias vf='vim $(fzf)'
+alias nf='nvim $(fzf)'
+# --------------------------------------------------
+# --------------------------------------------------
+
+
+# qmk ----------------------------------------------
+# tab補完
+autoload -Uz bashcompinit && bashcompinit
+source ~/repos/qmk_firmware/util/qmk_tab_complete.sh
+
+function cpBuilt(){
+    rsync -av --include='*.uf2' --include='*.hex' --exclude='*' ~/MyKeyBoards/qmk_firmware/.build/ ~/MyKeyBoards/build/
+}
+
+# keyballのcompile
+function kbc(){
+  if [ $# -eq 1 ];then
+    cd ~/qmk/qmk
+    qmk compile -kb keyball/keyball$1 -km mymac
+    cd -
+  fi
+}
+# --------------------------------------------------
+
+
+## tmux----------------------------------------------
+## --------------------------------------------------
+#export PERCOL=fzf
+#if [[ ! -n $TMUX && $- == *l* ]]; then
+#  # get the IDs
+#  ID="`tmux list-sessions`"
+#  if [[ -z "$ID" ]]; then
+#    tmux new-session
+#  fi
+#  create_new_session="Create New Session"
+#  ID="$ID\n${create_new_session}:"
+#  ID="`echo $ID | $PERCOL | cut -d: -f1`"
+#  if [[ "$ID" = "${create_new_session}" ]]; then
+#    tmux new-session
+#  elif [[ -n "$ID" ]]; then
+#    tmux attach-session -t "$ID"
+#  else
+#    :  # Start terminal normally
+#  fi
+#fi
+
+chpwd() {
+  if [ -n "$TMUX" ]; then
+    tmux refresh-client -S
+  fi
+}
+## --------------------------------------------------
+## --------------------------------------------------
+#
+
+# --------------------------------------------------
+# python--------------------------------------------
+# venvの作成関数
+function mkvenv() {
+  # 引数がなかったら.venvを環境名にする
+  local venv_name=${1:-.venv}
+  python3 -m venv $venv_name
+  if [[ ! $(basename $PWD) == $USER ]] && [[ -z ${1} ]]; then
+    echo "source ${venv_name}/bin/activate" > .envrc
+    direnv allow
+  else
+  fi
+}
+# venvの適用
+function va() {
+    local venv_name=${1:-.venv}
+    source ${venv_name}/bin/activate
+}
+# deactivateの実装
+# direnvでsourceした際、環境変数の変更のせいかdeactivateが使用できないため
+function deactivate () {
+        if [ -n "${_OLD_VIRTUAL_PATH:-}" ]
+        then
+                PATH="${_OLD_VIRTUAL_PATH:-}"
+                export PATH
+                unset _OLD_VIRTUAL_PATH
+        fi
+        if [ -n "${_OLD_VIRTUAL_PYTHONHOME:-}" ]
+        then
+                PYTHONHOME="${_OLD_VIRTUAL_PYTHONHOME:-}"
+                export PYTHONHOME
+                unset _OLD_VIRTUAL_PYTHONHOME
+        fi
+        if [ -n "${BASH:-}" -o -n "${ZSH_VERSION:-}" ]
+        then
+                hash -r 2> /dev/null
+        fi
+        if [ -n "${_OLD_VIRTUAL_PS1:-}" ]
+        then
+                PS1="${_OLD_VIRTUAL_PS1:-}"
+                export PS1
+                unset _OLD_VIRTUAL_PS1
+        fi
+        unset VIRTUAL_ENV
+        unset VIRTUAL_ENV_PROMPT
+        if [ ! "${1:-}" = "nondestructive" ]
+        then
+                unset -f deactivate
+        fi
+}
+
+# --------------------------------------------------
+# --------------------------------------------------
+
+
+# --------------------------------------------------
+# --------------------------------------------------
+# direnvの設定
+export EDITOR="/opt/homebrew/bin/nvim"
+eval "$(direnv hook zsh)"
+# --------------------------------------------------
+# --------------------------------------------------
+
+
+# __init__.pyiの作成関数----------------------------
+generate_stub_for_module() {
+  # Check for the correct number of arguments
+  if [ "$#" -ne 2 ]; then
+    echo "Usage: generate_stub_for_module <module_name> <venv_path>"
+    return 1
+  fi
+
+  local module_name="$1"
+  local venv_path="$2"
+
+  # Construct the site-packages path
+  local site_packages_path="${venv_path}/lib/python$(python --version | cut -d ' ' -f 2 | cut -d '.' -f 1,2)/site-packages"
+
+  # Check if the module directory exists within site-packages
+  if [ ! -d "${site_packages_path}/${module_name}" ]; then
+    echo "Error: Module not found in site-packages."
+    return 1
+  fi
+
+  # Activate the virtual environment
+  source "${venv_path}/bin/activate"
+
+  # Use stubgen to generate the stub
+  stubgen -o "${site_packages_path}/${module_name}" -p "${module_name}"
+
+  # Deactivate the virtual environment
+  deactivate
+}
+
+# fzf set up
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# fzf-extra
+# https://github.com/atweiden/fzf-extras
+[[ -e "$HOME/.fzf-extras/fzf-extras.zsh" ]] \
+  && source "$HOME/.fzf-extras/fzf-extras.zsh"
