@@ -647,5 +647,3 @@ eval "$(direnv hook zsh)"
     export PATH="$PATH:/opt/nvim/"
     ;;
 esac
-
-. "/home/toku/.deno/env"
