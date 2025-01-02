@@ -261,7 +261,7 @@ return {
 				python = { "flake8", "mypy" },
 				markdown = { "markdownlint" },
 				-- ~/.luacheckrcを作成してvim undefined errorを無視している
-				lua = { "LuaCheck" },
+				lua = { "luacheck" },
 			}
 
 			local nvim_lint = vim.api.nvim_create_augroup("nvim_lint", { clear = true })
