@@ -644,6 +644,8 @@ eval "$(direnv hook zsh)"
 
   linux*)
     # ここに Linux 向けの設定
+    export PATH="$PATH:/opt/nvim/"
     ;;
 esac
 
+. "/home/toku/.deno/env"
