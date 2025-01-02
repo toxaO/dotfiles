@@ -16,10 +16,10 @@ local M = {}
 
 function M.setup()
   keymap.set("", "<Space>", "<Nop>", km_opts.ns)
-  keymap.set("n", "<Space><Space>",
-    ":<C-U>echo 'single'"
-    .."| echo 'daul'<CR>"
-  , km_opts.ns)
+  -- keymap.set("n", "<Space><Space>",
+  --   ":<C-U>echo 'single'"
+  --   .."| echo 'daul'<CR>"
+  -- , km_opts.ns)
 
   ----------------------------------------------------------------------
   -- Normal --

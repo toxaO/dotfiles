@@ -228,7 +228,7 @@ function precmd() {
 
 # 環境変数----------------------------------------------
 # export PATH=$HOME/.local/share/nvim/lazy/fzf/bin:$PATH
-# export PATH=$HOME/.cargo/bin:$PATH
+export PATH=$HOME/.cargo/bin:$PATH
 # 自作コマンド
 export PATH=$HOME/mycommands:$PATH
 # deno ubuntu用
@@ -557,6 +557,7 @@ function mkvenv() {
   python3 -m venv $venv_name
   if [[ ! $(basename $PWD) == $USER ]] && [[ -z ${1} ]]; then
     echo "source ${venv_name}/bin/activate" > .envrc
+    echo "export PATH=$HOME/.cargo/bin:$PATH" > .envrc
     direnv allow
   else
   fi
