@@ -287,10 +287,7 @@ function peco-get-destination-from-cdr() {
 }
 
 ### cdrを使えるように設定
-#autoload -Uz add-zsh-hock
-#autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
-
-# cdr, add-zsh-hook を有効にする
+autoload -Uz add-zsh-hock
 autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
 
