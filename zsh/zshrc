@@ -374,7 +374,7 @@ alias nt='_open_filetypes_nvim'
 
 # python alias
 alias pip='pip3'
-alias py='python'
+alias py='python3'
 alias mva='source ~/.venv/bin/activate'
 alias da='deactivate'
 
@@ -586,61 +586,62 @@ case ${OSTYPE} in
   darwin*)
     # ここに Mac 向けの設定
 
-# itermのアーキテクチャエイリアス
-alias x86='arch -x86_64 zsh'
-alias arm='arch -arm64e zsh'
+    # itermのアーキテクチャエイリアス
+    alias x86='arch -x86_64 zsh'
+    alias arm='arch -arm64e zsh'
 
-#.DS_Store消去
-alias delds='find . -name ".DS_Store" -type f -ls -delete'
+    #.DS_Store消去
+    alias delds='find . -name ".DS_Store" -type f -ls -delete'
 
-#pyenv
-if [ "$(uname -m)" = "arm64" ]; then
-  export PYENV_ROOT="$HOME/.pyenv_arm64"
-  export PATH="$HOME/.pyenv_arm64/bin:$PATH"
-else
-  export PYENV_ROOT="$HOME/.pyenv_x86"
-  export PATH="$HOME/.pyenv_x86/bin:$PATH"
-fi
-eval "$(pyenv init -)"
-eval "$(pyenv init --path)"
+    #pyenv
+    if [ "$(uname -m)" = "arm64" ]; then
+      export PYENV_ROOT="$HOME/.pyenv_arm64"
+      export PATH="$HOME/.pyenv_arm64/bin:$PATH"
+    else
+      export PYENV_ROOT="$HOME/.pyenv_x86"
+      export PATH="$HOME/.pyenv_x86/bin:$PATH"
+    fi
+    eval "$(pyenv init -)"
+    eval "$(pyenv init --path)"
 
-# homebrewのパス
-if [ "$(uname -m)" = "arm64" ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-  export PATH="/opt/homebrew/bin:$PATH"
-else
-  eval "$(/usr/local/bin/brew shellenv)"
-fi
+    # homebrewのパス
+    if [ "$(uname -m)" = "arm64" ]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+      export PATH="/opt/homebrew/bin:$PATH"
+    else
+      eval "$(/usr/local/bin/brew shellenv)"
+    fi
 
-# curlの設定
-# --------------------------------------------------
-# --------------------------------------------------
-export PATH="/opt/homebrew/opt/curl/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
-export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
-# --------------------------------------------------
-# --------------------------------------------------
+    # curlの設定
+    # --------------------------------------------------
+    # --------------------------------------------------
+    export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+    export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
+    export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
+    export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
+    # --------------------------------------------------
+    # --------------------------------------------------
 
-# vim
-alias vim='/opt/homebrew/bin/vim'
+    # vim
+    alias vim='/opt/homebrew/bin/vim'
 
-# nvim
-alias nvim='/opt/homebrew/bin/nvim'
+    # nvim
+    alias nvim='/opt/homebrew/bin/nvim'
 
-# --------------------------------------------------
-# --------------------------------------------------
-# direnvの設定
-export EDITOR="/opt/homebrew/bin/nvim"
-eval "$(direnv hook zsh)"
-# --------------------------------------------------
-# --------------------------------------------------
-
-
+    # --------------------------------------------------
+    # --------------------------------------------------
+    # direnvの設定
+    export EDITOR="/opt/homebrew/bin/nvim"
+    eval "$(direnv hook zsh)"
+    # --------------------------------------------------
+    # --------------------------------------------------
     ;;
 
   linux*)
     # ここに Linux 向けの設定
     export PATH="$PATH:/opt/nvim/"
+    if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null ; then
+      LS_COLORS="${LS_COLORS}:ow=01;34"; export LS_COLORS
+    fi
     ;;
 esac
