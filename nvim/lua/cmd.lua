@@ -14,6 +14,17 @@ function M.setup()
 			vim.cmd([[cclose]])
 		end
 	end, {})
+
+  vim.cmd([[
+    command! ModifyCSProjFile call ModifyCSProjFile()
+    function! ModifyCSProjFile()
+        call system("find . -maxdepth 2 -name \"*.csproj\" | xargs sed -i -e 's/C:/\\/mnt\\/c/g'")
+        call system("find . -maxdepth 2 -name \"*.csproj\" | xargs sed -i -e 's/D:/\\/mnt\\/d/g'")
+        if exists(':YcmCompleter')
+            execute "YcmCompleter ReloadSolution"
+        endif
+    endfunction
+    ]])
 end
 
 return M
