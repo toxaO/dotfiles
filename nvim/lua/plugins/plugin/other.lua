@@ -12,7 +12,8 @@ return {
 
 	{ "vim-jp/vimdoc-ja"},
 
-	"cocopon/iceberg.vim",
+	{ "cocopon/iceberg.vim" },
+
 	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "ryanoasis/vim-devicons" },
@@ -86,11 +87,10 @@ return {
 
 --------------------------------------------------
 	-- LSP
-	{ "neovim/nvim-lspconfig"},
+	-- { "neovim/nvim-lspconfig"},
 	{
 		"williamboman/mason.nvim",
 		config = function()
-			--require'lspconfig'.pyright.setup{}
 			require("mason").setup()
 		end,
 	},
@@ -257,7 +257,7 @@ return {
 		"mfussenegger/nvim-lint",
 		config = function()
 			require("lint").linters_by_ft = {
-
+        c = { "clang-format" },
 				python = { "flake8", "mypy" },
 				markdown = { "markdownlint" },
 				-- ~/.luacheckrcを作成してvim undefined errorを無視している
