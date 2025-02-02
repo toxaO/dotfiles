@@ -88,17 +88,20 @@ return {
 --------------------------------------------------
 	-- LSP
 	-- { "neovim/nvim-lspconfig"},
-	{
-		"williamboman/mason.nvim",
-		config = function()
-			require("mason").setup()
-		end,
-	},
+	-- {
+	-- 	"williamboman/mason.nvim",
+	-- 	config = function()
+	-- 		require("mason").setup()
+	-- 	end,
+	-- },
+
 	{
 		"williamboman/mason-lspconfig.nvim",
 		dependencies = { "williamboman/mason.nvim", "neovim/nvim-lspconfig" },
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
+			require("mason").setup()
+
 			vim.lsp.handlers["textDocument/publishDiagnostics"] =
 				vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, { virtual_text = false })
 
@@ -257,7 +260,7 @@ return {
 		"mfussenegger/nvim-lint",
 		config = function()
 			require("lint").linters_by_ft = {
-        c = { "clang-format" },
+        -- c = { "clang-format" },
 				python = { "flake8", "mypy" },
 				markdown = { "markdownlint" },
 				-- ~/.luacheckrcを作成してvim undefined errorを無視している
@@ -375,34 +378,6 @@ return {
       require("ibl").setup()
     end
   },
-
---------------------------------------------------
-  -- window frame color
-  -- {
-  --   "nvim-zh/colorful-winsep.nvim",
-  --   branch = "alpha",
-  --   config = function()
-  --     require("colorful-winsep").setup({
-  --     highlight = {
-  --       bg = "#17171b",
-  --       fg = "#d4d5db",
-  --     },
-  --     -- timer refresh rate
-  --     interval = 30,
-  --     -- This plugin will not be activated for filetype in the following table.
-  --     no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
-  --     -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
-  --     symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-  --     close_event = function()
-  --       -- Executed after closing the window separator
-  --     end,
-  --     create_event = function()
-  --       -- Executed after creating the window separator
-  --     end,
-  --   })
-  --   end,
-  --   event = { "WinNew" },
-  -- },
 
 --------------------------------------------------
   -- git

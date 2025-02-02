@@ -711,7 +711,7 @@ return {
 
           -- "i" --
           keymap.set("n", "i", function()
-            local path = fn["fnamemodify"](fn["input"]("cwd: ", b.ddu_ui_filer_path .. "/", "file"), ":p")
+            local path = fn["fnamemodify"](fn["input"]("cwd: ", b.ddu_ui_filer_path, "file"), ":p")
               fn["ddu#ui#do_action"]("itemAction",
                   {
                     name = "narrow",
