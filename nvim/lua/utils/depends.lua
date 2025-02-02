@@ -1,6 +1,6 @@
 local fn = vim.fn
 
-local myutils = require("utils.util")
+local try = require("utils.try")
 
 local M = {}
 
@@ -59,7 +59,7 @@ function M.which(name)
 end
 
 function M.install(name, verb)
-  myutils.try_catch({
+  try.try_catch({
     try = function()
       if fn.executable(name) < 1 then
         local installCommand = ''
