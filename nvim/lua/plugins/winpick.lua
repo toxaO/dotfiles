@@ -5,7 +5,7 @@ local api = vim.api
 local opt = vim.opt
 local keymap = vim.keymap
 
-local myWinPick = require("plugins..config.winpick")
+local myWinPick = require("plugins.config.winpick")
 
 return{
   {

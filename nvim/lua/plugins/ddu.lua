@@ -786,6 +786,7 @@ return {
       end)
 
       fn["ddu#custom#action"]("kind", "file", "window_choose", function(args)
+        myutils.io.debug_echo("args", args.items)
         return ddu.window_choose(args)
       end)
 

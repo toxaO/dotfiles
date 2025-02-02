@@ -31,8 +31,8 @@ end
 
 function M.window_choose(args)
   utils.io.begin_debug("window_choose")
-  utils.io.debug_echo("args", args)
-
+  utils.io.debug_echo("args", args.items[1])
+  print(args.items[1].action.path)
 
   utils.try_catch({
     try = function()
@@ -42,7 +42,7 @@ function M.window_choose(args)
         return
       end
 
-      local my_winpick = require("plugins.plugin.config.winpick")
+      local my_winpick = require("plugins.config.winpick")
       my_winpick.choose_for_focus()
       vim.cmd("edit " .. path)
     end,
