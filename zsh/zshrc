@@ -227,10 +227,19 @@ function precmd() {
 # -----------------------------------------------------------
 
 # 環境変数----------------------------------------------
-# export PATH=$HOME/.local/share/nvim/lazy/fzf/bin:$PATH
+if uname -a | grep -sq "Ubuntu"; then
+  # Ubuntu
+elif [  "$(uname)" = "Darwin" ]; then
+  # macOS
+elif [ -n "$WSL_DISTRO_NAME" ]; then
+  # WSL2
+fi
 export PATH=$HOME/.cargo/bin:$PATH
 # 自作コマンド
 export PATH=$HOME/mycommands:$PATH
+# homeにおいておくコマンド
+# wslまたはwindows用ubuntuのwin32yankのため
+export PATH=$HOME/bin:/usr/local/bin:$PATH
 # deno ubuntu用
 export DENO_INSTALL="$HOME/.deno" >> $HOME/.zshrc
 export PATH="$DENO_INSTALL/bin:$PATH" >> $HOME/.zshrc
@@ -449,8 +458,8 @@ fi
 # keyballのcompile
 function kbc(){
   if [ $# -eq 1 ];then
-    cd ~/qmk/qmk
-    qmk compile -kb keyball/keyball$1 -km mymac
+    cd ~/github/qmk
+    qmk compile -kb keyball_rp/keyball$1 -km mymap
     cd -
   fi
 }

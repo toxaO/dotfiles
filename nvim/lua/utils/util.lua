@@ -1,5 +1,5 @@
 
-local io = require("utils.sub.io")
+local io = require("utils.io")
 
 local M = {}
 

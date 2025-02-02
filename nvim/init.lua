@@ -9,7 +9,7 @@ require("cmd").setup()
 require("keymaps").setup()
 require("autocmd").setup()
 require("options").setup()
-require("plugins").setup()
+require("plugin").setup()
 -- autocmdとpluginsの設定の後にする必要あり。
 -- そのうちpluginの
 require("colorscheme").setup()

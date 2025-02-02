@@ -1,5 +1,4 @@
 local utils = require("utils")
-
 local g = vim.g
 local fn = vim.fn
 local api = vim.api
@@ -21,39 +20,6 @@ local M = {
     end,
   },
 }
-
---M.floatWindow = {
---  col = g.float_window_col,
---  row = g.float_window_row,
---  width = g.float_window_width,
---  height = g.float_window_height,
---  preview_width = 120,
---  preview_col = 0,
---  preview_height = g.ddu_float_window_height,
---  border = "rounded",
---  split = "floating",
---}
---
---M.uiParams = {
---  span = 2,
---
---  split = M.floatWindow.split,
---  floatingBorder = M.floatWindow.border,
---  filterFloatingPosition = "bottom",
---  filterSplitDirection = M.floatWindow.split,
---  winRow = M.floatWindow.row,
---  winCol = M.floatWindow.col,
---  winWidth = M.floatWindow.width,
---  winHeight = M.floatWindow.height,
---
---  previewFloating = true,
---  previewVertical = true,
---  previewFloatingBorder = M.floatWindow.border,
---  previewFloatingZindex = 10000,
---  previewCol = M.floatWindow.preview_col,
---  previewWidth = M.floatWindow.preview_width,
---  previewHeight = M.floatWindow.preview_height,
---}
 
 function M.win_all()
   return fn.range(1, fn.winnr("$"))
@@ -80,6 +46,7 @@ function M.window_choose(args)
       my_winpick.choose_for_focus()
       vim.cmd("edit " .. path)
     end,
+
     catch = function()
       M.do_action("itemAction", args)
     end,
