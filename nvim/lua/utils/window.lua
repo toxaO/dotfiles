@@ -13,6 +13,14 @@ function M.get_vim_columns()
   return api.nvim_eval("&columns")
 end
 
+function M.win_all()
+  return fn.range(1, fn.winnr("$"))
+end
+
+function M.win_count()
+  return fn.winnr("$")
+end
+
 function M.resize_float_window_default()
   M.resize_float_window(8, 30)
 end

@@ -1,4 +1,3 @@
-local utils = require("utils")
 local g = vim.g
 local fn = vim.fn
 local api = vim.api
@@ -6,6 +5,8 @@ local opt = vim.opt
 local keymap = vim.keymap
 
 local km_opts = require("const.keymap")
+
+local u= require("utils")
 
 local M = {
   patch_global = fn["ddu#custom#patch_global"],
@@ -21,28 +22,20 @@ local M = {
   },
 }
 
-function M.win_all()
-  return fn.range(1, fn.winnr("$"))
-end
-
-function M.win_count()
-  return fn.winnr("$")
-end
-
 function M.window_choose(args)
-  utils.io.begin_debug("window_choose")
-  utils.io.debug_echo("args", args.items[1])
+  u.io.begin_debug("window_choose")
+  u.io.debug_echo("args", args.items)
   print(args.items[1].action.path)
 
-  utils.try_catch({
+  u.try_catch({
     try = function()
       local path = args.items[1].action.path
-      if M.win_count() <= 1 then
+      if u.window.win_count() <= 1 then
         vim.cmd("edit " .. path)
         return
       end
 
-      local my_winpick = require("plugins.config.winpick")
+      local my_winpick = require("customs.winpick")
       my_winpick.choose_for_focus()
       vim.cmd("edit " .. path)
     end,
@@ -51,7 +44,7 @@ function M.window_choose(args)
       M.do_action("itemAction", args)
     end,
   })
-  utils.io.end_debug("window_choose")
+  u.io.end_debug("window_choose")
   return 0
 end
 

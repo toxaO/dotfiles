@@ -5,7 +5,7 @@ local api = vim.api
 local keymap = vim.keymap
 local opt = vim.opt
 
-local ddu = require("plugins.config.ddu.core")
+local ddu = require("plugins.ddu.action")
 local myutils = require("utils")
 local km_opts = require("const.keymap")
 
