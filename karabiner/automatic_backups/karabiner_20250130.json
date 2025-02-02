@@ -430,15 +430,6 @@
                         "vendor_id": 34948
                     },
                     "ignore": true
-                },
-                {
-                    "identifiers": {
-                        "is_keyboard": true,
-                        "is_pointing_device": true,
-                        "product_id": 512,
-                        "vendor_id": 22871
-                    },
-                    "ignore": false
                 }
             ],
             "name": "Default profile",
