@@ -925,6 +925,9 @@ return {
           callback = ddu_window_resize,
         }
       )
+
     end -- /config
+
   }, -- /plugin name
+
 }
