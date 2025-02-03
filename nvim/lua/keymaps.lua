@@ -43,6 +43,11 @@ function M.setup()
   keymap.set("n", "<Space>S", ":<C-u>mksession! | echo 'save Session!'<CR>", km_opts.ns)
 
   --------------------------------------------------
+  -- messages
+  --------------------------------------------------
+  keymap.set("n", "<Space>M", ":<C-u>messages<CR>", km_opts.n)
+
+  --------------------------------------------------
   -- easymotion
   --------------------------------------------------
 	keymap.set("n", "s", "<Plug>(easymotion-overwin-f2)", km_opts.ns)

@@ -24,55 +24,34 @@ function M.echoe(mes)
   M._echo("err", mes)
 end
 
--- debug preference
--- function M.debug_echo(mes, args, stack)
---   if g.is_enable_my_debug == true then
---     M.echom(mes)
---     local this_stack = stack or 0
+function M.show_contents(mes, args, stack)
+  M.echom(mes)
+  local this_stack = stack or 0
+  local tabshift = string.rep("  ", this_stack)  -- インデント簡略化
 
---     local tabshift = ""
---     for _ = 0,this_stack do
---       tabshift = tabshift .. "  "
---     end
-
---     if args then
---       if type(args) ~= "table" then
---         M.echom(tabshift .. " : " .. args)
---         return
---       end
---       for i, v in ipairs(args) do
---         if type(v) == "table" then
---           M.debug_echo(i, v, this_stack + 1)
---         else
---           M.echom(tabshift .. i .. " : " .. v)
---         end
---       end
---     end
---   end
--- end
-
-function M.debug_echo(mes, args, stack)
-  if vim.g.is_enable_my_debug then  -- グローバル変数参照の修正
-    M.echom(mes)
-    local this_stack = stack or 0
-    local tabshift = string.rep("  ", this_stack)  -- インデント簡略化
-
-    if args then
-      if type(args) ~= "table" then
-        M.echom(tabshift .. " : " .. tostring(args))  -- tostring で安全に表示
-        return
-      end
-      -- pairs を使用してすべてのキーをループ
-      for k, v in pairs(args) do
+  if args then
+    if type(args) ~= "table" then
+      M.echom(tabshift .. " : " .. tostring(args))  -- tostring で安全に表示
+      return
+    end
+    -- pairs を使用してすべてのキーをループ
+    for k, v in pairs(args) do
+      if not (type(k) == "string" and k:match("^__")) then
         if type(v) == "table" then
           M.echom(tabshift .. k .. " : {")  -- テーブルの開始を表示
-          M.debug_echo("", v, this_stack + 1) -- ネストされたテーブルの再帰呼び出し
+          M.show_contents("", v, this_stack + 1) -- ネストされたテーブルの再帰呼び出し
           M.echom(tabshift .. "}")  -- テーブルの閉じを表示
         else
           M.echom(tabshift .. k .. " : " .. tostring(v))
         end
       end
     end
+  end
+end
+
+function M.debug_echo(mes, args, stack)
+  if vim.g.is_enable_my_debug then  -- グローバル変数参照の修正
+    M.show_contents(mes, args, stack)
   end
 end
 

@@ -11,6 +11,7 @@ M.env = require("utils.env")
 M.window = require("utils.window")
 M.depends = require("utils.depends")
 M.try = require("utils.try")
+M.path = require("utils.path")
 
 -- key exists in array
 function M.isContainsInArray(set, key)
