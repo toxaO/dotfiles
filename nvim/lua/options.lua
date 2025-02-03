@@ -36,7 +36,7 @@ function M.setup()
     mouse = "a",
     pumheight = 10,
     showcmd = true,
-    cmdheight = 2,
+    cmdheight = 1,
     wildmenu = true,
     laststatus = 3, -- global status line
     signcolumn = "yes", -- 数字行左側の表示領域を常に表示

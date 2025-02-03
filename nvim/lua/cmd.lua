@@ -2,29 +2,28 @@ local g = vim.g
 local b = vim.b
 local fn = vim.fn
 local api = vim.api
+local cmd = vim.cmd
 local create_cmd = vim.api.nvim_create_user_command
 
 local M = {}
 
 function M.setup()
 	create_cmd("ToggleQuickFix", function()
-		if vim.fn.empty(vim.fn.filter(vim.fn.getwininfo(), "v:val.quickfix")) == 1 then
-			vim.cmd([[copen]])
+		if fn.empty(fn.filter(vim.fn.getwininfo(), "v:val.quickfix")) == 1 then
+			cmd([[copen]])
 		else
-			vim.cmd([[cclose]])
+			cmd([[cclose]])
 		end
 	end, {})
 
-  vim.cmd([[
-    command! ModifyCSProjFile call ModifyCSProjFile()
-    function! ModifyCSProjFile()
-        call system("find . -maxdepth 2 -name \"*.csproj\" | xargs sed -i -e 's/C:/\\/mnt\\/c/g'")
-        call system("find . -maxdepth 2 -name \"*.csproj\" | xargs sed -i -e 's/D:/\\/mnt\\/d/g'")
-        if exists(':YcmCompleter')
-            execute "YcmCompleter ReloadSolution"
-        endif
-    endfunction
-    ]])
+  create_cmd("DebugMode", function()
+    if g.is_enable_my_debug == 1 then
+      g.is_enable_my_debug = 0
+    else
+      g.is_enable_my_debug = 1
+    end
+  end, {})
+
 end
 
 return M

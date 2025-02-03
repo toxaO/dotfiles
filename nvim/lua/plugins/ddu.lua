@@ -5,17 +5,20 @@ local api = vim.api
 local keymap = vim.keymap
 local opt = vim.opt
 
-local ddu = require("plugins.ddu.action")
-local myutils = require("utils")
+local ddu = require("plugins.ddu.ddu_util")
+local ddu_action = require("plugins.ddu.action")
+local u = require("utils")
 local km_opts = require("const.keymap")
 
 local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 
 
--- ddu custom functions --
+------------------------------
+-- action (modify)
+------------------------------
 local function toggle(array, needle)
   local idx = -1
-  for k, v in ipairs(array) do
+  for k, v in pairs(array) do
     if v == needle then idx = k end
   end
   if idx ~= -1 then
@@ -24,6 +27,7 @@ local function toggle(array, needle)
     table.insert(array, needle)
   end
   --print(vim.inspect(array))
+  u.io.debug_echo("[insered matchers]", array)
   return array
 end
 
@@ -32,11 +36,14 @@ local function toggleHidden(ui_name, source_name)
   local opts = cur['sourceOptions'] or {}
   local opts_all = opts[source_name] or {}
   local matchers = opts_all['matchers'] or {}
+  u.io.debug_echo("[matchers]", matchers)
   --print(vim.inspect(matchers))
   return toggle(matchers, 'matcher_hidden')
 end
 
--- /ddu custom functions --
+------------------------------
+-- repos
+------------------------------
 
 return {
 
@@ -118,8 +125,14 @@ return {
     }, -- /dependencies
 
     config = function ()
+      ------------------------------
+      -- setup
+      ------------------------------
+
       -- ddu default --
-        -- ddu window size --
+        ------------------------------
+        -- window util
+        ------------------------------
       local function ddu_window_resize()
         -- window param variables
         local lines = opt.lines:get()
@@ -182,17 +195,21 @@ return {
         end
       end
 
-      -- initial window size setting --
+
+
+      -- initial window size setting -> setup
       ddu_window_resize()
 
 
-      -- ddu global setting --
+      -- ddu global setting -> default
       fn["ddu#custom#patch_global"]({
         -- default ui --
         ui = "ff",
 
-        -- ui-ff params --
+        -- ui-ff params -> ff
+        -- paramsは分ける
         uiParams = {
+
           ff = {
             split = "floating",
             highlights = {
@@ -215,50 +232,60 @@ return {
               delay = 0,
               name = "preview",
             },
+
           }, -- /ui-ff params
         }, -- /ui params
 
         sourceOptions = {
-          _ = {
+          _ = { -- ->default
             ignoreCase = true,
+
             matchers = {
               "matcher_substring",
               "matcher_hidden",
             },
+
             sorters = {"sorter_alpha"},
+
             converters = {
               "converter_devicon",
               "converter_dir_omit_middle",
               "converter_relativepath",
               "converter_hl_dir",
             },
+
           }, --/sourceOptions-default
+
           buffer = {sorters = {},},
-            action = {matchers = {}}, -- source-actionにmatcher-hiddenを入れるとsourceが取れない
+          action = {matchers = {}}, -- source-actionにmatcher-hiddenを入れるとsourceが取れない
+
           file_rec = {
             matchers = {"matcher_fzf"},
             sorters = {"sorter_fzf"},
           }, -- /sourceOptions-file_rec
+
         }, -- /sourceOptions
 
         filterParams = {
-          matcher_substring = {
-            highlightMatched = "Search",
-          }, -- /matcher_substring
-          matcher_fzf = {
-            highlightMatched = "Search",
-          }, -- /matcher_fzf
+
+          matcher_substring = { highlightMatched = "Search", }, -- /matcher_substring
+
+          matcher_fzf = { highlightMatched = "Search", }, -- /matcher_fzf
+
         }, -- /filterParams
 
         kindOptions = {
-         file = {defaultAction = "open"},
-         action = {defaultAction = "do"},
-         help = {defaultAction = "open"},
-         ui_select = {defaultAction = "do"},
+          file = {defaultAction = "open"},
+          action = {defaultAction = "do"},
+          help = {defaultAction = "open"},
+          ui_select = {defaultAction = "do"},
         }, -- /kindOptions
+
       }) -- /default
 
-      -- ff --
+      ------------------------------
+      -- ff ->ff
+      ------------------------------
         -- buffer --
       fn["ddu#custom#patch_local"]("buffer",{
         sources = {{name = "buffer"}},
@@ -271,11 +298,15 @@ return {
 
         -- file_rec --
       fn["ddu#custom#patch_local"]("file_rec",{
+
         sources = {
           {name = "file_rec"},
         },
+
         sourceParams = {
+
           file_rec = {
+
             ignoredDirectories = {
               ".git",
               "node_modules",
@@ -286,20 +317,26 @@ return {
               ".mypy_cache",
               "out",
             },
+
           },
+
         },
+
       }) -- /file_rec --
 
        -- project all file --
       fn["ddu#custom#patch_local"]("project", {
-        sources = {
-          {name = "file_rec"},
-        },
+
+        sources = { {name = "file_rec"}, },
+
         sourceOptions = {
---          file_rec = {path = fn["expand"](myutils.fs.get_project_root_current_buf())}
+--          file_rec = {path = fn["expand"](u.fs.get_project_root_current_buf())}
         },
+
         sourceParams = {
+
           file_rec = {
+
             ignoredDirectories = {
               ".git",
               "node_modules",
@@ -310,37 +347,52 @@ return {
               ".mypy_cache",
               "out",
             },
+
           },
+
         },
+
       }) -- /project all file --
 
         -- project grep --
       fn["ddu#custom#patch_local"]("project_grep", {
+
         uiParams = {
+
           ff = {
             ignoreEmpty = false,
             autoResize = false,
           },
+
         },
+
         sources = {
           --{name = "file_rec"},
           {name = "rg"},
         },
+
         sourceOptions = {
+
           file_rec = {
- --           path = myutils.fs.get_project_root_current_buf()
+           -- path = u.fs.get_project_root_current_buf()
           },
+
           rg = {
             matchers = {},
             volatile = true,
           },
+
         },
+
         sourceParams = {
+
           rg = {
             args = {"--column", "--no-heading", "--color", "never"},
             --input = fn["expand"]("<cword>"),
           },
+
         },
+
       }) -- /project grep
 
         -- help --
@@ -353,11 +405,15 @@ return {
 
       -- /ff setting --
 
-      -- filer setting --
-        -- filer ui params --
+      ------------------------------
+      -- filer -> filer
+      ------------------------------
 
+      -- filer ui params --
       local filer_ui = {
+
         filer = {
+
           winWidth = 40,
           split = "vertical",
           splitDirection = "topleft",
@@ -368,17 +424,24 @@ return {
           previewSplit = "vertical",
           previewFloatingTitle = "Preview",
           previewFloating= true,
-          previewFloatingBorder = "rounded"}}
+          previewFloatingBorder = "rounded"
+
+        }
+
+      }
 
       local filer_sourceOptions = {
+
         ["_"] = {
           --columns = {"devicon_filename"},
           columns = {"icon_filename"},
           converters = {},
         },
+
       }
 
       local filer_columnParams = {
+
         icon_filename = {
           span = 2,
           padding = 2,
@@ -387,14 +450,18 @@ return {
           sort = "filename",
           sortTreesFirst = true,
         },
+
       }
 
       local filer_actionOptions = {
+
           narrow = { quit = false, },
           cd = {quit = false},
-        }
+
+      }
 
       local filer_default = {
+
         ui = "filer",
         uiParams = filer_ui ,
         sources = { {name = "file"} },
@@ -404,12 +471,16 @@ return {
         actionOptions = filer_actionOptions,
         resume = true,
         sync = true,
+
       }
 
       fn["ddu#custom#patch_local"]("filer", filer_default)
       -- /filer setting --
 
-      -- ddu keymaps --
+
+      ------------------------------
+      -- keymap
+      ------------------------------
         -- common keymaps --
       local function common_keymap()
           -- <CR> open --
@@ -772,6 +843,9 @@ return {
         -- /filer keymaps --
       -- /ddu keymaps --
 
+      ------------------------------
+      -- add custom action
+      ------------------------------
       fn["ddu#custom#action"]("kind", "file", "argadd", function(args)
         local arglist = {}
         for _, item in ipairs(args.items) do
@@ -786,10 +860,13 @@ return {
       end)
 
       fn["ddu#custom#action"]("kind", "file", "window_choose", function(args)
-        myutils.io.debug_echo("args", args.items)
-        return ddu.window_choose(args)
+        return ddu_action.window_choose(args)
       end)
 
+      ------------------------------
+      -- starter keymaps
+      ------------------------------
+      -- ff starter
       keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.nsw)
       keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.nsw)
       keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.nsw)
@@ -818,7 +895,7 @@ return {
         })
       end, km_opts.nsw)
 
-      -- filer start --
+      -- filer starter
       keymap.set("n", "<Space>e", function()
         local filer_name = vim.t.ddu_ui_filer_path or fn["getcwd"]()
         filer_default.name = "filer_" .. fn["win_getid"]()
@@ -827,7 +904,11 @@ return {
         fn["ddu#ui#do_action"]("cursorNext")
       end, km_opts.nsw)
 
-      -- autocmd --
+
+      ------------------------------
+      -- auto commands
+      ------------------------------
+      -- update items
       autocmd({"BufEnter", "TabEnter", "WinEnter", "CursorHold", "FocusGained"},
         {
           group = my_augroup,
@@ -835,6 +916,8 @@ return {
           command = "call ddu#ui#do_action('checkItems')"
         }
       )
+
+      -- window resize
       autocmd({"VimResized"},
         {
           group = my_augroup,
