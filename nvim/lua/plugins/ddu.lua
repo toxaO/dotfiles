@@ -846,7 +846,7 @@ return {
       ------------------------------
       -- add custom action
       ------------------------------
-      fn["ddu#custom#action"]("kind", "file", "argadd", function(args)
+      ddu.action("kind", "file", "argadd", function(args)
         local arglist = {}
         for _, item in ipairs(args.items) do
           local path = item.action.path
@@ -859,8 +859,20 @@ return {
         return 4
       end)
 
-      fn["ddu#custom#action"]("kind", "file", "window_choose", function(args)
+      ddu.action("kind", "file", "window_choose", function(args)
         return ddu_action.window_choose(args)
+      end)
+
+      ddu.action("ui", "_", "confirm_item", function(args)
+        return ddu_action.item_data(args)
+      end)
+
+      ddu.action("kind", "file", "confirm_item", function(args)
+        return ddu_action.item_data(args)
+      end)
+
+      ddu.action("kind", "action", "confirm_item", function(args)
+        return ddu_action.item_data(args)
       end)
 
       ------------------------------

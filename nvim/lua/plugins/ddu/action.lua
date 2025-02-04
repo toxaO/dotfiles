@@ -12,6 +12,9 @@ local M = {}
 
 function M.item_data(args)
   u.io.show_contents("item", args)
+  -- u.io.show_attribute("attr", args)
+  -- print(vim.inspect(args))
+  return 0
 end
 
 function M.window_choose(args)
