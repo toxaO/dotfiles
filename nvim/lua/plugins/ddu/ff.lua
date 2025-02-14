@@ -17,6 +17,10 @@ local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 local M = {}
 
 function M.setup()
+
+  ------------------------------
+  -- /ff setting --
+  ------------------------------
     -- buffer --
   ddu.patch_local("buffer",{
     sources = {{name = "buffer"}},
@@ -133,8 +137,43 @@ function M.setup()
       helpLang = "ja",
     },
   }) -- /help --
-
+  ------------------------------
   -- /ff setting --
+  ------------------------------
+
+  ------------------------------
+  -- ff starter
+  ------------------------------
+  keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.nsw)
+  keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.nsw)
+  keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.nsw)
+  keymap.set("n", "<Space>h",
+    ":call ddu#start(#{name: 'file_rec', sources: [#{name: 'path_history'}]})<CR>", km_opts.nsw)
+  keymap.set("n", "<Space>p",function()
+    fn["ddu#start"]({
+      name = "file_rec",
+      sourceOptions = {
+        _ = {
+          path = fn["expand"](b.project_root)
+        },
+      },
+    })
+  end, km_opts.nsw)
+  keymap.set("n", "<F1>",":call ddu#start(#{name: 'help'})<CR>", km_opts.nsw)
+  keymap.set("n", "<Space>g",function()
+    fn["ddu#start"]({
+      name = "project_grep",
+      sourceOptions = {
+        _ = {
+          path = fn["expand"](b.project_root)
+        },
+      },
+      input = fn["expand"]("<cword>"),
+    })
+  end, km_opts.nsw)
+  ------------------------------
+  -- /ff starter
+  ------------------------------
 
 end
 

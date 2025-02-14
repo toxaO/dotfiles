@@ -17,6 +17,9 @@ local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 local M = {}
 
 function M.setup()
+  ------------------------------
+  -- filer setting --
+  ------------------------------
   -- filer ui params --
   local filer_ui = {
 
@@ -83,9 +86,14 @@ function M.setup()
   }
 
   ddu.patch_local("filer", filer_default)
+  ------------------------------
   -- /filer setting --
+  ------------------------------
 
-  -- filer starter
+  ------------------------------
+  -- filer starter --
+  ------------------------------
+
   keymap.set("n", "<Space>e", function()
     local filer_name = vim.t.ddu_ui_filer_path or fn["getcwd"]()
     filer_default.name = "filer_" .. fn["win_getid"]()
@@ -93,6 +101,10 @@ function M.setup()
     fn["ddu#start"]( filer_default )
     fn["ddu#ui#do_action"]("cursorNext")
   end, km_opts.nsw)
+
+  ------------------------------
+  -- /filer starter --
+  ------------------------------
 
 end
 
