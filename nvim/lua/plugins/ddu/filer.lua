@@ -71,7 +71,10 @@ function M.setup()
 
   }
 
-  local filer_default = {
+  ------------------------------
+  -- defaultのとりまとめ
+  ------------------------------
+  local filer_setting = {
 
     ui = "filer",
     uiParams = filer_ui ,
@@ -85,7 +88,8 @@ function M.setup()
 
   }
 
-  ddu.patch_local("filer", filer_default)
+  -- default.name = "filer" としてlocalに適用
+  ddu.patch_local("filer", filer_setting)
   ------------------------------
   -- /filer setting --
   ------------------------------
@@ -95,12 +99,23 @@ function M.setup()
   ------------------------------
 
   keymap.set("n", "<Space>e", function()
-    local filer_name = vim.t.ddu_ui_filer_path or fn["getcwd"]()
-    filer_default.name = "filer_" .. fn["win_getid"]()
-    filer_default.sourceOptions.file = {path = filer_name}
-    fn["ddu#start"]( filer_default )
-    fn["ddu#ui#do_action"]("cursorNext")
+    local current_path = vim.t.ddu_ui_filer_path or fn["getcwd"]() -- dduを開くと変数が設定される
+    filer_setting.name = current_path
+    filer_setting.sourceOptions.file = {path = current_path}
+    fn["ddu#start"]( filer_setting )
+    fn["ddu#ui#do_action"]("cursorNext") -- デフォルトのカーソル位置がファイルパスに被るため
   end, km_opts.nsw)
+
+  -- グローバルなファイラを４つほど作ろうと思ったけど、現状タブ毎のファイラでいい気がするので保留
+  -- 各タブで開いてから統合したいタブで分割してバッファから探したほうがいい気がする
+  -- g.first_filer_path = ""
+  -- keymap.set("n", "<Space>1", function()
+  --   g.first_filer_path = g.first_filer_path or fn["getcwd"]() -- dduを開くと変数が設定される
+  --   filer_setting.name = "filer_1"
+  --   filer_setting.sourceOptions.file = {path = g.first_filer_path}
+  --   fn["ddu#start"]( filer_setting )
+  --   fn["ddu#ui#do_action"]("cursorNext") -- デフォルトのカーソル位置がファイルパスに被るため
+  -- end, km_opts.nsw)
 
   ------------------------------
   -- /filer starter --
