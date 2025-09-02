@@ -24,7 +24,11 @@ function M.setup()
     visualbell = true, -- エラー音を画面表示に,
     helplang = "ja,en", -- ヘルプファイル日本語化
     clipboard = "unnamed", -- クリップボード連携
-    cursorline = true,
+    -- autocmdでactive windowのみtrueにする--------------------
+    cursorline = false,
+    cursorcolumn = false,
+    cursorlineopt = "number,line",  -- 行番号も含めてハイライトしたい場合
+    ------------------------------------------------------------
     number = true,
     syntax = "on",
     relativenumber = false,
