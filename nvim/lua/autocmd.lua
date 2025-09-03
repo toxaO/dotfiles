@@ -93,28 +93,85 @@ function M.setup()
   --------------------------------------------------------------------------------
   -- set cursorline only in active window
   --------------------------------------------------------------------------------
-  -- アクティブ窓だけ有効化（浮動ウィンドウは対象外）
-  local function apply_active_only()
-    local cur = vim.api.nvim_get_current_win()
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-      local cfg = vim.api.nvim_win_get_config(win)
-      if cfg.relative == "" then  -- floating window はスキップ
-        local active = (win == cur)
-        pcall(vim.api.nvim_set_option_value, "cursorline",   active, { win = win })
-        pcall(vim.api.nvim_set_option_value, "cursorcolumn", active, { win = win })
+  -- -- アクティブ窓だけ有効化（浮動ウィンドウは対象外）
+  -- local function apply_active_only()
+  --   local cur = vim.api.nvim_get_current_win()
+  --   for _, win in ipairs(vim.api.nvim_list_wins()) do
+  --     local cfg = vim.api.nvim_win_get_config(win)
+  --     if cfg.relative == "" then  -- floating window はスキップ
+  --       local active = (win == cur)
+  --       pcall(vim.api.nvim_set_option_value, "cursorline",   active, { win = win })
+  --       pcall(vim.api.nvim_set_option_value, "cursorcolumn", active, { win = win })
+  --     end
+  --   end
+  -- end
+
+  -- apply_active_only()
+
+  -- -- ウィンドウ切替/生成/タブ移動/フォーカス変化ごとに再適用
+  -- local grp = vim.api.nvim_create_augroup("OnlyActiveCursorLC", { clear = true })
+  -- vim.api.nvim_create_autocmd(
+  --   { "WinEnter", "WinLeave", "WinNew", "BufWinEnter", "TabEnter", "TabLeave", "FocusGained", "FocusLost" },
+  --   { group = grp, callback = apply_active_only }
+  -- )
+
+
+local grp = vim.api.nvim_create_augroup("OnlyActiveCursorLC", { clear = true })
+
+local function is_ignored(win)
+  -- 浮動ウィンドウは対象外
+  local cfg = vim.api.nvim_win_get_config(win)
+  if cfg and cfg.relative ~= "" then return true end
+
+  local buf = vim.api.nvim_win_get_buf(win)
+  local bt  = vim.bo[buf].buftype
+  if bt == "prompt" or bt == "nofile" then return true end
+
+  -- ddu 系やプロンプト系は対象外
+  local ft  = vim.bo[buf].filetype
+  if ft == "ddu-ff" or ft == "ddu-ff-filter" or ft == "ddu-filer"
+     or ft == "TelescopePrompt" or ft == "denops" then
+    return true
+  end
+  return false
+end
+
+local function apply_active_only()
+  local cur = vim.api.nvim_get_current_win()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if not is_ignored(win) then
+      local active = (win == cur)
+      -- 変更が必要なときだけセット（無駄な再描画を避ける）
+      if vim.api.nvim_get_option_value("cursorline", { win = win }) ~= active then
+        vim.api.nvim_set_option_value("cursorline", active, { win = win })
+      end
+      if vim.api.nvim_get_option_value("cursorcolumn", { win = win }) ~= active then
+        vim.api.nvim_set_option_value("cursorcolumn", active, { win = win })
       end
     end
   end
+end
 
-  apply_active_only()
+-- dduが内部でウィンドウを切り替えた直後に当てるため schedule で遅延
+vim.api.nvim_create_autocmd(
+  { "WinEnter", "WinLeave", "BufWinEnter", "TabEnter", "TabLeave", "VimResized" },
+  { group = grp, callback = function() vim.schedule(apply_active_only) end }
+)
 
-  -- ウィンドウ切替/生成/タブ移動/フォーカス変化ごとに再適用
-  local grp = vim.api.nvim_create_augroup("OnlyActiveCursorLC", { clear = true })
-  vim.api.nvim_create_autocmd(
-    { "WinEnter", "WinLeave", "WinNew", "BufWinEnter", "TabEnter", "TabLeave", "FocusGained", "FocusLost" },
-    { group = grp, callback = apply_active_only }
-  )
+-- 念のため：ddu系のFileTypeが来たら、そのウィンドウでは常にOFF
+vim.api.nvim_create_autocmd("FileType", {
+  group = grp,
+  pattern = { "ddu-ff", "ddu-ff-filter", "ddu-filer" },
+  callback = function(args)
+    local w = vim.fn.bufwinid(args.buf)
+    if w ~= -1 then
+      vim.api.nvim_set_option_value("cursorline",   false, { win = w })
+      vim.api.nvim_set_option_value("cursorcolumn", false, { win = w })
+    end
+  end,
+})
 
+----------------------------------------------------------------------------------------------------
 end
 
 return M

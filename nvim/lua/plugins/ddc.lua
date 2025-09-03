@@ -58,6 +58,11 @@ return{
 	{ "Shougo/ddc-source-copilot" },
 	{ "Shougo/ddc-source-line" },
 	{ "tani/ddc-fuzzy" },
+  { "SHougo/ddc-source-copilot",
+    init = function()
+      vim.g.copilot_no_maps = true
+    end,
+  },
 
 	-- ddc filter
 	{ "Shougo/ddc-filter-sorter_rank" },

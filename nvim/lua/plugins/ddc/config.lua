@@ -27,6 +27,7 @@ function M.setup()
   -- source --
   patch_global("sources", {
     "lsp",
+    "copilot",
     "around",
     "file",
     'mocword',
@@ -45,6 +46,13 @@ function M.setup()
 
     around = {
       mark = "[Around]",
+    },
+
+    copilot = {
+      mark = "[Copilot]",
+      matchers = {},
+      isVolatile = true,
+      minAutoCompleteLength = 0,
     },
 
     file = {
