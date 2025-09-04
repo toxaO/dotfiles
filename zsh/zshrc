@@ -245,6 +245,8 @@ export DENO_INSTALL="$HOME/.deno" >> $HOME/.zshrc
 export PATH="$DENO_INSTALL/bin:$PATH" >> $HOME/.zshrc
 # （確かnvimのddcのやつ）
 export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
+# nodebrew用
+PATH=$HOME/.nodebrew/current/bin:$PATH
 # 重複の削除
 typeset -U path PATH
 
