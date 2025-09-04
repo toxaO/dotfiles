@@ -31,6 +31,11 @@ return{
       fn["ddc#enable"]()
     end
   },
+  {"Shougo/pum.vim",
+      config = function()
+      fn["pum#set_option"]({max_width = 50})
+    end
+  },
 
 	-- ddc lsp
 	{ "uga-rosa/ddc-source-lsp-setup" },

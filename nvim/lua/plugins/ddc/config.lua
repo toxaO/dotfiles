@@ -71,7 +71,7 @@ function M.setup()
     lsp = {
       mark = "[LSP]",
       forceCompletionPattern = { [[\.\w*|:\w*|->\w*]] },
-      sorters = { "sorter_lsp-kind" },
+      -- sorters = { "sorter_lsp-kind" },
       minAutoCompleteLength = 1,
     },
 
@@ -94,6 +94,11 @@ function M.setup()
       enableResolveItem = true,
       enableAdditionalTextEdit = true,
     },
+
+    ["copilot"] = {
+      maxSize = 100,
+    },
+
   })
 
   --vim.g.vsnip_filetypes = {}
