@@ -10,7 +10,7 @@ local function ignore_winsep(winid, bufnr, _)
   or fn["getwininfo"](winid)[1]["width"] == 1 then
     return false
   else
-    return true
+return true
   end
 end
 
@@ -30,9 +30,7 @@ return{
 
       local myWinPick = require("customs.winpick")
 
-      -- api.nvim_create_user_command("WinPick", myWinPick.choose_for_focus, {})
       vim.keymap.set("n", "<Space>w", myWinPick.choose_for_focus)
-      --api.nvim_create_user_command("WinExchange", myWinPick.choose_for_move {})
       vim.keymap.set("n", "<Space>m", myWinPick.choose_for_move)
 
     end,
