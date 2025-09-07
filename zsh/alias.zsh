@@ -1,0 +1,41 @@
+# dir alias
+alias .f='cd ~/dotfiles'
+alias pr='project_root'
+
+# vim / nvim
+alias nv='nvim'
+alias ns='nvim -S'
+alias nf='f(){ local f; f=$(fzf -1 -0) || return; nvim "$f"; }; f'
+alias vf='f(){ local f; f=$(fzf -1 -0) || return; vim "$f"; }; f'
+
+# コマンド
+if [[ -o interactive ]]; then
+  alias rm='rm -I'   # 対話時は確認付き
+else
+  alias rm='rm'      # 非対話（スクリプトなど）はそのまま
+fi
+
+# python alias
+alias pip='pip3'
+alias py='python3'
+alias da='vadeactivate'
+
+# tmux
+alias tm='tmux'
+
+# git関連alia
+alias co='git checkout'
+alias br='git branch'
+alias gl='git log --oneline -n 10'
+alias ga='git add .'
+alias gc='git commit -m'
+alias gs='git status'
+alias gm='git merge'
+alias gls='git ls-files'
+
+# apple siricon アーキテクチャエイリアス
+alias x86='arch -x86_64 zsh'
+alias arm='arch -arm64e zsh'
+
+#.DS_Store消去
+alias rmDS='find . -name ".DS_Store" -type f -ls -delete'

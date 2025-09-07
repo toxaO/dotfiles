@@ -1,145 +1,13 @@
 #!/bin/zsh
 # -----------------------------------------------------------
 # prezto初期設定
-# Executes commands at the start of an interactive session.
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-# Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
-# Customize to your needs...
 #------------------------------------------------------------
-# プロンプト
-# Pythonの仮想環境に関するプロンプト
-virtualenv_info() {
-    color='%{\e[38;5;' #  文字色を設定
-    green='114m%}'
-    red='001m%}'
-    yellow='227m%}'
-    blue='033m%}'
-    reset='%{\e[0m%}'   # reset
-    python='\Uf0320 '
-    # Check if in a virtual environment
-    if [[ -n $VIRTUAL_ENV ]]; then
-        local venv_name=$(basename "${VIRTUAL_ENV}")
-        local venv_patient_dir=$(basename "$(dirname "${VIRTUAL_ENV}")")
-
-        if [[ $VIRTUAL_ENV == "$HOME/.venv" ]]; then
-          #1: ~/.venv
-          echo "${color}${green}${python}${reset}"
-        elif [[ $venv_name == ".venv" ]]; then
-          #2: ../foo/.venv
-          echo "${color}${yellow}${python}${venv_patient_dir}${reset}"
-        else
-          #3: ../foo/var_env
-          echo "${color}${yellow}${python}${venv_name}${reset}"
-        fi
-    fi
-}
-
-# -----------------------------------------------------------
-# gitに関するプロンプト
-# 参考https://tomiylab.com/2020/03/prompt/
-# https://dev.macha795.com/zsh-prompt-customize/
-# https://bottoms-programming.com/archives/apple-silicon-termina-git-branch-name.html
-# git ブランチ名を色付きで表示させるメソッド
-function rprompt-git-current-branch {
-  local branch_name st branch_status
-
-  branch='\ue0a0'
-  color='%{\e[38;5;' #  文字色を設定
-  green='114m%}'
-  red='001m%}'
-  yellow='227m%}'
-  blue='033m%}'
-  reset='%{\e[0m%}'   # reset
-
-  local insideProject=`git rev-parse --is-inside-work-tree 2>/dev/null`
-  if [ ! "${insideProject}" = "true" ]; then
-    # git 管理されていないディレクトリは何も返さない
-    return
-  fi
-  branch_name=`git symbolic-ref --short HEAD 2> /dev/null`
-  st=`git status 2> /dev/null`
-  if [[ -n `echo "$st" | grep "^nothing to"` ]]; then
-    # 全て commit されてクリーンな状態
-    branch_status="${color}${green}${branch}"
-  elif [[ -n `echo "$st" | grep "^Untracked files"` ]]; then
-    # git 管理されていないファイルがある状態
-    branch_status="${color}${red}${branch}?"
-  elif [[ -n `echo "$st" | grep "^Changes not staged for commit"` ]]; then
-    # git add されていないファイルがある状態
-    branch_status="${color}${red}${branch}+"
-  elif [[ -n `echo "$st" | grep "^Changes to be committed"` ]]; then
-    # git commit されていないファイルがある状態
-    branch_status="${color}${yellow}${branch}!"
-  elif [[ -n `echo "$st" | grep "^rebase in progress"` ]]; then
-    # コンフリクトが起こった状態
-    echo "${color}${red}${branch}!(no branch)${reset}"
-    return
-  else
-    # 上記以外の状態の場合
-    branch_status="${color}${blue}${branch}"
-  fi
-  # ブランチ名を色付きで表示する
-  echo "${branch_status}$branch_name${reset}"
-}
-
-# -----------------------------------------------------------
-#左側プロンプトカラー
-function left-prompt {
-  clock_t='217m%}'      #clock text color
-  clock_b='016m%}'      #clock background color
-  name_t='153m%}'      # user name text clolr
-  name_b='016m%}'    # user name background color
-  machine_t='141m%}'  #machine text color
-  machine_b='016m%}'  #machine text color
-  path_t='255m%}'     # path text clolr
-  path_b='031m%}'   # path background color
-  arrow='087m%}'   # arrow color
-  text_color='%{\e[38;5;'    # set text color
-  back_color='%{\e[30;48;5;' # set background color
-  reset='%{\e[0m%}'   # reset
-  sharp='\uE0B0'      # triangle
-
-  #マシンでの条件分岐
-  case "`uname -n`" in
-    "tokuserver" )
-		  machine_t='014m%}'  #machine text color
-		  machine_b='016m%}';;
-	  # "tokuserver" )
-		  # machine_t='196m%}'  #machine text color
-		  # machine_b='016m%}';;  #machine text color
-  esac
-
-  clock="${back_color}${clock_b}${text_color}${clock_t}"
-  user="${back_color}${name_b}${text_color}${name_t}"
-  machine="${back_color}${machine_b}${text_color}${machine_t}"
-  dir="${back_color}${path_b}${text_color}${path_t}"
-
-  echo "${clock}%* ${user}%n %# ${reset}${machine}%m${back_color}${path_b}${text_color}${name_b}${sharp} ${dir}%~${reset}${text_color}${path_b}${sharp}${reset}
-%{%F{cyan}%}❯%{%F{magenta}%}❯%{%F{blue}%}❯ "
-}
-
-#-------------------------------------------------------
-
-setopt prompt_subst # プロンプトが表示されるたびにプロンプト文字列を評価、置換する
-
-RPROMPT='$(virtualenv_info) $(rprompt-git-current-branch)'
-PROMPT='$(left-prompt)'
-
 # --------------------------------------------------
-# 環境変数
+# path
 # --------------------------------------------------
-if uname -a | grep -sq "Ubuntu"; then
-  # Ubuntu
-elif [  "$(uname)" = "Darwin" ]; then
-  # macOS
-elif [ -n "$WSL_DISTRO_NAME" ]; then
-  # WSL2
-fi
-
 path=(
   $HOME/.cargo/bin
   $HOME/mycommands
@@ -149,285 +17,59 @@ path=(
   $HOME/.nodebrew/current/bin
   $path
 )
-# 重複の削除
-typeset -U path PATH
 
-#基本エディタの設定
-export EDITOR=nvim
-export VISUAL=$EDITOR
-# nvimのddc/mocword用辞書パス
-export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
+# --------------------------------------------------
+# prompt
+# --------------------------------------------------
+if [[ -f "$HOME/dotfiles/zsh/prompt.zsh" ]]; then
+  source "$HOME/dotfiles/zsh/prompt.zsh"
+fi
 
 # --------------------------------------------------
 # options
 # --------------------------------------------------
-# 補完で小文字でも大文字にマッチさせる
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
-# 補完候補を詰めて表示
-setopt list_packed
-# 補完候補一覧をカラー表示
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zmodload zsh/complist
-zstyle ':completion:*' menu select
-# コマンドのスペルを訂正
-setopt correct
-# ビープ音を鳴らさない
-setopt no_beep
-# グロブ表現避け (*等)
-setopt nonomatch
-# ヒストリ関連オプション
-setopt inc_append_history share_history hist_ignore_all_dups hist_reduce_blanks
-#コマンド履歴保存数
-HISTFILE=~/.histfile
-HISTSIZE=100000
-SAVEHIST=100000
+if [[ -f "$HOME/dotfiles/zsh/options.zsh" ]]; then
+  source "$HOME/dotfiles/zsh/options.zsh"
+fi
 
 # --------------------------------------------------
 # bindkey
 # --------------------------------------------------
-# bindkey '^R' peco-select-history
-# bindkey '^G' peco-cdr
+if [[ -f "$HOME/dotfiles/zsh/bindkey.zsh" ]]; then
+  source "$HOME/dotfiles/zsh/bindkey.zsh"
+fi
 
 # --------------------------------------------------
 # alias
 # --------------------------------------------------
-# dir alias
-alias .f='~/dotfiles'
-alias pr='project_root'
-
-# vim / nvim
-alias nv='nvim'
-alias ns='nvim -S'
-alias nf='f(){ local f; f=$(fzf -1 -0) || return; nvim "$f"; }; f'
-alias vf='f(){ local f; f=$(fzf -1 -0) || return; vim "$f"; }; f'
-
-# コマンド
-alias rm='rm -I'
-alias rmi='rm -i'
-
-# python alias
-alias pip='pip3'
-alias py='python3'
-alias da='deactivate'
-
-# tmux
-alias tm='tmux'
-
-# git関連alia
-alias co='git checkout'
-alias br='git branch'
-alias gl='git log --oneline -n 10'
-alias ga='git add .'
-alias gc='git commit -m'
-alias gs='git status'
-alias gm='git merge'
-alias gls='git ls-files'
+if [[ -f "$HOME/dotfiles/zsh/alias.zsh" ]]; then
+  source "$HOME/dotfiles/zsh/alias.zsh"
+fi
 
 # --------------------------------------------------
 # functions
 # --------------------------------------------------
-
-# コマンドの実行ごとに改行(定義しておくだけで効果アリ, プロンプト用)
-function precmd() {
-    # Print a newline before the prompt, unless it's the first prompt in the process.
-    if [ -z "$NEW_LINE_BEFORE_PROMPT" ]; then
-        NEW_LINE_BEFORE_PROMPT=1
-    elif [ "$NEW_LINE_BEFORE_PROMPT" -eq 1 ]; then
-        echo ""
-    fi
-}
-
-# cdrを使えるように設定
-autoload -Uz add-zsh-hook
-autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
-add-zsh-hook chpwd chpwd_recent_dirs
-
-# cdr の設定
-zstyle ':completion:*' recent-dirs-insert both
-zstyle ':chpwd:*' recent-dirs-max 500
-zstyle ':chpwd:*' recent-dirs-default true
-zstyle ':chpwd:*' recent-dirs-file "$HOME/.cache/shell/chpwd-recent-dirs"
-zstyle ':chpwd:*' recent-dirs-pushd true
-
-#256色の確認関数:colorlist
-colorlist() {
-	for color in {000..015}; do
-		print -nP "%F{$color}$color %f"
-	done
-	printf "\n"
-	for color in {016..255}; do
-		print -nP "%F{$color}$color %f"
-		if [ $(($((color-16))%6)) -eq 5 ]; then
-			printf "\n"
-		fi
-	done
-}
-
-# cd project root
-function project_root() {
-  # if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-  #   cd `pwd`/`git rev-parse --show-cdup`
-  # fi
-  cd "$(git rev-parse --show-toplevel 2>/dev/null)" || return
-}
-
-# qmk
-# tab補完
-if [ -e ~/repos/qmk_firmware ]; then
-autoload -Uz bashcompinit && bashcompinit
-source ~/repos/qmk_firmware/util/qmk_tab_complete.sh
-
-function cpBuilt(){
-    rsync -av --include='*.uf2' --include='*.hex' --exclude='*' ~/MyKeyBoards/qmk_firmware/.build/ ~/MyKeyBoards/build/
-}
+if [[ -f "$HOME/dotfiles/zsh/func.zsh" ]]; then
+  source "$HOME/dotfiles/zsh/func.zsh"
 fi
 
-## tmux
-chpwd() {
-  if [ -n "$TMUX" ]; then
-    tmux refresh-client -S
-  fi
-}
-# python
-# venvの作成関数
-function mkvenv() {
-  # 引数がなかったら.venvを環境名にする
-  local venv_name=${1:-.venv}
-  python3 -m venv $venv_name
-  if [[ ! $(basename $PWD) == $USER ]] && [[ -z ${1} ]]; then
-    echo "source ${venv_name}/bin/activate" > .envrc
-    echo "export PATH=$HOME/.cargo/bin:$PATH" > .envrc
-    direnv allow
-  else
-  fi
-}
-# venvの適用
-function va() {
-    local venv_name=${1:-.venv}
-    source ${venv_name}/bin/activate
-}
-# deactivateの実装
-# direnvでsourceした際、環境変数の変更のせいかdeactivateが使用できないため
-function deactivate () {
-        if [ -n "${_OLD_VIRTUAL_PATH:-}" ]
-        then
-                PATH="${_OLD_VIRTUAL_PATH:-}"
-                export PATH
-                unset _OLD_VIRTUAL_PATH
-        fi
-        if [ -n "${_OLD_VIRTUAL_PYTHONHOME:-}" ]
-        then
-                PYTHONHOME="${_OLD_VIRTUAL_PYTHONHOME:-}"
-                export PYTHONHOME
-                unset _OLD_VIRTUAL_PYTHONHOME
-        fi
-        if [ -n "${BASH:-}" -o -n "${ZSH_VERSION:-}" ]
-        then
-                hash -r 2> /dev/null
-        fi
-        if [ -n "${_OLD_VIRTUAL_PS1:-}" ]
-        then
-                PS1="${_OLD_VIRTUAL_PS1:-}"
-                export PS1
-                unset _OLD_VIRTUAL_PS1
-        fi
-        unset VIRTUAL_ENV
-        unset VIRTUAL_ENV_PROMPT
-        if [ ! "${1:-}" = "nondestructive" ]
-        then
-                unset -f deactivate
-        fi
-}
+#-------------------------------------------------
+# 環境変数
+#-------------------------------------------------
+if [[ -f "$HOME/dotfiles/zsh/env.zsh" ]]; then
+  source "$HOME/dotfiles/zsh/env.zsh"
+fi
 
-# __init__.pyiの作成関数----------------------------
-generate_stub_for_module() {
-  # Check for the correct number of arguments
-  if [ "$#" -ne 2 ]; then
-    echo "Usage: generate_stub_for_module <module_name> <venv_path>"
-    return 1
-  fi
-
-  local module_name="$1"
-  local venv_path="$2"
-
-  # Construct the site-packages path
-  local site_packages_path="${venv_path}/lib/python$(python --version | cut -d ' ' -f 2 | cut -d '.' -f 1,2)/site-packages"
-
-  # Check if the module directory exists within site-packages
-  if [ ! -d "${site_packages_path}/${module_name}" ]; then
-    echo "Error: Module not found in site-packages."
-    return 1
-  fi
-
-  # Activate the virtual environment
-  source "${venv_path}/bin/activate"
-
-  # Use stubgen to generate the stub
-  stubgen -o "${site_packages_path}/${module_name}" -p "${module_name}"
-
-  # Deactivate the virtual environment
-  deactivate
-}
-
+#-------------------------------------------------
 # fzf set up
+#-------------------------------------------------
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 # fzf-extra
 # https://github.com/atweiden/fzf-extras
 [[ -e "$HOME/.fzf-extras/fzf-extras.zsh" ]] \
   && source "$HOME/.fzf-extras/fzf-extras.zsh"
 
-case ${OSTYPE} in
-  darwin*)
-    # ここに Mac 向けの設定
-
-    # itermのアーキテクチャエイリアス
-    alias x86='arch -x86_64 zsh'
-    alias arm='arch -arm64e zsh'
-
-    #.DS_Store消去
-    alias delds='find . -name ".DS_Store" -type f -ls -delete'
-
-    #pyenv
-    if [ "$(uname -m)" = "arm64" ]; then
-      export PYENV_ROOT="$HOME/.pyenv_arm64"
-      export PATH="$HOME/.pyenv_arm64/bin:$PATH"
-    else
-      export PYENV_ROOT="$HOME/.pyenv_x86"
-      export PATH="$HOME/.pyenv_x86/bin:$PATH"
-    fi
-    eval "$(pyenv init -)"
-    eval "$(pyenv init --path)"
-
-    # homebrewのパス
-    if [ "$(uname -m)" = "arm64" ]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-      export PATH="/opt/homebrew/bin:$PATH"
-    else
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
-
-    # curlの設定
-    export PATH="/opt/homebrew/opt/curl/bin:$PATH"
-    export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
-    export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
-    export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
-
-    # vim
-    alias vim='/opt/homebrew/bin/vim'
-
-    # nvim
-    alias nvim='/opt/homebrew/bin/nvim'
-
-    # direnvの設定
-    export EDITOR="/opt/homebrew/bin/nvim"
-    eval "$(direnv hook zsh)"
-    ;;
-
-  linux*)
-    # ここに Linux 向けの設定
-    export PATH="$PATH:/opt/nvim/"
-    if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null ; then
-      LS_COLORS="${LS_COLORS}:ow=01;34"; export LS_COLORS
-    fi
-    ;;
-esac
+#-------------------------------------------------
+# direnv set up
+#-------------------------------------------------
+command -v direnv >/dev/null && eval "$(direnv hook zsh)"
