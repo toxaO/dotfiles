@@ -11,16 +11,15 @@ fi
 # Customize to your needs...
 #------------------------------------------------------------
 # プロンプト
-# venv prompt
-color='%{\e[38;5;' #  文字色を設定
-green='114m%}'
-red='001m%}'
-yellow='227m%}'
-blue='033m%}'
-reset='%{\e[0m%}'   # reset
-#python='\ue73c '
-python='\Uf0320 '
+# Pythonの仮想環境に関するプロンプト
 virtualenv_info() {
+    color='%{\e[38;5;' #  文字色を設定
+    green='114m%}'
+    red='001m%}'
+    yellow='227m%}'
+    blue='033m%}'
+    reset='%{\e[0m%}'   # reset
+    python='\Uf0320 '
     # Check if in a virtual environment
     if [[ -n $VIRTUAL_ENV ]]; then
         local venv_name=$(basename "${VIRTUAL_ENV}")
@@ -88,11 +87,6 @@ function rprompt-git-current-branch {
 }
 
 # -----------------------------------------------------------
-# プロンプトが表示されるたびにプロンプト文字列を評価、置換する
-setopt prompt_subst
-# プロンプトの右側にメソッドの結果を表示させる
-RPROMPT='`virtualenv_info` `rprompt-git-current-branch`'
-
 #左側プロンプトカラー
 function left-prompt {
   clock_t='217m%}'      #clock text color
@@ -127,20 +121,17 @@ function left-prompt {
   echo "${clock}%* ${user}%n %# ${reset}${machine}%m${back_color}${path_b}${text_color}${name_b}${sharp} ${dir}%~${reset}${text_color}${path_b}${sharp}${reset}
 %{%F{cyan}%}❯%{%F{magenta}%}❯%{%F{blue}%}❯ "
 }
- PROMPT=`left-prompt`
 
-# コマンドの実行ごとに改行(定義しておくだけで効果アリ)
-function precmd() {
-    # Print a newline before the prompt, unless it's the
-    # first prompt in the process.
-    if [ -z "$NEW_LINE_BEFORE_PROMPT" ]; then
-        NEW_LINE_BEFORE_PROMPT=1
-    elif [ "$NEW_LINE_BEFORE_PROMPT" -eq 1 ]; then
-        echo ""
-    fi
-}
+#-------------------------------------------------------
 
-# 環境変数----------------------------------------------
+setopt prompt_subst # プロンプトが表示されるたびにプロンプト文字列を評価、置換する
+
+RPROMPT='$(virtualenv_info) $(rprompt-git-current-branch)'
+PROMPT='$(left-prompt)'
+
+# --------------------------------------------------
+# 環境変数
+# --------------------------------------------------
 if uname -a | grep -sq "Ubuntu"; then
   # Ubuntu
 elif [  "$(uname)" = "Darwin" ]; then
@@ -148,69 +139,67 @@ elif [  "$(uname)" = "Darwin" ]; then
 elif [ -n "$WSL_DISTRO_NAME" ]; then
   # WSL2
 fi
-export PATH=$HOME/.cargo/bin:$PATH
-# 自作コマンド
-export PATH=$HOME/mycommands:$PATH
-# homeにおいておくコマンド
-# wslまたはwindows用ubuntuのwin32yankのため
-export PATH=$HOME/bin:/usr/local/bin:$PATH
-# deno ubuntu用
-export DENO_INSTALL="$HOME/.deno" >> $HOME/.zshrc
-export PATH="$DENO_INSTALL/bin:$PATH" >> $HOME/.zshrc
-# （確かnvimのddcのやつ）
-export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
-# nodebrew用
-PATH=$HOME/.nodebrew/current/bin:$PATH
+
+path=(
+  $HOME/.cargo/bin
+  $HOME/mycommands
+  $HOME/bin
+  /usr/local/bin
+  $HOME/.deno/bin
+  $HOME/.nodebrew/current/bin
+  $path
+)
 # 重複の削除
 typeset -U path PATH
 
+#基本エディタの設定
+export EDITOR=nvim
+export VISUAL=$EDITOR
+# nvimのddc/mocword用辞書パス
+export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
+
+# --------------------------------------------------
+# options
+# --------------------------------------------------
 # 補完で小文字でも大文字にマッチさせる
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 # 補完候補を詰めて表示
 setopt list_packed
 # 補完候補一覧をカラー表示
-zstyle ':completion:*' list-colors ''
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zmodload zsh/complist
+zstyle ':completion:*' menu select
 # コマンドのスペルを訂正
 setopt correct
 # ビープ音を鳴らさない
 setopt no_beep
-
-# --------------------------------------------------
-# 自作関数
-# --------------------------------------------------
-### cdrを使えるように設定
-autoload -Uz add-zsh-hock
-autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
-add-zsh-hook chpwd chpwd_recent_dirs
-
-# cdr の設定
-zstyle ':completion:*' recent-dirs-insert both
-zstyle ':chpwd:*' recent-dirs-max 500
-zstyle ':chpwd:*' recent-dirs-default true
-zstyle ':chpwd:*' recent-dirs-file "$HOME/.cache/shell/chpwd-recent-dirs"
-zstyle ':chpwd:*' recent-dirs-pushd true
-
-# グロブ表現避け (*等)-------------------------------
+# グロブ表現避け (*等)
 setopt nonomatch
+# ヒストリ関連オプション
+setopt inc_append_history share_history hist_ignore_all_dups hist_reduce_blanks
 #コマンド履歴保存数
 HISTFILE=~/.histfile
 HISTSIZE=100000
 SAVEHIST=100000
-# emacs mode
-bindkey -e
-#基本エディタの設定
-export VISUAL=/usr/bin/vim
 
-# alias --------------------------------------------
-# cd alias
+# --------------------------------------------------
+# bindkey
+# --------------------------------------------------
+bindkey '^R' peco-select-history
+bindkey '^G' peco-cdr
+
+# --------------------------------------------------
+# alias
+# --------------------------------------------------
+# dir alias
 alias .f='~/dotfiles'
 alias pr='project_root'
 
 # vim / nvim
 alias nv='nvim'
-alias nf='nvim $(fzf)'
 alias ns='nvim -S'
-alias vf='vim $(fzf)'
+alias nf='f(){ local f; f=$(fzf -1 -0) || return; nvim "$f"; }; f'
+alias vf='f(){ local f; f=$(fzf -1 -0) || return; vim "$f"; }; f'
 
 # コマンド
 alias rm='rm -I'
@@ -235,8 +224,30 @@ alias gm='git merge'
 alias gls='git ls-files'
 
 # --------------------------------------------------
-# 自作functions
+# functions
 # --------------------------------------------------
+
+# コマンドの実行ごとに改行(定義しておくだけで効果アリ, プロンプト用)
+function precmd() {
+    # Print a newline before the prompt, unless it's the first prompt in the process.
+    if [ -z "$NEW_LINE_BEFORE_PROMPT" ]; then
+        NEW_LINE_BEFORE_PROMPT=1
+    elif [ "$NEW_LINE_BEFORE_PROMPT" -eq 1 ]; then
+        echo ""
+    fi
+}
+
+# cdrを使えるように設定
+autoload -Uz add-zsh-hook
+autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
+add-zsh-hook chpwd chpwd_recent_dirs
+
+# cdr の設定
+zstyle ':completion:*' recent-dirs-insert both
+zstyle ':chpwd:*' recent-dirs-max 500
+zstyle ':chpwd:*' recent-dirs-default true
+zstyle ':chpwd:*' recent-dirs-file "$HOME/.cache/shell/chpwd-recent-dirs"
+zstyle ':chpwd:*' recent-dirs-pushd true
 
 #256色の確認関数:colorlist
 colorlist() {
@@ -297,12 +308,13 @@ function _open_filetypes_nvim() {
 
 # cd project root
 function project_root() {
-  if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-    cd `pwd`/`git rev-parse --show-cdup`
-  fi
+  # if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+  #   cd `pwd`/`git rev-parse --show-cdup`
+  # fi
+  cd "$(git rev-parse --show-toplevel 2>/dev/null)" || return
 }
 
-# qmk ----------------------------------------------
+# qmk
 # tab補完
 if [ -e ~/repos/qmk_firmware ]; then
 autoload -Uz bashcompinit && bashcompinit
@@ -313,13 +325,13 @@ function cpBuilt(){
 }
 fi
 
-## tmux----------------------------------------------
+## tmux
 chpwd() {
   if [ -n "$TMUX" ]; then
     tmux refresh-client -S
   fi
 }
-# python--------------------------------------------
+# python
 # venvの作成関数
 function mkvenv() {
   # 引数がなかったら.venvを環境名にする
@@ -370,11 +382,6 @@ function deactivate () {
         fi
 }
 
-# --------------------------------------------------
-# --------------------------------------------------
-
-
-
 # __init__.pyiの作成関数----------------------------
 generate_stub_for_module() {
   # Check for the correct number of arguments
@@ -407,7 +414,6 @@ generate_stub_for_module() {
 
 # fzf set up
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
 # fzf-extra
 # https://github.com/atweiden/fzf-extras
 [[ -e "$HOME/.fzf-extras/fzf-extras.zsh" ]] \
@@ -444,14 +450,10 @@ case ${OSTYPE} in
     fi
 
     # curlの設定
-    # --------------------------------------------------
-    # --------------------------------------------------
     export PATH="/opt/homebrew/opt/curl/bin:$PATH"
     export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
     export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
     export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
-    # --------------------------------------------------
-    # --------------------------------------------------
 
     # vim
     alias vim='/opt/homebrew/bin/vim'
@@ -459,13 +461,9 @@ case ${OSTYPE} in
     # nvim
     alias nvim='/opt/homebrew/bin/nvim'
 
-    # --------------------------------------------------
-    # --------------------------------------------------
     # direnvの設定
     export EDITOR="/opt/homebrew/bin/nvim"
     eval "$(direnv hook zsh)"
-    # --------------------------------------------------
-    # --------------------------------------------------
     ;;
 
   linux*)
