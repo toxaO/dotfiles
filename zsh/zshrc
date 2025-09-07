@@ -185,8 +185,8 @@ SAVEHIST=100000
 # --------------------------------------------------
 # bindkey
 # --------------------------------------------------
-bindkey '^R' peco-select-history
-bindkey '^G' peco-cdr
+# bindkey '^R' peco-select-history
+# bindkey '^G' peco-cdr
 
 # --------------------------------------------------
 # alias
@@ -261,49 +261,6 @@ colorlist() {
 			printf "\n"
 		fi
 	done
-}
-
-#peco function
-function peco-select-history() {
-  BUFFER=$(\history -n 1 | tac | peco)
-  CURSOR=$#BUFFER
-  zle clear-screen
-}
-zle -N peco-select-history
-
-function peco-lscd {
-    local dir="$( find . -maxdepth 1 -type d | sed -e 's;\./;;' | peco )"
-    if [ ! -z "$dir" ] ; then
-        cd "$dir"
-    fi
-}
-
-# search a destination from cdr list
-function peco-get-destination-from-cdr() {
-  cdr -l | \
-  sed -e 's/^[[:digit:]]*[[:blank:]]*//' | \
-  peco --query "$LBUFFER"
-}
-
-### 過去に移動したことのあるディレクトリを選択。
-function peco-cdr() {
-  local destination="$(peco-get-destination-from-cdr)"
-  if [ -n "$destination" ]; then
-    BUFFER="cd $destination"
-    zle accept-line
-  else
-    zle reset-prompt
-  fi
-}
-zle -N peco-cdr
-# open specific file type by nvim
-# ファイルタイプを指定して全てnvimで開く関数
-function _open_filetypes_nvim() {
-    files=()
-  for i in $@; do
-    files=($files **/*.$i)
-  done
-  nvim $files
 }
 
 # cd project root
