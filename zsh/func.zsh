@@ -1,4 +1,6 @@
+#--------------------------------------------------
 #256色の確認関数:colorlist
+#--------------------------------------------------
 colorlist() {
 	for color in {000..015}; do
 		print -nP "%F{$color}$color %f"
@@ -12,27 +14,35 @@ colorlist() {
 	done
 }
 
+#--------------------------------------------------
 # cd project root
+#--------------------------------------------------
 project_root() {
   local top
   top="$(git rev-parse --show-toplevel 2>/dev/null)" || return
   cd "$top" || return
 }
 
-# qmk tab補完
+#--------------------------------------------------
+# qmk補完
+#--------------------------------------------------
 if [ -e ~/repos/qmk_firmware ]; then
 autoload -Uz bashcompinit && bashcompinit
-source ~/repos/qmk_firmware/util/qmk_tab_complete.sh
+source ~/github/qmk/qmk_firmware/util/qmk_tab_complete.sh
 fi
 
+#--------------------------------------------------
 # tmux
+#--------------------------------------------------
 chpwd() {
   if [ -n "$TMUX" ]; then
     tmux refresh-client -S
   fi
 }
 
+#--------------------------------------------------
 # python
+#--------------------------------------------------
 # venvの作成関数
 function mkvenv() {
   local venv_name=${1:-.venv}
@@ -52,7 +62,6 @@ va() {
   source "$venv/bin/activate"
 }
 
-# vadeactivateの実装
 # direnvでsourceした際、環境変数の変更のせいかdeactivateが使用できないため
 function vadeactivate () {
         if [ -n "${_OLD_VIRTUAL_PATH:-}" ]
