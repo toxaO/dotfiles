@@ -102,15 +102,10 @@ function M.setup()
     },
 
     sources = {
-      --{name = "file_rec"},
       {name = "rg"},
     },
 
     sourceOptions = {
-
-      file_rec = {
-       -- path = u.fs.get_project_root_current_buf()
-      },
 
       rg = {
         matchers = {},

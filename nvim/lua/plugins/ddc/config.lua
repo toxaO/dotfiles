@@ -26,8 +26,8 @@ function M.setup()
 
   -- source --
   patch_global("sources", {
-    "lsp",
     "copilot",
+    "lsp",
     "around",
     "file",
     'mocword',
@@ -39,7 +39,7 @@ function M.setup()
 
     _ = {
       matchers = { "matcher_fuzzy" },
-      sorters = { "sorter_fuzzy", "sorter_rank" },
+      sorters = { "sorter_fuzzy",},
       converters = { "converter_remove_overlap", "converter_fuzzy" },
       minAutoCompleteLength = 3,
     },

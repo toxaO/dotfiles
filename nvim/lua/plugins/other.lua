@@ -19,14 +19,6 @@ return {
   -- 背景透明化
   {"tsuyoshicho/transparency.vim"},
 
-  -- 検索時のカーソルカラー変更
-  {
-    "adamheins/vim-highlight-match-under-cursor",
-    config = function ()
-      g.HighlightMatchUnderCursor_highlight_link_group = "CurSearch"
-    end
-  },
-
   -- ステータスバー
 	{
 		"nvim-lualine/lualine.nvim",
@@ -47,8 +39,8 @@ return {
   keys = { "<C-E>", mode = "n" } },
 
 	-- fzf
-	{ "junegunn/fzf", build = "./install --all" },
-	"junegunn/fzf.vim",
+	-- { "junegunn/fzf", build = "./install --all" },
+	-- "junegunn/fzf.vim",
 
 	-- キーバインド表示
 	{
