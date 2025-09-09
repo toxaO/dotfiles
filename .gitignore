@@ -41,3 +41,4 @@
 !/LICENSE
 !.gitignore
 !.gitkeep
+!init.sh
