@@ -72,7 +72,7 @@ return {
     opts = {},
     config = true, },
 
-  -- git
-  {"lambdalisue/gin.vim"},
+  -- diff
+  {"sindrets/diffview.nvim"},
 
 }
