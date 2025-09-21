@@ -73,3 +73,8 @@ fi
 # direnv set up
 #-------------------------------------------------
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
+
+#-------------------------------------------------
+# secret api key set up
+#-------------------------------------------------
+[ -f "$HOME/.secrets/openai.sh" ] && source "$HOME/.secrets/openai.sh"

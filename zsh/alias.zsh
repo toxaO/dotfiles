@@ -26,9 +26,12 @@ alias tm='tmux'
 # git関連alia
 alias co='git checkout'
 alias br='git branch'
+alias com='git checkout main'
 alias cod='git checkout develop'
+alias coC='git checkout Codex'
 alias gl='git log --oneline -n 10'
 alias ga='git add .'
+alias gaa='git add -A'
 alias gc='git commit -m'
 alias gs='git status'
 alias gm='git merge'
@@ -47,3 +50,6 @@ alias arm='arch -arm64e zsh'
 
 #.DS_Store消去
 alias rmDS='find . -name ".DS_Store" -type f -ls -delete'
+
+# Codex
+alias cx='codex'

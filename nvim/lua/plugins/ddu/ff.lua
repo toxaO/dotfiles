@@ -90,7 +90,7 @@ function M.setup()
   }) -- /project all file --
 
     -- project grep --
-  ddu.patch_local("project_grep", {
+  ddu.patch_local("grep", {
 
     uiParams = {
 
@@ -155,9 +155,20 @@ function M.setup()
     })
   end, km_opts.nsw)
   keymap.set("n", "<F1>",":call ddu#start(#{name: 'help'})<CR>", km_opts.nsw)
-  keymap.set("n", "<Space>g",function()
+  keymap.set("n", "<space>g",function()
     fn["ddu#start"]({
-      name = "project_grep",
+      name = "grep",
+      sourceOptions = {
+        _ = {
+          path = fn["expand"](".")
+        },
+      },
+      input = fn["expand"]("<cword>"),
+    })
+  end, km_opts.nsw)
+  keymap.set("n", "<Space>G",function()
+    fn["ddu#start"]({
+      name = "grep",
       sourceOptions = {
         _ = {
           path = fn["expand"](b.project_root)
