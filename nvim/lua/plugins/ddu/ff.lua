@@ -160,6 +160,17 @@ function M.setup()
       name = "project_grep",
       sourceOptions = {
         _ = {
+          path = fn["expand"](".")
+        },
+      },
+      input = fn["expand"]("<cword>"),
+    })
+  end, km_opts.nsw)
+  keymap.set("n", "<Space>G",function()
+    fn["ddu#start"]({
+      name = "project_grep",
+      sourceOptions = {
+        _ = {
           path = fn["expand"](b.project_root)
         },
       },

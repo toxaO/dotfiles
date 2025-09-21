@@ -9,6 +9,7 @@ fi
 # path
 # --------------------------------------------------
 path=(
+  /opt/homebrew/bin
   $HOME/.cargo/bin
   $HOME/mycommands
   $HOME/bin
@@ -74,5 +75,14 @@ fi
 #-------------------------------------------------
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 
+
+#-------------------------------------------------
+# direnv set up
+#-------------------------------------------------
+[ -f "$HOME/.secrets/openai.sh" ] && source "$HOME/.secrets/openai.sh"
+
+#-------------------------------------------------
+# Iterm使用時のみ
+#-------------------------------------------------
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
