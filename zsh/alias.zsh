@@ -43,6 +43,7 @@ alias gcl='git clone'
 alias gcb='git checkout -b'
 alias gpo='git push origin'
 alias gr='git remote -v'
+alias lg='lazygit'
 
 # apple siricon アーキテクチャエイリアス
 alias x86='arch -x86_64 zsh'
