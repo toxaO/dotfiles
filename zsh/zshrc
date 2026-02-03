@@ -86,3 +86,28 @@ command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 # Iterm使用時のみ
 #-------------------------------------------------
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+#-------------------------------------------------
+# tmux auto attach (iTerm only)
+#-------------------------------------------------
+if [[ -o interactive ]] \
+  && [[ -z "$TMUX" ]] \
+  && [[ -n "$ITERM_SESSION_ID" ]] \
+  && command -v tmux >/dev/null; then
+  tmux_auto_attach() {
+    local sessions session_name
+
+    sessions=("${(@f)$(tmux list-sessions -F '#S' 2>/dev/null)}")
+    if (( ${#sessions} > 0 )); then
+      tmux attach -t "${sessions[1]}" \; choose-tree -Zs
+      return
+    fi
+
+    while [[ -z "$session_name" ]]; do
+      vared -p "New session name: " session_name
+    done
+    tmux new -s "$session_name"
+  }
+
+  tmux_auto_attach
+fi
