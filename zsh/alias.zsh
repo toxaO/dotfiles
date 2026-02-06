@@ -22,6 +22,10 @@ alias da='vadeactivate'
 
 # tmux
 alias tm='tmux'
+alias .t='tmux_reload'
+
+# zsh
+alias .z='source ~/dotfiles/zsh/zshrc'
 
 # git関連alia
 alias co='git checkout'

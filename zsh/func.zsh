@@ -40,6 +40,49 @@ chpwd() {
   fi
 }
 
+tmux_reload() {
+  local conf="$HOME/dotfiles/tmux/tmux.conf"
+  if ! command -v tmux >/dev/null; then
+    echo "tmux not found" >&2
+    return 1
+  fi
+  if [ -x "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh" ]; then
+    "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
+  fi
+  if [ -n "$TMUX" ]; then
+    tmux source-file "$conf" >/dev/null && tmux display-message "Reloaded: $conf"
+  else
+    tmux source-file "$conf" && echo "Reloaded: $conf"
+  fi
+}
+
+tmux_keybinds_update() {
+  local script="$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
+  if [ ! -x "$script" ]; then
+    echo "not executable: $script" >&2
+    return 1
+  fi
+  "$script"
+}
+
+zsh_cmds_update() {
+  local script="$HOME/dotfiles/zsh/scripts/update_commands_notes.sh"
+  if [ ! -x "$script" ]; then
+    echo "not executable: $script" >&2
+    return 1
+  fi
+  "$script"
+}
+
+zsh_cmds_menu() {
+  local script="$HOME/dotfiles/zsh/scripts/commands_menu.sh"
+  if [ ! -x "$script" ]; then
+    echo "not executable: $script" >&2
+    return 1
+  fi
+  "$script"
+}
+
 #--------------------------------------------------
 # python
 #--------------------------------------------------
@@ -93,5 +136,3 @@ function vadeactivate () {
                 unset -f vadeactivate
         fi
 }
-
-
