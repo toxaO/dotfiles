@@ -21,7 +21,7 @@ alias py='python3'
 alias da='vadeactivate'
 
 # tmux
-alias tm='tmux'
+alias tm='tmux_start'
 alias .t='tmux_reload'
 
 # zsh

@@ -56,6 +56,71 @@ tmux_reload() {
   fi
 }
 
+tmux_start() {
+  if ! command -v tmux >/dev/null; then
+    echo "tmux not found" >&2
+    return 1
+  fi
+  if [ -n "$TMUX" ]; then
+    echo "already in tmux" >&2
+    return 1
+  fi
+
+  local sessions choice name
+  sessions=("${(@f)$(tmux list-sessions -F '#S' 2>/dev/null)}")
+
+  if (( ${#sessions} > 0 )); then
+    echo "Choose how to start tmux:"
+    select choice in "Choose existing (choose-tree)" "Create new session"; do
+      case "$choice" in
+        "Choose existing (choose-tree)")
+          tmux attach -t "${sessions[1]}" \; choose-tree -Zs
+          return
+          ;;
+        "Create new session")
+          break
+          ;;
+        *)
+          echo "Invalid selection."
+          ;;
+      esac
+    done
+  fi
+
+  local base_dir picked_dir
+  base_dir="$HOME"
+
+  if command -v fzf >/dev/null; then
+    if command -v fd >/dev/null; then
+      picked_dir="$(fd -t d -H --exclude .git --exclude node_modules --exclude .cache --max-depth 3 . "$base_dir" | \
+        fzf --prompt="Dir> " --height=40% \
+        --header="Ctrl-d: deep search / Ctrl-s: shallow search" \
+        --bind="ctrl-d:reload(fd -t d -H --exclude .git --exclude node_modules --exclude .cache . \"$base_dir\")" \
+        --bind="ctrl-s:reload(fd -t d -H --exclude .git --exclude node_modules --exclude .cache --max-depth 3 . \"$base_dir\")")"
+    else
+      picked_dir="$(find "$base_dir" -maxdepth 3 -type d 2>/dev/null | \
+        fzf --prompt="Dir> " --height=40% \
+        --header="Ctrl-d: deep search / Ctrl-s: shallow search" \
+        --bind="ctrl-d:reload(find \"$base_dir\" -type d 2>/dev/null)" \
+        --bind="ctrl-s:reload(find \"$base_dir\" -maxdepth 3 -type d 2>/dev/null)")"
+    fi
+  else
+    vared -p "Directory (default: $base_dir): " picked_dir
+  fi
+
+  if [[ -z "$picked_dir" ]]; then
+    picked_dir="$base_dir"
+  fi
+
+  local dir_name date_suffix
+  dir_name="$(basename "$picked_dir")"
+  dir_name="${dir_name// /_}"
+  date_suffix="$(date +%Y%m%d)"
+  name="${dir_name}_${date_suffix}"
+
+  tmux new -s "$name" -c "$picked_dir"
+}
+
 tmux_keybinds_update() {
   local script="$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
   if [ ! -x "$script" ]; then

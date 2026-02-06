@@ -94,20 +94,7 @@ if [[ -o interactive ]] \
   && [[ -z "$TMUX" ]] \
   && [[ -n "$ITERM_SESSION_ID" ]] \
   && command -v tmux >/dev/null; then
-  tmux_auto_attach() {
-    local sessions session_name
-
-    sessions=("${(@f)$(tmux list-sessions -F '#S' 2>/dev/null)}")
-    if (( ${#sessions} > 0 )); then
-      tmux attach -t "${sessions[1]}" \; choose-tree -Zs
-      return
-    fi
-
-    while [[ -z "$session_name" ]]; do
-      vared -p "New session name: " session_name
-    done
-    tmux new -s "$session_name"
-  }
-
-  tmux_auto_attach
+  if type tmux_start >/dev/null 2>&1; then
+    tmux_start
+  fi
 fi
