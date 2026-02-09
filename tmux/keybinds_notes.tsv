@@ -34,7 +34,7 @@ prefix	<	ui	window menu	bind-key    -T prefix <       display-menu -T "#[align=c
 prefix	=	buffer	choose buffer	bind-key    -T prefix =       choose-buffer -Z
 prefix	>	ui	pane menu	bind-key    -T prefix >       display-menu -T "#[align=centre]#{pane_index} (#{pane_id})" -x P -y P "#{?#{m/r:(copy|view)-mode,#{pane_mode}},Go To Top,}" < { send-keys -X history-top } "#{?#{m/r:(copy|view)-mode,#{pane_mode}},Go To Bottom,}" > { send-keys -X history-bottom } '' "#{?mouse_word,Search For #[underscore]#{=/9/...:mouse_word},}" C-r { if-shell -F "#{?#{m/r:(copy|view)-mode,#{pane_mode}},0,1}" "copy-mode -t=" ; send-keys -X -t = search-backward "#{q:mouse_word}" } "#{?mouse_word,Type #[underscore]#{=/9/...:mouse_word},}" C-y { copy-mode -q ; send-keys -l "#{q:mouse_word}" } "#{?mouse_word,Copy #[underscore]#{=/9/...:mouse_word},}" c { copy-mode -q ; set-buffer "#{q:mouse_word}" } "#{?mouse_line,Copy Line,}" l { copy-mode -q ; set-buffer "#{q:mouse_line}" } '' "#{?mouse_hyperlink,Type #[underscore]#{=/9/...:mouse_hyperlink},}" C-h { copy-mode -q ; send-keys -l "#{q:mouse_hyperlink}" } "#{?mouse_hyperlink,Copy #[underscore]#{=/9/...:mouse_hyperlink},}" h { copy-mode -q ; set-buffer "#{q:mouse_hyperlink}" } '' "Horizontal Split" h { split-window -h } "Vertical Split" v { split-window -v } '' "#{?#{>:#{window_panes},1},,-}Swap Up" u { swap-pane -U } "#{?#{>:#{window_panes},1},,-}Swap Down" d { swap-pane -D } "#{?pane_marked_set,,-}Swap Marked" s { swap-pane } '' Kill X { kill-pane } Respawn R { respawn-pane -k } "#{?pane_marked,Unmark,Mark}" m { select-pane -m } "#{?#{>:#{window_panes},1},,-}#{?window_zoomed_flag,Unzoom,Zoom}" z { resize-pane -Z }
 prefix	?	other	keybinds search	bind-key    -T prefix ?       display-popup -E -h "80%" -w "90%" "sh -c '/Users/tokumasa/dotfiles/zsh/scripts/commands_menu.sh'"
-prefix	C	other	new session (fzf dir)	bind-key    -T prefix C       customize-mode -Z
+prefix	C	other	new session (fzf dir)	bind-key -r -T prefix C       display-popup -E -h "80%" -w "90%" "sh -c '/Users/tokumasa/dotfiles/tmux/scripts/new_session_fzf.sh'"
 prefix	D	session	choose client	bind-key    -T prefix D       choose-client -Z
 prefix	E	layout	layout: spread	bind-key    -T prefix E       select-layout -E
 prefix	\{	pane	swap pane up	bind-key    -T prefix \{      swap-pane -U
@@ -87,10 +87,12 @@ prefix	q	pane	show pane numbers	bind-key    -T prefix q       display-panes
 prefix	r	session	refresh client	bind-key    -T prefix r       refresh-client
 prefix	s	other	session chooser (preview)	bind-key    -T prefix s       choose-tree -Zs
 prefix	t	ui	clock mode	bind-key    -T prefix t       clock-mode
+prefix	v	buffer	paste	bind-key    -T prefix v       paste-buffer -p
 root	WheelDownStatus	window	mouse: next window	bind-key -T root WheelDownStatus        next-window
 prefix	w	other	window chooser (preview)	bind-key    -T prefix w       choose-tree -Zw
 prefix	PPage	buffer	copy mode (top)	bind-key    -T prefix PPage   copy-mode -u
 prefix	x	other	confirm kill pane	bind-key    -T prefix x       confirm-before -p "kill-pane #P? (y/n)" kill-pane
+prefix	y	buffer	copy mode	bind-key    -T prefix y       copy-mode
 prefix	z	pane	toggle pane zoom	bind-key    -T prefix z       resize-pane -Z
 prefix	|	window	split window horizontally	bind-key    -T prefix |       split-window -h
 root	WheelUpPane	other	mouse: scroll/copy	bind-key -T root WheelUpPane            if-shell -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" { send-keys -M } { copy-mode -e }
