@@ -57,4 +57,4 @@ alias arm='arch -arm64e zsh'
 alias rmDS='find . -name ".DS_Store" -type f -ls -delete'
 
 # Codex
-alias cx='codex'
+alias cx='VISUAL="/opt/homebrew/bin/micro" EDITOR="/opt/homebrew/bin/micro" codex'
