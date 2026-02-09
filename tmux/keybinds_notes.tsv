@@ -67,12 +67,12 @@ prefix	C-n	window	next window	bind-key -r -T prefix C-n     next-window
 prefix	C-o	window	rotate panes	bind-key    -T prefix C-o     rotate-window
 prefix	f	ui	find window	bind-key    -T prefix f       command-prompt { find-window -Z "%%" }
 prefix	C-p	window	previous window	bind-key -r -T prefix C-p     previous-window
-prefix	S-Left	pane	resize pane left	bind-key    -T prefix S-Left  resize-pane -L 5
+prefix	S-Left	pane	resize pane left	bind-key -r -T prefix S-Left  resize-pane -L 5
 prefix	h	pane	focus pane left	bind-key -r -T prefix h       select-pane -L
 prefix	i	ui	display message	bind-key    -T prefix i       display-message
 root	S-Right	pane	focus pane right	bind-key -T root S-Right                select-pane -R
 prefix	j	pane	focus pane down	bind-key -r -T prefix j       select-pane -D
-prefix	S-Down	pane	resize pane down	bind-key    -T prefix S-Down  resize-pane -D 5
+prefix	S-Down	pane	resize pane down	bind-key -r -T prefix S-Down  resize-pane -D 5
 prefix	k	pane	focus pane up	bind-key -r -T prefix k       select-pane -U
 prefix	l	pane	focus pane right	bind-key -r -T prefix l       select-pane -R
 prefix	m	pane	mark pane	bind-key    -T prefix m       select-pane -m
@@ -107,8 +107,8 @@ prefix	\#	buffer	list buffers	bind-key    -T prefix \#      list-buffers
 prefix	\$	ui	rename session	bind-key    -T prefix \$      command-prompt -I "#S" { rename-session "%%" }
 prefix	\%	window	split window horizontally	bind-key    -T prefix \%      split-window -h
 prefix	\'	ui	select window by index	bind-key    -T prefix \'      command-prompt -T window-target -p index { select-window -t ":%%" }
-prefix	S-Up	pane	resize pane up	bind-key    -T prefix S-Up    resize-pane -U 5
-prefix	S-Right	pane	resize pane right	bind-key    -T prefix S-Right resize-pane -R 5
+prefix	S-Up	pane	resize pane up	bind-key -r -T prefix S-Up    resize-pane -U 5
+prefix	S-Right	pane	resize pane right	bind-key -r -T prefix S-Right resize-pane -R 5
 prefix	Left	pane	focus pane left	bind-key -r -T prefix Left    select-pane -L
 prefix	M-Left	pane	resize pane left	bind-key -r -T prefix M-Left  resize-pane -L 5
 prefix	Down	pane	focus pane down	bind-key -r -T prefix Down    select-pane -D
