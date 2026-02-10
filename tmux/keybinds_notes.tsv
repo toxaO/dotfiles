@@ -89,7 +89,7 @@ prefix	s	other	session chooser (preview)	bind-key    -T prefix s       choose-tr
 prefix	t	ui	clock mode	bind-key    -T prefix t       clock-mode
 prefix	v	buffer	paste	bind-key    -T prefix v       paste-buffer -p
 root	WheelDownStatus	window	mouse: next window	bind-key -T root WheelDownStatus        next-window
-prefix	w	other	window chooser (preview)	bind-key    -T prefix w       choose-tree -Zw
+prefix	w	other	window chooser (preview)	bind-key    -T prefix w       switch-client -T w
 prefix	PPage	buffer	copy mode (top)	bind-key    -T prefix PPage   copy-mode -u
 prefix	x	other	confirm kill pane	bind-key    -T prefix x       confirm-before -p "kill-pane #P? (y/n)" kill-pane
 prefix	y	buffer	copy mode	bind-key    -T prefix y       copy-mode

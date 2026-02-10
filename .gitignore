@@ -23,6 +23,9 @@
 !/tmux/
 !/tmux/tmux.conf
 
+!/wezterm/
+!/wezterm/wezterm.lua
+
 !/nvim/
 /nvim/lazy-lock.json
 !/nvim/init.lua

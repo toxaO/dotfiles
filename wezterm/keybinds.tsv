@@ -1,0 +1,31 @@
+# shortcut	category	description	action	source
+leader + c	ui	open key assignments launcher	ShowLauncherArgs(FUZZY|KEY_ASSIGNMENTS)	custom
+leader + s	ui	open workspace launcher	ShowLauncherArgs(FUZZY|WORKSPACES)	custom
+leader + S	ui	create/switch workspace by name	PromptInputLine -> SwitchToWorkspace(name)	custom
+leader + ,	ui	rename current tab	PromptInputLine -> active_tab():set_title	custom
+leader + /	ui	open keybinds search (fzf pane)	SplitPane Down 35% -> wezterm/scripts/keybinds_menu.sh	custom
+leader + j	other	send literal Ctrl+j	SendKey(key=j,mods=CTRL)	custom
+leader + w	ui	enter window key-table	ActivateKeyTable(name=w,one_shot)	custom
+leader + w s	window	split pane vertically	SplitVertical(CurrentPaneDomain)	custom
+leader + w v	window	split pane horizontally	SplitHorizontal(CurrentPaneDomain)	custom
+leader + w w	window	show tab navigator	ShowTabNavigator	custom
+leader + x	pane	close pane with confirmation dialog	CloseCurrentPane(confirm=true)	custom
+leader + y	buffer	enter copy mode	ActivateCopyMode	custom
+leader + v	buffer	paste from clipboard	PasteFrom(Clipboard)	custom
+leader + h	pane	focus pane left	ActivatePaneDirection(Left)	custom
+leader + j	pane	focus pane down	ActivatePaneDirection(Down)	custom
+leader + k	pane	focus pane up	ActivatePaneDirection(Up)	custom
+leader + l	pane	focus pane right	ActivatePaneDirection(Right)	custom
+shift+left	pane	focus pane left	ActivatePaneDirection(Left)	custom
+shift+down	pane	focus pane down	ActivatePaneDirection(Down)	custom
+shift+up	pane	focus pane up	ActivatePaneDirection(Up)	custom
+shift+right	pane	focus pane right	ActivatePaneDirection(Right)	custom
+opt+enter	window	disable default toggle full screen	DisableDefaultAssignment	custom
+cmd+c	clipboard	copy selection	CopyTo(Clipboard)	default
+cmd+v	clipboard	paste clipboard	PasteFrom(Clipboard)	default
+cmd+t	tab	new tab	SpawnTab(CurrentPaneDomain)	default
+cmd+w	tab	close tab (confirm)	CloseCurrentTab(confirm=true)	default
+cmd+n	window	new window	SpawnWindow	default
+cmd+k	scroll	clear scrollback and viewport	ClearScrollback(ScrollbackAndViewport)	default
+cmd+f	search	search in pane	Search(CurrentSelectionOrEmptyString)	default
+cmd+enter	window	toggle full screen	ToggleFullScreen	default
