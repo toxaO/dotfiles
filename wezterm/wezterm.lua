@@ -1,13 +1,55 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
+local copy_mode = wezterm.gui.default_key_tables().copy_mode
+
+table.insert(copy_mode, {
+  key = "Enter",
+  mods = "NONE",
+  action = act.Multiple({
+    act.CopyTo("ClipboardAndPrimarySelection"),
+    act.Multiple({
+      act.ScrollToBottom,
+      act.CopyMode("Close"),
+    }),
+  }),
+})
 
 local is_nightly =
   wezterm.version and
   (wezterm.version:find("nightly", 1, true) or wezterm.version:find("dev", 1, true))
+local TAB_LEFT = wezterm.nerdfonts.ple_lower_right_triangle
+local TAB_RIGHT = wezterm.nerdfonts.ple_upper_left_triangle
 
 wezterm.on("gui-startup", function()
   local _, _, window = wezterm.mux.spawn_window({})
   window:gui_window():maximize()
+end)
+
+wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
+  local background = "#3e445e"
+  local foreground = "#c6c8d1"
+  local edge_background = "#161821"
+
+  if tab.is_active then
+    background = "#84a0c6"
+    foreground = "#161821"
+  end
+
+  local edge_foreground = background
+  local raw_title = tab.tab_title and #tab.tab_title > 0 and tab.tab_title or tab.active_pane.title
+  local title = "   " .. wezterm.truncate_right(raw_title, max_width - 1) .. "   "
+
+  return {
+    { Background = { Color = edge_background } },
+    { Foreground = { Color = edge_foreground } },
+    { Text = TAB_LEFT },
+    { Background = { Color = background } },
+    { Foreground = { Color = foreground } },
+    { Text = title },
+    { Background = { Color = edge_background } },
+    { Foreground = { Color = edge_foreground } },
+    { Text = TAB_RIGHT },
+  }
 end)
 
 return {
@@ -18,6 +60,8 @@ return {
   },
   window_decorations = is_nightly and "RESIZE | MACOS_FORCE_SQUARE_CORNERS" or "RESIZE",
   window_frame = {
+    inactive_titlebar_bg = "none",
+    active_titlebar_bg = "none",
     border_left_width = "1",
     border_right_width = "1",
     border_bottom_height = "1",
@@ -28,6 +72,9 @@ return {
     border_top_color = "#283457",
   },
   use_fancy_tab_bar = false,
+  show_tabs_in_tab_bar = true,
+  show_new_tab_button_in_tab_bar = false,
+  show_close_tab_button_in_tabs = false,
   tab_max_width = 32,
   tab_and_split_indices_are_zero_based = true,
   hide_tab_bar_if_only_one_tab = true,
@@ -41,6 +88,10 @@ return {
     pane_border = "#2a3150",
     pane_border_hover = "#3f4b74",
     pane_border_active = "#7aa2f7",
+    tab_bar = {
+      background = "#161821",
+      inactive_tab_edge = "#161821",
+    },
   },
   inactive_pane_hsb = {
     saturation = 0.7,
@@ -77,9 +128,56 @@ return {
     {
       key = "s",
       mods = "LEADER",
-      action = act.ShowLauncherArgs({
-        flags = "FUZZY|WORKSPACES",
-      }),
+      action = wezterm.action_callback(function(window, pane)
+        local workspaces = {}
+        table.insert(workspaces, {
+          id = "__create_new_workspace__",
+          label = "+ Create new workspace (named)",
+        })
+        local current = wezterm.mux.get_active_workspace()
+        for i, name in ipairs(wezterm.mux.get_workspace_names()) do
+          local marker = name == current and "* " or "  "
+          table.insert(workspaces, {
+            id = name,
+            label = string.format("%s%d. %s", marker, i, name),
+          })
+        end
+        window:perform_action(
+          act.InputSelector({
+            title = "Select workspace",
+            choices = workspaces,
+            fuzzy = true,
+            action = wezterm.action_callback(function(win, p, id, _)
+              if id == "__create_new_workspace__" then
+                win:perform_action(
+                  act.PromptInputLine({
+                    description = "New workspace name:",
+                    action = wezterm.action_callback(function(w, pp, line)
+                      if line and line ~= "" then
+                        w:perform_action(
+                          act.SwitchToWorkspace({
+                            name = line,
+                          }),
+                          pp
+                        )
+                      end
+                    end),
+                  }),
+                  p
+                )
+              elseif id then
+                win:perform_action(
+                  act.SwitchToWorkspace({
+                    name = id,
+                  }),
+                  p
+                )
+              end
+            end),
+          }),
+          pane
+        )
+      end),
     },
     {
       key = "S",
@@ -101,14 +199,38 @@ return {
     {
       key = ",",
       mods = "LEADER",
-      action = act.PromptInputLine({
-        description = "Rename tab:",
-        action = wezterm.action_callback(function(window, _, line)
-          if line and line ~= "" then
-            window:active_tab():set_title(line)
-          end
-        end),
-      }),
+      action = wezterm.action_callback(function(window, pane)
+        local current = window:active_tab():get_title()
+        window:perform_action(
+          act.PromptInputLine({
+            description = string.format("Rename tab (%s) to:", current),
+            action = wezterm.action_callback(function(win, _, line)
+              if line and line ~= "" then
+                win:active_tab():set_title(line)
+              end
+            end),
+          }),
+          pane
+        )
+      end),
+    },
+    {
+      key = ".",
+      mods = "LEADER",
+      action = wezterm.action_callback(function(window, pane)
+        local current = wezterm.mux.get_active_workspace()
+        window:perform_action(
+          act.PromptInputLine({
+            description = string.format("Rename workspace (%s) to:", current),
+            action = wezterm.action_callback(function(_, _, line)
+              if line and line ~= "" then
+                wezterm.mux.rename_workspace(current, line)
+              end
+            end),
+          }),
+          pane
+        )
+      end),
     },
     {
       key = "/",
@@ -141,6 +263,16 @@ return {
       action = act.CloseCurrentPane({
         confirm = true,
       }),
+    },
+    {
+      key = "{",
+      mods = "LEADER",
+      action = act.MoveTabRelative(-1),
+    },
+    {
+      key = "}",
+      mods = "LEADER",
+      action = act.MoveTabRelative(1),
     },
     {
       key = "y",
@@ -199,7 +331,44 @@ return {
     },
   },
   key_tables = {
+    copy_mode = copy_mode,
     w = {
+      {
+        key = "h",
+        action = act.SplitPane({
+          direction = "Left",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
+      {
+        key = "j",
+        action = act.SplitPane({
+          direction = "Down",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
+      {
+        key = "k",
+        action = act.SplitPane({
+          direction = "Up",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
+      {
+        key = "l",
+        action = act.SplitPane({
+          direction = "Right",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
       {
         key = "s",
         action = act.SplitVertical({

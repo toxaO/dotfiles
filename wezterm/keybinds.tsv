@@ -1,15 +1,22 @@
 # shortcut	category	description	action	source
 leader + c	ui	open key assignments launcher	ShowLauncherArgs(FUZZY|KEY_ASSIGNMENTS)	custom
-leader + s	ui	open workspace launcher	ShowLauncherArgs(FUZZY|WORKSPACES)	custom
+leader + s	ui	open workspace selector	InputSelector(fuzzy) -> SwitchToWorkspace	custom
 leader + S	ui	create/switch workspace by name	PromptInputLine -> SwitchToWorkspace(name)	custom
 leader + ,	ui	rename current tab	PromptInputLine -> active_tab():set_title	custom
+leader + .	ui	rename current workspace	PromptInputLine -> rename_workspace(active,new)	custom
 leader + /	ui	open keybinds search (fzf pane)	SplitPane Down 35% -> wezterm/scripts/keybinds_menu.sh	custom
 leader + j	other	send literal Ctrl+j	SendKey(key=j,mods=CTRL)	custom
 leader + w	ui	enter window key-table	ActivateKeyTable(name=w,one_shot)	custom
+leader + w h	window	split pane to left	SplitPane(direction=Left)	custom
+leader + w j	window	split pane to down	SplitPane(direction=Down)	custom
+leader + w k	window	split pane to up	SplitPane(direction=Up)	custom
+leader + w l	window	split pane to right	SplitPane(direction=Right)	custom
 leader + w s	window	split pane vertically	SplitVertical(CurrentPaneDomain)	custom
 leader + w v	window	split pane horizontally	SplitHorizontal(CurrentPaneDomain)	custom
 leader + w w	window	show tab navigator	ShowTabNavigator	custom
 leader + x	pane	close pane with confirmation dialog	CloseCurrentPane(confirm=true)	custom
+leader + {	tab	move tab left	MoveTabRelative(-1)	custom
+leader + }	tab	move tab right	MoveTabRelative(1)	custom
 leader + y	buffer	enter copy mode	ActivateCopyMode	custom
 leader + v	buffer	paste from clipboard	PasteFrom(Clipboard)	custom
 leader + h	pane	focus pane left	ActivatePaneDirection(Left)	custom
