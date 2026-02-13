@@ -21,7 +21,9 @@ local TAB_LEFT = wezterm.nerdfonts.ple_lower_right_triangle
 local TAB_RIGHT = wezterm.nerdfonts.ple_upper_left_triangle
 
 wezterm.on("gui-startup", function()
-  local _, _, window = wezterm.mux.spawn_window({})
+  local _, _, window = wezterm.mux.spawn_window({
+    cwd = wezterm.home_dir,
+  })
   window:gui_window():maximize()
 end)
 
@@ -123,6 +125,7 @@ wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
 end)
 
 return {
+  default_cwd = wezterm.home_dir,
   leader = {
     key = "j",
     mods = "CTRL",
@@ -144,21 +147,13 @@ return {
   use_fancy_tab_bar = false,
   show_tabs_in_tab_bar = true,
   show_new_tab_button_in_tab_bar = false,
-  show_close_tab_button_in_tabs = false,
   tab_bar_at_bottom = true,
   tab_max_width = 32,
   tab_and_split_indices_are_zero_based = true,
-  hide_tab_bar_if_only_one_tab = true,
-  window_content_alignment = {
-    horizontal = "Center",
-    vertical = "Bottom",
-  },
+  hide_tab_bar_if_only_one_tab = false,
   color_scheme = "iceberg-dark",
   colors = {
     split = "#3b4261",
-    pane_border = "#2a3150",
-    pane_border_hover = "#3f4b74",
-    pane_border_active = "#7aa2f7",
     tab_bar = {
       background = "#161821",
       inactive_tab_edge = "#161821",
@@ -228,6 +223,9 @@ return {
                         w:perform_action(
                           act.SwitchToWorkspace({
                             name = line,
+                            spawn = {
+                              cwd = wezterm.home_dir,
+                            },
                           }),
                           pp
                         )
@@ -260,6 +258,9 @@ return {
             window:perform_action(
               act.SwitchToWorkspace({
                 name = line,
+                spawn = {
+                  cwd = wezterm.home_dir,
+                },
               }),
               pane
             )
