@@ -25,6 +25,30 @@ wezterm.on("gui-startup", function()
   window:gui_window():maximize()
 end)
 
+wezterm.on("update-right-status", function(window, _)
+  window:set_left_status("")
+  local names = wezterm.mux.get_workspace_names()
+  table.sort(names)
+  local current = wezterm.mux.get_active_workspace()
+
+  local cells = {}
+  table.insert(cells, { Foreground = { Color = "#6b7089" } })
+  table.insert(cells, { Text = " ws " })
+  for _, name in ipairs(names) do
+    local is_active = name == current
+    table.insert(cells, { Text = " " })
+    table.insert(cells, {
+      Background = { Color = is_active and "#84a0c6" or "#2e3244" },
+    })
+    table.insert(cells, {
+      Foreground = { Color = is_active and "#161821" or "#c6c8d1" },
+    })
+    table.insert(cells, { Text = " " .. name .. " " })
+  end
+  table.insert(cells, { Text = " " })
+  window:set_right_status(wezterm.format(cells))
+end)
+
 wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
   local background = "#3e445e"
   local foreground = "#c6c8d1"
@@ -75,6 +99,7 @@ return {
   show_tabs_in_tab_bar = true,
   show_new_tab_button_in_tab_bar = false,
   show_close_tab_button_in_tabs = false,
+  tab_bar_at_bottom = false,
   tab_max_width = 32,
   tab_and_split_indices_are_zero_based = true,
   hide_tab_bar_if_only_one_tab = true,
@@ -308,6 +333,16 @@ return {
         key = 'g',
         mods = 'LEADER',
         action = act.PaneSelect
+    },
+    {
+      key = "LeftArrow",
+      mods = "LEADER",
+      action = act.SwitchWorkspaceRelative(-1),
+    },
+    {
+      key = "RightArrow",
+      mods = "LEADER",
+      action = act.SwitchWorkspaceRelative(1),
     },
     {
       key = "LeftArrow",
