@@ -145,7 +145,7 @@ return {
   show_tabs_in_tab_bar = true,
   show_new_tab_button_in_tab_bar = false,
   show_close_tab_button_in_tabs = false,
-  tab_bar_at_bottom = false,
+  tab_bar_at_bottom = true,
   tab_max_width = 32,
   tab_and_split_indices_are_zero_based = true,
   hide_tab_bar_if_only_one_tab = true,

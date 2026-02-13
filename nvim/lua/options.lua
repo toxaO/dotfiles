@@ -8,6 +8,9 @@ local keymap = vim.keymap
 local M = {}
 
 function M.setup()
+  vim.g.c_if0_dimming_enabled = 0
+  vim.g.c_no_if0 = 1
+
   local options = {
     encoding = "utf-8",
     fileencoding = "utf-8",

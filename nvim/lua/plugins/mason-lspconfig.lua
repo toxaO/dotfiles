@@ -45,6 +45,12 @@ return {
       end
 
       local on_attach = function(client, bufnr)
+        local ft = vim.bo[bufnr].filetype
+        if (ft == "c" or ft == "cpp" or ft == "objc" or ft == "objcpp")
+          and vim.g.c_if0_dimming_enabled ~= 1 then
+          pcall(vim.lsp.semantic_tokens.stop, bufnr, client.id)
+        end
+
         client.server_capabilities.documentFormattingProvider = false
         local set = vim.keymap.set
         set("n", "<Space>ld", "<cmd>lua vim.lsp.buf.definition()<CR>")
@@ -64,7 +70,6 @@ return {
       end
 
       -- Mason でインストール済みのサーバーを取得して設定
-      local lspconfig = require("lspconfig")
       local servers = require("mason-lspconfig").get_installed_servers()
 
       for _, server_name in ipairs(servers) do
