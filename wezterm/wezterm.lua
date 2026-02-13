@@ -34,6 +34,7 @@ wezterm.on("update-right-status", function(window, _)
   end
   table.sort(names)
   local current = wezterm.mux.get_active_workspace()
+  local leader_active = window:leader_is_active()
   local prev_name = ""
   local next_name = ""
   for i, name in ipairs(names) do
@@ -43,21 +44,32 @@ wezterm.on("update-right-status", function(window, _)
       break
     end
   end
-  window:set_right_status(wezterm.format({
-    { Foreground = { Color = "#6b7089" } },
+  local cells = {
+    { Foreground = { Color = "#c6c8d1" } },
     { Text = " " .. prev_name .. "  " },
-    { Foreground = { Color = "#6b7089" } },
+    { Foreground = { Color = "#c6c8d1" } },
     { Text = "< " },
     { Background = { Color = "#84a0c6" } },
     { Foreground = { Color = "#161821" } },
     { Text = " " .. current .. " " },
     { Background = { Color = "#161821" } },
-    { Foreground = { Color = "#6b7089" } },
+    { Foreground = { Color = "#c6c8d1" } },
     { Text = " >" },
     { Background = { Color = "#161821" } },
-    { Foreground = { Color = "#6b7089" } },
+    { Foreground = { Color = "#c6c8d1" } },
     { Text = "  " .. next_name .. " " },
-  }))
+  }
+  if leader_active then
+    table.insert(cells, 1, { Foreground = { Color = "#c6c8d1" } })
+    table.insert(cells, 1, { Background = { Color = "#161821" } })
+    table.insert(cells, 1, { Text = " " })
+    table.insert(cells, 1, { Foreground = { Color = "#161821" } })
+    table.insert(cells, 1, { Background = { Color = "#e2a478" } })
+    table.insert(cells, 1, { Text = " LEADER " })
+    table.insert(cells, 1, { Foreground = { Color = "#161821" } })
+    table.insert(cells, 1, { Background = { Color = "#e2a478" } })
+  end
+  window:set_right_status(wezterm.format(cells))
 end)
 
 local function switch_workspace_sorted(window, pane, delta)
