@@ -28,26 +28,60 @@ end)
 wezterm.on("update-right-status", function(window, _)
   window:set_left_status("")
   local names = wezterm.mux.get_workspace_names()
+  if #names == 0 then
+    window:set_right_status("")
+    return
+  end
   table.sort(names)
   local current = wezterm.mux.get_active_workspace()
-
-  local cells = {}
-  table.insert(cells, { Foreground = { Color = "#6b7089" } })
-  table.insert(cells, { Text = " ws " })
-  for _, name in ipairs(names) do
-    local is_active = name == current
-    table.insert(cells, { Text = " " })
-    table.insert(cells, {
-      Background = { Color = is_active and "#84a0c6" or "#2e3244" },
-    })
-    table.insert(cells, {
-      Foreground = { Color = is_active and "#161821" or "#c6c8d1" },
-    })
-    table.insert(cells, { Text = " " .. name .. " " })
+  local prev_name = ""
+  local next_name = ""
+  for i, name in ipairs(names) do
+    if name == current then
+      prev_name = names[(i - 2) % #names + 1] or ""
+      next_name = names[i % #names + 1] or ""
+      break
+    end
   end
-  table.insert(cells, { Text = " " })
-  window:set_right_status(wezterm.format(cells))
+  window:set_right_status(wezterm.format({
+    { Foreground = { Color = "#6b7089" } },
+    { Text = " " .. prev_name .. "  " },
+    { Foreground = { Color = "#6b7089" } },
+    { Text = "< " },
+    { Background = { Color = "#84a0c6" } },
+    { Foreground = { Color = "#161821" } },
+    { Text = " " .. current .. " " },
+    { Background = { Color = "#161821" } },
+    { Foreground = { Color = "#6b7089" } },
+    { Text = " >" },
+    { Background = { Color = "#161821" } },
+    { Foreground = { Color = "#6b7089" } },
+    { Text = "  " .. next_name .. " " },
+  }))
 end)
+
+local function switch_workspace_sorted(window, pane, delta)
+  local names = wezterm.mux.get_workspace_names()
+  if #names == 0 then
+    return
+  end
+  table.sort(names)
+  local current = wezterm.mux.get_active_workspace()
+  local idx = 1
+  for i, name in ipairs(names) do
+    if name == current then
+      idx = i
+      break
+    end
+  end
+  local next_idx = ((idx - 1 + delta) % #names) + 1
+  window:perform_action(
+    act.SwitchToWorkspace({
+      name = names[next_idx],
+    }),
+    pane
+  )
+end
 
 wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
   local background = "#3e445e"
@@ -345,6 +379,34 @@ return {
       action = act.SwitchWorkspaceRelative(1),
     },
     {
+      key = "n",
+      mods = "LEADER",
+      action = act.Multiple({
+        wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, 1)
+        end),
+        act.ActivateKeyTable({
+          name = "ws_nav",
+          one_shot = false,
+          timeout_milliseconds = 2000,
+        }),
+      }),
+    },
+    {
+      key = "p",
+      mods = "LEADER",
+      action = act.Multiple({
+        wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, -1)
+        end),
+        act.ActivateKeyTable({
+          name = "ws_nav",
+          one_shot = false,
+          timeout_milliseconds = 2000,
+        }),
+      }),
+    },
+    {
       key = "LeftArrow",
       mods = "SHIFT",
       action = act.ActivatePaneDirection("Left"),
@@ -367,6 +429,24 @@ return {
   },
   key_tables = {
     copy_mode = copy_mode,
+    ws_nav = {
+      {
+        key = "n",
+        action = wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, 1)
+        end),
+      },
+      {
+        key = "p",
+        action = wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, -1)
+        end),
+      },
+      {
+        key = "Escape",
+        action = act.PopKeyTable,
+      },
+    },
     w = {
       {
         key = "h",

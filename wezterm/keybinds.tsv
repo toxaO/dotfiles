@@ -4,6 +4,8 @@ leader + s	ui	open workspace selector	InputSelector(fuzzy) -> SwitchToWorkspace	
 leader + S	ui	create/switch workspace by name	PromptInputLine -> SwitchToWorkspace(name)	custom
 leader + ,	ui	rename current tab	PromptInputLine -> active_tab():set_title	custom
 leader + .	ui	rename current workspace	PromptInputLine -> rename_workspace(active,new)	custom
+leader + n	ui	switch to next workspace (repeatable)	Switch workspace + ws_nav mode	custom
+leader + p	ui	switch to previous workspace (repeatable)	Switch workspace + ws_nav mode	custom
 leader + left	ui	switch to previous workspace	SwitchWorkspaceRelative(-1)	custom
 leader + right	ui	switch to next workspace	SwitchWorkspaceRelative(1)	custom
 leader + /	ui	open keybinds search (fzf pane)	SplitPane Down 35% -> wezterm/scripts/keybinds_menu.sh	custom
