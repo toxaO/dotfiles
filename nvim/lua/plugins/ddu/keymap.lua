@@ -230,6 +230,19 @@ function M.setup()
         fn["ddu#ui#do_action"]("toggleAutoAction")
       end, km_opts.bnw)
 
+      -- ",x" toggle temporary rg extension ignore --
+      keymap.set("n", ",x", function()
+        ddu.do_action("toggleRgExcludeExtension")
+      end, km_opts.bnw)
+      -- ",r" clear temporary rg extension ignores --
+      keymap.set("n", ",r", function()
+        ddu.do_action("clearRgExcludeExtensions")
+      end, km_opts.bnw)
+      -- ",X" select extension from visible rg result --
+      keymap.set("n", ",X", function()
+        ddu.do_action("selectRgExcludeExtensionFromVisibleItems")
+      end, km_opts.bnw)
+
     end,
   }) -- /ff normal keymaps --
 

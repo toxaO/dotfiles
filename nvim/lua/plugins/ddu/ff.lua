@@ -117,7 +117,8 @@ function M.setup()
     sourceParams = {
 
       rg = {
-        args = {"--column", "--no-heading", "--color", "never"},
+        args = ddu_action.build_rg_args(),
+        globs = ddu_action.build_rg_globs(),
         --input = fn["expand"]("<cword>"),
       },
 
