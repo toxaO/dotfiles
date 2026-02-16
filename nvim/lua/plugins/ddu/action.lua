@@ -45,6 +45,18 @@ local function window_choose(args)
   return 0
 end
 
+local function resolve_target_directory(item)
+  local path = item and item.action and item.action.path or ""
+  if path == "" then
+    return ""
+  end
+  local normalized = fn.fnamemodify(path, ":p")
+  if fn.isdirectory(normalized) == 1 then
+    return normalized
+  end
+  return fn.fnamemodify(normalized, ":h")
+end
+
 local function toggle_hidden(ui_name, source_name)
   local matchers = ddu.get_current(ui_name)["sourceOptions"][source_name]["matchers"]
   or {}
@@ -125,6 +137,26 @@ local function parse_extension_selection(input, max_index)
   end
   table.sort(indexes)
   return indexes
+end
+
+local function build_filer_cd_cmd(show_files)
+  local cmd = {
+    "fd",
+    ".",
+    "--max-depth",
+    "1",
+    "--hidden",
+    "--follow",
+    "--exclude",
+    ".git",
+    "--type",
+    "d",
+  }
+  if show_files then
+    table.insert(cmd, "--type")
+    table.insert(cmd, "f")
+  end
+  return cmd
 end
 
 local function refresh_rg_items()
@@ -280,6 +312,24 @@ function M.reg_actions()
     return 0
   end)
 
+  ddu.action("ui", "_", "toggleFilerCdShowFiles", function(_)
+    if vim.b.ddu_ui_name ~= "filer_cd" then
+      return 0
+    end
+    vim.b.ddu_filer_cd_show_files = not (vim.b.ddu_filer_cd_show_files == true)
+    local show_files = vim.b.ddu_filer_cd_show_files == true
+    ddu.do_action("updateOptions", {
+      sourceParams = {
+        file_external = {
+          cmd = build_filer_cd_cmd(show_files),
+        },
+      },
+    })
+    ddu.do_action("redraw", { method = "refreshItems" })
+    print("filer_cd: " .. (show_files and "directories + files" or "directories only"))
+    return 0
+  end)
+
   ddu.action("ui", "_", "current", function(_)
     print(vim.inspect(ddu.get_current()))
   end)
@@ -303,6 +353,23 @@ function M.reg_actions()
 
   ddu.action("kind", "file", "window_choose", function(args)
     return window_choose(args)
+  end)
+
+  ddu.action("kind", "file", "tab_cd", function(args)
+    local item = args.items and args.items[1] or nil
+    local dir = resolve_target_directory(item)
+    if dir == "" then
+      print("ddu tab_cd: directory not found")
+      return 0
+    end
+    vim.cmd("tcd " .. fn.fnameescape(dir))
+    if vim.b.ddu_ui_name == "filer_cd" then
+      vim.t.ddu_ui_filer_cd_path = dir
+    else
+      vim.t.ddu_ui_filer_main_path = dir
+    end
+    print('tab cwd -> "' .. dir .. '"')
+    return 0
   end)
 
   ddu.action("ui", "_", "confirm_item", function(args)

@@ -31,28 +31,40 @@ function M.setup()
     sources = {{name = "arglist"}},
   }) -- /args --
 
-    -- file_rec --
+    -- file_rec (use file_external + fd) --
   ddu.patch_local("file_rec",{
 
     sources = {
-      {name = "file_rec"},
+      {name = "file_external"},
     },
 
     sourceParams = {
 
-      file_rec = {
-
-        ignoredDirectories = {
+      file_external = {
+        cmd = {
+          "fd",
+          ".",
+          "--type",
+          "f",
+          "--hidden",
+          "--follow",
+          "--exclude",
           ".git",
+          "--exclude",
           "node_modules",
+          "--exclude",
           "vendor",
+          "--exclude",
           ".next",
+          "--exclude",
           ".venv",
+          "--exclude",
           "__pycache__",
+          "--exclude",
           ".mypy_cache",
+          "--exclude",
           "out",
         },
-
       },
 
     },
@@ -62,7 +74,7 @@ function M.setup()
    -- project all file --
   ddu.patch_local("project", {
 
-    sources = { {name = "file_rec"}, },
+    sources = { {name = "file_external"}, },
 
     sourceOptions = {
 --          file_rec = {path = fn["expand"](u.fs.get_project_root_current_buf())}
@@ -70,19 +82,31 @@ function M.setup()
 
     sourceParams = {
 
-      file_rec = {
-
-        ignoredDirectories = {
+      file_external = {
+        cmd = {
+          "fd",
+          ".",
+          "--type",
+          "f",
+          "--hidden",
+          "--follow",
+          "--exclude",
           ".git",
+          "--exclude",
           "node_modules",
+          "--exclude",
           "vendor",
+          "--exclude",
           ".next",
+          "--exclude",
           ".venv",
+          "--exclude",
           "__pycache__",
+          "--exclude",
           ".mypy_cache",
+          "--exclude",
           "out",
         },
-
       },
 
     },
@@ -161,7 +185,8 @@ function M.setup()
       name = "grep",
       sourceOptions = {
         _ = {
-          path = fn["expand"](".")
+          -- Use tab-local cwd for grep base path.
+          path = fn["getcwd"](-1, 0)
         },
       },
       input = fn["expand"]("<cword>"),

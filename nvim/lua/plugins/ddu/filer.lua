@@ -17,6 +17,26 @@ local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 local M = {}
 
 function M.setup()
+  local function build_filer_cd_cmd(show_files)
+    local cmd = {
+      "fd",
+      ".",
+      "--max-depth",
+      "1",
+      "--hidden",
+      "--follow",
+      "--exclude",
+      ".git",
+      "--type",
+      "d",
+    }
+    if show_files then
+      table.insert(cmd, "--type")
+      table.insert(cmd, "f")
+    end
+    return cmd
+  end
+
   ------------------------------
   -- filer setting --
   ------------------------------
@@ -68,6 +88,7 @@ function M.setup()
 
       narrow = { quit = false, },
       cd = {quit = false},
+      tab_cd = { quit = false },
 
   }
 
@@ -90,6 +111,33 @@ function M.setup()
 
   -- default.name = "filer" としてlocalに適用
   ddu.patch_local("filer", filer_setting)
+  local filer_cd_ui = vim.deepcopy(filer_setting.uiParams)
+  filer_cd_ui.filer.split = "floating"
+  filer_cd_ui.filer.floatingBorder = "rounded"
+  filer_cd_ui.filer.floatingTitle = " CD Filer "
+  filer_cd_ui.filer.winRow = 1
+  filer_cd_ui.filer.winCol = 2
+  filer_cd_ui.filer.winHeight = "&lines - 4"
+  filer_cd_ui.filer.winWidth = "&columns - 4"
+
+  ddu.patch_local("filer_cd", {
+    ui = filer_setting.ui,
+    uiParams = filer_cd_ui,
+    sources = { { name = "file_external" } },
+    sourceOptions = filer_setting.sourceOptions,
+    sourceParams = {
+      file_external = {
+        cmd = build_filer_cd_cmd(false),
+      },
+    },
+    columnParams = filer_setting.columnParams,
+    actionOptions = {
+      narrow = { quit = false },
+      tab_cd = { quit = true },
+    },
+    resume = false,
+    sync = true,
+  })
   ------------------------------
   -- /filer setting --
   ------------------------------
@@ -99,11 +147,31 @@ function M.setup()
   ------------------------------
 
   keymap.set("n", "<Space>e", function()
-    local current_path = vim.t.ddu_ui_filer_path or fn["getcwd"]() -- dduを開くと変数が設定される
+    local current_path = vim.t.ddu_ui_filer_main_path or fn["getcwd"](-1, 0)
     filer_setting.name = current_path
     filer_setting.sourceOptions.file = {path = current_path}
     fn["ddu#start"]( filer_setting )
     fn["ddu#ui#do_action"]("cursorNext") -- デフォルトのカーソル位置がファイルパスに被るため
+  end, km_opts.nsw)
+
+  keymap.set("n", "<Space>c", function()
+    local current_path = vim.t.ddu_ui_filer_cd_path or fn["getcwd"](-1, 0)
+    fn["ddu#start"]({
+      name = "filer_cd",
+      sourceOptions = {
+        file_external = { path = current_path },
+      },
+      sourceParams = {
+        file_external = {
+          cmd = build_filer_cd_cmd(false),
+        },
+      },
+    })
+    vim.schedule(function()
+      pcall(function()
+        fn["ddu#ui#do_action"]("cursorNext")
+      end)
+    end)
   end, km_opts.nsw)
 
   -- グローバルなファイラを４つほど作ろうと思ったけど、現状タブ毎のファイラでいい気がするので保留
