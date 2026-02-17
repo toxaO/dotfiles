@@ -105,7 +105,7 @@ function M.setup()
     columnParams = filer_columnParams,
     actionOptions = filer_actionOptions,
     resume = true,
-    sync = true,
+    sync = false,
 
   }
 
@@ -136,7 +136,7 @@ function M.setup()
       tab_cd = { quit = true },
     },
     resume = false,
-    sync = true,
+    sync = false,
   })
   ------------------------------
   -- /filer setting --

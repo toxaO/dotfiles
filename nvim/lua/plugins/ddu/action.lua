@@ -75,14 +75,38 @@ local function normalize_extension(ext)
   return normalized
 end
 
-local function excluded_extensions_text()
-  local excludes = get_rg_excluded_extensions()
-  if #excludes == 0 then
-    return "(none)"
+local function extension_from_path(path)
+  if type(path) ~= "string" or path == "" then
+    return ""
   end
-  local sorted = vim.deepcopy(excludes)
-  table.sort(sorted)
-  return table.concat(sorted, ",")
+  local basename = path:match("([^/\\]+)$") or path
+  local ext = basename:match("%.([^.]+)$")
+  return normalize_extension(ext or "")
+end
+
+local function collect_extensions_from_visible_items()
+  local items = vim.b.ddu_ui_items
+  if type(items) ~= "table" then
+    items = fn["ddu#ui#get_items"]() or {}
+  end
+  local ext_map = {}
+
+  for _, item in ipairs(items) do
+    local path = item and item.action and item.action.path or ""
+    if path ~= "" then
+      local ext = extension_from_path(path)
+      if ext ~= "" then
+        ext_map[ext] = true
+      end
+    end
+  end
+
+  local exts = {}
+  for ext, _ in pairs(ext_map) do
+    table.insert(exts, ext)
+  end
+  table.sort(exts)
+  return exts
 end
 
 local function toggle_excluded_extension(ext)
@@ -137,6 +161,20 @@ local function parse_extension_selection(input, max_index)
   end
   table.sort(indexes)
   return indexes
+end
+
+local function show_extension_list_message(exts)
+  local excludes = {}
+  for _, ext in ipairs(get_rg_excluded_extensions()) do
+    excludes[ext] = true
+  end
+
+  local lines = { "Toggle rg ignore extension (comma/range):" }
+  for i, ext in ipairs(exts) do
+    local mark = excludes[ext] and "[x]" or "[ ]"
+    table.insert(lines, string.format("%2d. %s *.%s", i, mark, ext))
+  end
+  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "ddu rg extensions" })
 end
 
 local function build_filer_cd_cmd(show_files)
@@ -224,58 +262,25 @@ function M.reg_actions()
       and item.action
       and item.action.path
       or ""
-    local ext = normalize_extension(fn.fnamemodify(path, ":e"))
+    local ext = extension_from_path(path)
 
     if ext == "" then
-      print("ddu rg ignore: extension not found")
       return 0
     end
 
-    local removed = toggle_excluded_extension(ext)
-    if removed then
-      print(string.format("ddu rg ignore: include *.%s", ext))
-    else
-      print(string.format("ddu rg ignore: exclude *.%s", ext))
-    end
-    print("ddu rg ignore extensions: " .. excluded_extensions_text())
+    toggle_excluded_extension(ext)
     refresh_rg_items()
     return 0
   end)
 
   ddu.action("ui", "_", "selectRgExcludeExtensionFromVisibleItems", function(_)
-    local items = fn["ddu#ui#get_items"]() or {}
-    local ext_map = {}
-
-    for _, item in ipairs(items) do
-      local path = item and item.action and item.action.path or ""
-      local ext = normalize_extension(fn.fnamemodify(path, ":e"))
-      if ext ~= "" then
-        ext_map[ext] = true
-      end
-    end
-
-    local exts = {}
-    for ext, _ in pairs(ext_map) do
-      table.insert(exts, ext)
-    end
-    table.sort(exts)
+    local exts = collect_extensions_from_visible_items()
 
     if #exts == 0 then
-      print("ddu rg ignore: no extension found in visible items")
       return 0
     end
 
-    local exclude_set = {}
-    for _, ext in ipairs(get_rg_excluded_extensions()) do
-      exclude_set[ext] = true
-    end
-
-    local lines = { "Toggle rg ignore extension (comma/range):" }
-    for i, ext in ipairs(exts) do
-      local mark = exclude_set[ext] and "[x]" or "[ ]"
-      table.insert(lines, string.format("%2d. %s *.%s", i, mark, ext))
-    end
-    vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "ddu rg extensions" })
+    show_extension_list_message(exts)
 
     vim.ui.input({
       prompt = "indexes (e.g. 1,3,5 or 2-6): ",
@@ -286,7 +291,7 @@ function M.reg_actions()
 
       local indexes, err = parse_extension_selection(input, #exts)
       if not indexes then
-        print("ddu rg ignore: " .. err)
+        vim.notify(err, vim.log.levels.WARN, { title = "ddu rg extensions" })
         return
       end
       if #indexes == 0 then
@@ -297,8 +302,6 @@ function M.reg_actions()
         toggle_excluded_extension(exts[i])
       end
 
-      print("ddu rg ignore: toggled " .. #indexes .. " extension(s)")
-      print("ddu rg ignore extensions: " .. excluded_extensions_text())
       refresh_rg_items()
     end)
     return 0
@@ -306,8 +309,6 @@ function M.reg_actions()
 
   ddu.action("ui", "_", "clearRgExcludeExtensions", function(_)
     rg_excluded_extensions = {}
-    print("ddu rg ignore: cleared temporary extension filters")
-    print("ddu rg ignore extensions: " .. excluded_extensions_text())
     refresh_rg_items()
     return 0
   end)

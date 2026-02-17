@@ -242,7 +242,6 @@ function M.setup()
       keymap.set("n", ",X", function()
         ddu.do_action("selectRgExcludeExtensionFromVisibleItems")
       end, km_opts.bnw)
-
     end,
   }) -- /ff normal keymaps --
 
