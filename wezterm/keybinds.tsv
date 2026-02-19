@@ -1,11 +1,14 @@
 # shortcut	category	description	action	source
-leader + c	ui	open key assignments launcher	ShowLauncherArgs(FUZZY|KEY_ASSIGNMENTS)	custom
+leader + c	tab	open new tab	SpawnTab(CurrentPaneDomain)	custom
+leader + C	ui	open command palette	ActivateCommandPalette	custom
 leader + s	ui	open workspace selector	InputSelector(fuzzy) -> SwitchToWorkspace	custom
 leader + S	ui	create/switch workspace by name	PromptInputLine -> SwitchToWorkspace(name)	custom
 leader + ,	ui	rename current tab	PromptInputLine -> active_tab():set_title	custom
 leader + .	ui	rename current workspace	PromptInputLine -> rename_workspace(active,new)	custom
-leader + n	ui	switch to next workspace (repeatable)	Switch workspace + ws_nav mode	custom
-leader + p	ui	switch to previous workspace (repeatable)	Switch workspace + ws_nav mode	custom
+leader + n	tab	switch to next tab (repeatable: n/p, Esc to exit)	ActivateTabRelative(1) + tab_nav mode	custom
+leader + p	tab	switch to previous tab (repeatable: n/p, Esc to exit)	ActivateTabRelative(-1) + tab_nav mode	custom
+leader + N	ui	switch to next workspace (repeatable: n/p, Esc to exit)	Switch workspace + ws_nav mode	custom
+leader + P	ui	switch to previous workspace (repeatable: n/p, Esc to exit)	Switch workspace + ws_nav mode	custom
 leader + left	ui	switch to previous workspace	SwitchWorkspaceRelative(-1)	custom
 leader + right	ui	switch to next workspace	SwitchWorkspaceRelative(1)	custom
 leader + /	ui	open keybinds search (fzf pane)	SplitPane Down 35% -> wezterm/scripts/keybinds_menu.sh	custom

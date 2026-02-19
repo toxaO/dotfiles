@@ -187,9 +187,12 @@ return {
     {
       key = "c",
       mods = "LEADER",
-      action = act.ShowLauncherArgs({
-        flags = "FUZZY|KEY_ASSIGNMENTS",
-      }),
+      action = act.SpawnTab("CurrentPaneDomain"),
+    },
+    {
+      key = "C",
+      mods = "LEADER|SHIFT",
+      action = act.ActivateCommandPalette,
     },
     {
       key = "s",
@@ -395,13 +398,11 @@ return {
       key = "n",
       mods = "LEADER",
       action = act.Multiple({
-        wezterm.action_callback(function(window, pane)
-          switch_workspace_sorted(window, pane, 1)
-        end),
+        act.ActivateTabRelative(1),
         act.ActivateKeyTable({
-          name = "ws_nav",
+          name = "tab_nav",
           one_shot = false,
-          timeout_milliseconds = 2000,
+          timeout_milliseconds = 1200,
         }),
       }),
     },
@@ -409,13 +410,39 @@ return {
       key = "p",
       mods = "LEADER",
       action = act.Multiple({
+        act.ActivateTabRelative(-1),
+        act.ActivateKeyTable({
+          name = "tab_nav",
+          one_shot = false,
+          timeout_milliseconds = 1200,
+        }),
+      }),
+    },
+    {
+      key = "N",
+      mods = "LEADER|SHIFT",
+      action = act.Multiple({
+        wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, 1)
+        end),
+        act.ActivateKeyTable({
+          name = "ws_nav",
+          one_shot = false,
+          timeout_milliseconds = 1200,
+        }),
+      }),
+    },
+    {
+      key = "P",
+      mods = "LEADER|SHIFT",
+      action = act.Multiple({
         wezterm.action_callback(function(window, pane)
           switch_workspace_sorted(window, pane, -1)
         end),
         act.ActivateKeyTable({
           name = "ws_nav",
           one_shot = false,
-          timeout_milliseconds = 2000,
+          timeout_milliseconds = 1200,
         }),
       }),
     },
@@ -442,6 +469,20 @@ return {
   },
   key_tables = {
     copy_mode = copy_mode,
+    tab_nav = {
+      {
+        key = "n",
+        action = act.ActivateTabRelative(1),
+      },
+      {
+        key = "p",
+        action = act.ActivateTabRelative(-1),
+      },
+      {
+        key = "Escape",
+        action = act.PopKeyTable,
+      },
+    },
     ws_nav = {
       {
         key = "n",
