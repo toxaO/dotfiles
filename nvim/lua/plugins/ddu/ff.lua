@@ -153,6 +153,18 @@ function M.setup()
     -- help --
   ddu.patch_local("help",{
     sources = {{name = "help",}},
+    uiParams = {
+      ff = {
+        startFilter = true,
+        startAutoAction = true,
+        autoAction = {
+          delay = 0,
+          name = "preview",
+        },
+        previewFloating = true,
+        previewSplit = "vertical",
+      },
+    },
     sourceParams = {
       helpLang = "ja",
     },

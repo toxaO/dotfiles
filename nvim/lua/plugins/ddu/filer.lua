@@ -154,7 +154,7 @@ function M.setup()
     fn["ddu#ui#do_action"]("cursorNext") -- デフォルトのカーソル位置がファイルパスに被るため
   end, km_opts.nsw)
 
-  keymap.set("n", "<Space>c", function()
+  keymap.set("n", "<Space>C", function()
     local current_path = vim.t.ddu_ui_filer_cd_path or fn["getcwd"](-1, 0)
     fn["ddu#start"]({
       name = "filer_cd",
