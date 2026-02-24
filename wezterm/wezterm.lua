@@ -2,6 +2,24 @@ local wezterm = require("wezterm")
 local act = wezterm.action
 local copy_mode = wezterm.gui.default_key_tables().copy_mode
 
+local config = {}
+
+if wezterm.config_builder then
+  config = wezterm.config_builder()
+end
+
+-- WSL Ubuntuをデフォルトドメインとして設定し、WSLセッションのCWDをLinuxのホームへ
+if wezterm.target_triple and wezterm.target_triple:find("windows", 1, true) then
+  config.default_domain = "WSL:Ubuntu"
+  config.wsl_domains = {
+    {
+      name = "WSL:Ubuntu",
+      distribution = "Ubuntu",
+      default_cwd = "~",
+    },
+  }
+end
+
 table.insert(copy_mode, {
   key = "Enter",
   mods = "NONE",
@@ -124,7 +142,7 @@ wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
   }
 end)
 
-return {
+local base_config = {
   default_cwd = wezterm.home_dir,
   leader = {
     key = "j",
@@ -317,8 +335,8 @@ return {
         },
         command = {
           args = {
-            "zsh",
-            "-lic",
+            "sh",
+            "-lc",
             "$HOME/dotfiles/wezterm/scripts/keybinds_menu.sh",
           },
         },
@@ -557,3 +575,9 @@ return {
     },
   },
 }
+
+for key, value in pairs(base_config) do
+  config[key] = value
+end
+
+return config
