@@ -39,6 +39,8 @@
 
 !/.gitignore_global
 !/.gitconfig_shared
+!/.gitattributes
+!/.editorconfig
 
 !/README.md
 !/LICENSE
