@@ -39,9 +39,10 @@ return{
 		config = function()
 			require("ddc_source_lsp_setup").setup()
 			local capabilities = require("ddc_source_lsp").make_client_capabilities()
-			require("lspconfig").denols.setup({
+			vim.lsp.config("denols", {
 				capabilities = capabilities,
 			})
+			vim.lsp.enable("denols")
 		end,
 	},
 	-- ddc source
