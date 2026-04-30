@@ -37,10 +37,21 @@ case ${OSTYPE} in
     linux*)
     # ここに Linux 向けの設定
     export PATH="$PATH:/opt/nvim/"
-    # linux*) ブロック内
-    if [[ -r /proc/version && $(</proc/version) == *Microsoft* ]];
-    then LS_COLORS="${LS_COLORS}:ow=01;34";
-    export LS_COLORS
+
+    if command -v dircolors >/dev/null 2>&1; then
+      eval "$(dircolors -b)"
+    fi
+
+    if [[ -r /proc/version && ${(L)$(</proc/version)} == *microsoft* ]]; then
+      # DrvFS directories under /mnt/* are often seen as world-writable.
+      # Color them like normal directories to keep ls and completion readable.
+      LS_COLORS=$(print -r -- "$LS_COLORS" | sed -E \
+        -e 's/(^|:)ow=[^:]*/\1ow=01;34/g' \
+        -e 's/(^|:)tw=[^:]*/\1tw=01;34/g' \
+        -e 's/(^|:)st=[^:]*/\1st=01;34/g')
+      export LS_COLORS
+
+      zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
     fi
     ;;
 esac
