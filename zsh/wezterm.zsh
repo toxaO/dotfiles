@@ -1,5 +1,5 @@
 [[ -o interactive ]] || return 0
-[[ "${TERM_PROGRAM:-}" == "WezTerm" || -n "${WEZTERM_EXECUTABLE:-}" ]] || return 0
+[[ "${TERM_PROGRAM:-}" == "WezTerm" || -n "${WEZTERM_EXECUTABLE:-}" || -n "${WEZTERM_PANE:-}" ]] || return 0
 
 autoload -Uz add-zsh-hook
 

@@ -8,6 +8,16 @@ if wezterm.config_builder then
   config = wezterm.config_builder()
 end
 
+local function replace_key_binding(bindings, new_binding)
+  for i, binding in ipairs(bindings) do
+    if binding.key == new_binding.key and binding.mods == new_binding.mods then
+      bindings[i] = new_binding
+      return
+    end
+  end
+  table.insert(bindings, new_binding)
+end
+
 -- WSL Ubuntuをデフォルトドメインとして設定し、WSLセッションのCWDをLinuxのホームへ
 if wezterm.target_triple and wezterm.target_triple:find("windows", 1, true) then
   config.default_domain = "WSL:Ubuntu"
@@ -20,7 +30,7 @@ if wezterm.target_triple and wezterm.target_triple:find("windows", 1, true) then
   }
 end
 
-table.insert(copy_mode, {
+replace_key_binding(copy_mode, {
   key = "Enter",
   mods = "NONE",
   action = act.Multiple({
@@ -30,36 +40,6 @@ table.insert(copy_mode, {
       act.CopyMode("Close"),
     }),
   }),
-})
-
-table.insert(copy_mode, {
-  key = "[",
-  mods = "NONE",
-  action = act.CopyMode({ MoveBackwardZoneOfType = "Prompt" }),
-})
-
-table.insert(copy_mode, {
-  key = "]",
-  mods = "NONE",
-  action = act.CopyMode({ MoveForwardZoneOfType = "Prompt" }),
-})
-
-table.insert(copy_mode, {
-  key = "{",
-  mods = "SHIFT",
-  action = act.CopyMode({ MoveBackwardZoneOfType = "Output" }),
-})
-
-table.insert(copy_mode, {
-  key = "}",
-  mods = "SHIFT",
-  action = act.CopyMode({ MoveForwardZoneOfType = "Output" }),
-})
-
-table.insert(copy_mode, {
-  key = "v",
-  mods = "ALT",
-  action = act.CopyMode({ SetSelectionMode = "SemanticZone" }),
 })
 
 local is_nightly =
@@ -140,6 +120,43 @@ local function switch_workspace_sorted(window, pane, delta)
   window:perform_action(
     act.SwitchToWorkspace({
       name = names[next_idx],
+    }),
+    pane
+  )
+end
+
+local function load_keybind_choices()
+  local choices = {}
+  local notes_file = wezterm.home_dir .. "/dotfiles/wezterm/keybinds.tsv"
+  local file = io.open(notes_file, "r")
+
+  if not file then
+    return choices
+  end
+
+  for line in file:lines() do
+    if line ~= "" and not line:match("^#") then
+      local shortcut, category, description = line:match("^([^\t]+)\t([^\t]+)\t([^\t]+)\t")
+      if shortcut and category and description then
+        table.insert(choices, {
+          id = shortcut .. ":" .. description,
+          label = string.format("%-22s %-10s %s", shortcut, category, description),
+        })
+      end
+    end
+  end
+
+  file:close()
+  return choices
+end
+
+local function show_keybinds_selector(window, pane)
+  window:perform_action(
+    act.InputSelector({
+      title = "WezTerm keybinds",
+      choices = load_keybind_choices(),
+      fuzzy = true,
+      action = wezterm.action_callback(function() end),
     }),
     pane
   )
@@ -358,19 +375,9 @@ local base_config = {
     {
       key = "/",
       mods = "LEADER",
-      action = act.SplitPane({
-        direction = "Down",
-        size = {
-          Percent = 35,
-        },
-        command = {
-          args = {
-            "sh",
-            "-lc",
-            "$HOME/dotfiles/wezterm/scripts/keybinds_menu.sh",
-          },
-        },
-      }),
+      action = wezterm.action_callback(function(window, pane)
+        show_keybinds_selector(window, pane)
+      end),
     },
     {
       key = "w",
@@ -493,16 +500,6 @@ local base_config = {
           timeout_milliseconds = 1200,
         }),
       }),
-    },
-    {
-      key = "UpArrow",
-      mods = "LEADER",
-      action = act.ScrollToPrompt(-1),
-    },
-    {
-      key = "DownArrow",
-      mods = "LEADER",
-      action = act.ScrollToPrompt(1),
     },
     {
       key = "LeftArrow",
