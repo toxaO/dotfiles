@@ -148,6 +148,41 @@ zsh_cmds_menu() {
   "$script"
 }
 
+agents_template() {
+  local src="$HOME/dotfiles/templates/AGENTS.md"
+  local dest="${1:-$PWD/AGENTS.md}"
+
+  if [ ! -f "$src" ]; then
+    echo "template not found: $src" >&2
+    return 1
+  fi
+
+  if [ -e "$dest" ]; then
+    echo "already exists: $dest" >&2
+    return 1
+  fi
+
+  cp "$src" "$dest" || return 1
+  echo "created: $dest"
+}
+
+cx() {
+  local template="$HOME/dotfiles/templates/AGENTS.md"
+  local target="$PWD/AGENTS.md"
+  local agent_editor="${AGENTS_EDITOR:-nvim}"
+
+  if [ ! -f "$target" ]; then
+    if [ ! -f "$template" ]; then
+      echo "template not found: $template" >&2
+      return 1
+    fi
+    cp "$template" "$target" || return 1
+    "$agent_editor" "$target" || return 1
+  fi
+
+  codex resume "$@"
+}
+
 #--------------------------------------------------
 # python
 #--------------------------------------------------
