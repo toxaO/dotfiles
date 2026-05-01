@@ -57,3 +57,4 @@ alias arm='arch -arm64e zsh'
 alias rmDS='find . -name ".DS_Store" -type f -ls -delete'
 
 # Codex
+alias cr='codex resume'

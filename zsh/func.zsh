@@ -148,6 +148,8 @@ zsh_cmds_menu() {
   "$script"
 }
 
+unalias cx 2>/dev/null
+
 agents_template() {
   local src="$HOME/dotfiles/templates/AGENTS.md"
   local dest="${1:-$PWD/AGENTS.md}"
@@ -166,7 +168,7 @@ agents_template() {
   echo "created: $dest"
 }
 
-cx() {
+function cx {
   local template="$HOME/dotfiles/templates/AGENTS.md"
   local target="$PWD/AGENTS.md"
   local agent_editor="${AGENTS_EDITOR:-nvim}"
@@ -180,7 +182,7 @@ cx() {
     "$agent_editor" "$target" || return 1
   fi
 
-  codex resume "$@"
+  codex "$@"
 }
 
 #--------------------------------------------------
