@@ -97,6 +97,13 @@ fi
 [ -f "$HOME/.secrets/openai.sh" ] && source "$HOME/.secrets/openai.sh"
 
 #-------------------------------------------------
+# WezTerm shell integration
+#-------------------------------------------------
+if [[ -f "$HOME/dotfiles/zsh/wezterm.zsh" ]]; then
+  source "$HOME/dotfiles/zsh/wezterm.zsh"
+fi
+
+#-------------------------------------------------
 # Iterm使用時のみ
 #-------------------------------------------------
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"

@@ -32,6 +32,36 @@ table.insert(copy_mode, {
   }),
 })
 
+table.insert(copy_mode, {
+  key = "[",
+  mods = "NONE",
+  action = act.CopyMode({ MoveBackwardZoneOfType = "Prompt" }),
+})
+
+table.insert(copy_mode, {
+  key = "]",
+  mods = "NONE",
+  action = act.CopyMode({ MoveForwardZoneOfType = "Prompt" }),
+})
+
+table.insert(copy_mode, {
+  key = "{",
+  mods = "SHIFT",
+  action = act.CopyMode({ MoveBackwardZoneOfType = "Output" }),
+})
+
+table.insert(copy_mode, {
+  key = "}",
+  mods = "SHIFT",
+  action = act.CopyMode({ MoveForwardZoneOfType = "Output" }),
+})
+
+table.insert(copy_mode, {
+  key = "v",
+  mods = "ALT",
+  action = act.CopyMode({ SetSelectionMode = "SemanticZone" }),
+})
+
 local is_nightly =
   wezterm.version and
   (wezterm.version:find("nightly", 1, true) or wezterm.version:find("dev", 1, true))
@@ -463,6 +493,16 @@ local base_config = {
           timeout_milliseconds = 1200,
         }),
       }),
+    },
+    {
+      key = "UpArrow",
+      mods = "LEADER",
+      action = act.ScrollToPrompt(-1),
+    },
+    {
+      key = "DownArrow",
+      mods = "LEADER",
+      action = act.ScrollToPrompt(1),
     },
     {
       key = "LeftArrow",
