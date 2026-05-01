@@ -26,6 +26,9 @@
 !/wezterm/
 !/wezterm/wezterm.lua
 
+!/powershell/
+!/powershell/**
+
 !/nvim/
 /nvim/lazy-lock.json
 !/nvim/init.lua
