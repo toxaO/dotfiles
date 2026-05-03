@@ -87,10 +87,6 @@ function ns {
     & nvim -S @args
 }
 
-function py {
-    & python3 @args
-}
-
 function pip {
     & pip3 @args
 }
