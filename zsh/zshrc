@@ -235,6 +235,7 @@ elif [ -n "$WSL_DISTRO_NAME" ]; then
   # WSL2
 fi
 export PATH=$HOME/.cargo/bin:$PATH
+export SUDO_EDITOR="nvim"
 # 自作コマンド
 export PATH=$HOME/mycommands:$PATH
 # homeにおいておくコマンド
@@ -380,6 +381,7 @@ alias rm='rm -I'
 alias rmi='rm -i'
 alias .za='source ~/.zshrc'
 alias nt='_open_filetypes_nvim'
+alias wolwin='wakeonlan f0:2f:74:4d:9b:7c'
 
 # python alias
 alias pip='pip3'
