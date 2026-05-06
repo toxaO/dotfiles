@@ -1,0 +1,240 @@
+#--------------------------------------------------
+#256色の確認関数:colorlist
+#--------------------------------------------------
+colorlist() {
+	for color in {000..015}; do
+		print -nP "%F{$color}$color %f"
+	done
+	printf "\n"
+	for color in {016..255}; do
+		print -nP "%F{$color}$color %f"
+		if [ $(($((color-16))%6)) -eq 5 ]; then
+			printf "\n"
+		fi
+	done
+}
+
+#--------------------------------------------------
+# cd project root
+#--------------------------------------------------
+project_root() {
+  local top
+  top="$(git rev-parse --show-toplevel 2>/dev/null)" || return
+  cd "$top" || return
+}
+
+#--------------------------------------------------
+# qmk補完
+#--------------------------------------------------
+if [ -e ~/repos/qmk_firmware ]; then
+autoload -Uz bashcompinit && bashcompinit
+source ~/github/qmk/qmk_firmware/util/qmk_tab_complete.sh
+fi
+
+#--------------------------------------------------
+# tmux
+#--------------------------------------------------
+chpwd() {
+  if [ -n "$TMUX" ]; then
+    tmux refresh-client -S
+  fi
+}
+
+tmux_reload() {
+  local conf="$HOME/dotfiles/tmux/tmux.conf"
+  if ! command -v tmux >/dev/null; then
+    echo "tmux not found" >&2
+    return 1
+  fi
+  if [ -x "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh" ]; then
+    "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
+  fi
+  if [ -n "$TMUX" ]; then
+    tmux source-file "$conf" >/dev/null && tmux display-message "Reloaded: $conf"
+  else
+    tmux source-file "$conf" && echo "Reloaded: $conf"
+  fi
+}
+
+tmux_start() {
+  if ! command -v tmux >/dev/null; then
+    echo "tmux not found" >&2
+    return 1
+  fi
+  if [ -n "$TMUX" ]; then
+    echo "already in tmux" >&2
+    return 1
+  fi
+
+  local sessions choice name
+  sessions=("${(@f)$(tmux list-sessions -F '#S' 2>/dev/null)}")
+
+  if (( ${#sessions} > 0 )); then
+    echo "Choose how to start tmux:"
+    select choice in "Choose existing (choose-tree)" "Create new session"; do
+      case "$choice" in
+        "Choose existing (choose-tree)")
+          tmux attach -t "${sessions[1]}" \; choose-tree -Zs
+          return
+          ;;
+        "Create new session")
+          break
+          ;;
+        *)
+          echo "Invalid selection."
+          ;;
+      esac
+    done
+  fi
+
+  local base_dir picked_dir
+  base_dir="$HOME"
+
+  if command -v fzf >/dev/null; then
+    if command -v fd >/dev/null; then
+      picked_dir="$(fd -t d -H --exclude .git --exclude node_modules --exclude .cache --max-depth 3 . "$base_dir" | \
+        fzf --prompt="Dir> " --height=40% \
+        --header="Ctrl-d: deep search / Ctrl-s: shallow search" \
+        --bind="ctrl-d:reload(fd -t d -H --exclude .git --exclude node_modules --exclude .cache . \"$base_dir\")" \
+        --bind="ctrl-s:reload(fd -t d -H --exclude .git --exclude node_modules --exclude .cache --max-depth 3 . \"$base_dir\")")"
+    else
+      picked_dir="$(find "$base_dir" -maxdepth 3 -type d 2>/dev/null | \
+        fzf --prompt="Dir> " --height=40% \
+        --header="Ctrl-d: deep search / Ctrl-s: shallow search" \
+        --bind="ctrl-d:reload(find \"$base_dir\" -type d 2>/dev/null)" \
+        --bind="ctrl-s:reload(find \"$base_dir\" -maxdepth 3 -type d 2>/dev/null)")"
+    fi
+  else
+    vared -p "Directory (default: $base_dir): " picked_dir
+  fi
+
+  if [[ -z "$picked_dir" ]]; then
+    picked_dir="$base_dir"
+  fi
+
+  local dir_name date_suffix
+  dir_name="$(basename "$picked_dir")"
+  dir_name="${dir_name// /_}"
+  date_suffix="$(date +%Y%m%d)"
+  name="${dir_name}_${date_suffix}"
+
+  tmux new -s "$name" -c "$picked_dir"
+}
+
+tmux_keybinds_update() {
+  local script="$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
+  if [ ! -x "$script" ]; then
+    echo "not executable: $script" >&2
+    return 1
+  fi
+  "$script"
+}
+
+zsh_cmds_update() {
+  local script="$HOME/dotfiles/zsh/scripts/update_commands_notes.sh"
+  if [ ! -x "$script" ]; then
+    echo "not executable: $script" >&2
+    return 1
+  fi
+  "$script"
+}
+
+zsh_cmds_menu() {
+  local script="$HOME/dotfiles/zsh/scripts/commands_menu.sh"
+  if [ ! -x "$script" ]; then
+    echo "not executable: $script" >&2
+    return 1
+  fi
+  "$script"
+}
+
+unalias cx 2>/dev/null
+
+agents_template() {
+  local src="$HOME/dotfiles/templates/AGENTS.md"
+  local dest="${1:-$PWD/AGENTS.md}"
+
+  if [ ! -f "$src" ]; then
+    echo "template not found: $src" >&2
+    return 1
+  fi
+
+  if [ -e "$dest" ]; then
+    echo "already exists: $dest" >&2
+    return 1
+  fi
+
+  cp "$src" "$dest" || return 1
+  echo "created: $dest"
+}
+
+function cx {
+  local template="$HOME/dotfiles/templates/AGENTS.md"
+  local target="$PWD/AGENTS.md"
+  local agent_editor="${AGENTS_EDITOR:-nvim}"
+
+  if [ ! -f "$target" ]; then
+    if [ ! -f "$template" ]; then
+      echo "template not found: $template" >&2
+      return 1
+    fi
+    cp "$template" "$target" || return 1
+    "$agent_editor" "$target" || return 1
+  fi
+
+  codex "$@"
+}
+
+#--------------------------------------------------
+# python
+#--------------------------------------------------
+# venvの作成関数
+function mkvenv() {
+  local venv_name=${1:-.venv}
+  python3 -m venv "$venv_name" || return
+  if [[ ! $(basename "$PWD") == $USER && -z ${1} ]]; then
+    command -v direnv >/dev/null && cat > .envrc <<'EOF'
+source .venv/bin/activate
+PATH_add "$HOME/.cargo/bin"
+EOF
+    command -v direnv >/dev/null && direnv allow
+  fi
+}
+# venvの適用
+va() {
+  local venv=${1:-.venv}
+  [[ -f "$venv/bin/activate" ]] || { echo "no such venv: $venv" >&2; return 1; }
+  source "$venv/bin/activate"
+}
+
+# direnvでsourceした際、環境変数の変更のせいかdeactivateが使用できないため
+function vadeactivate () {
+        if [ -n "${_OLD_VIRTUAL_PATH:-}" ]
+        then
+                PATH="${_OLD_VIRTUAL_PATH:-}"
+                export PATH
+                unset _OLD_VIRTUAL_PATH
+        fi
+        if [ -n "${_OLD_VIRTUAL_PYTHONHOME:-}" ]
+        then
+                PYTHONHOME="${_OLD_VIRTUAL_PYTHONHOME:-}"
+                export PYTHONHOME
+                unset _OLD_VIRTUAL_PYTHONHOME
+        fi
+        if [ -n "${BASH:-}" -o -n "${ZSH_VERSION:-}" ]
+        then
+                hash -r 2> /dev/null
+        fi
+        if [ -n "${_OLD_VIRTUAL_PS1:-}" ]
+        then
+                PS1="${_OLD_VIRTUAL_PS1:-}"
+                export PS1
+                unset _OLD_VIRTUAL_PS1
+        fi
+        unset VIRTUAL_ENV
+        unset VIRTUAL_ENV_PROMPT
+        if [ ! "${1:-}" = "nondestructive" ]
+        then
+                unset -f vadeactivate
+        fi
+}

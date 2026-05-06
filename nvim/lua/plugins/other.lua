@@ -19,20 +19,40 @@ return {
   -- 背景透明化
   {"tsuyoshicho/transparency.vim"},
 
-  -- 検索時のカーソルカラー変更
-  {
-    "adamheins/vim-highlight-match-under-cursor",
-    config = function ()
-      g.HighlightMatchUnderCursor_highlight_link_group = "CurSearch"
-    end
-  },
-
   -- ステータスバー
 	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "ryanoasis/vim-devicons" },
 		config = function()
-			require("lualine").setup()
+			require("lualine").setup({
+        sections = {
+          lualine_c = {
+            {
+              function()
+                return "cwd: " .. fn.fnamemodify(fn.getcwd(-1, 0), ":~")
+              end,
+            },
+            {
+              function()
+                local path = fn.expand("%:p")
+                if path == "" then
+                  return "[No Name]"
+                end
+                local cwd = fn.getcwd(-1, 0)
+                local prefix = cwd .. "/"
+                if path == cwd then
+                  return "."
+                end
+                if path:sub(1, #prefix) == prefix then
+                  return path:sub(#prefix + 1)
+                end
+                return fn.fnamemodify(path, ":~")
+              end,
+            },
+          },
+          lualine_x = { "encoding", "filetype" },
+        },
+      })
 		end,
 	},
 
@@ -47,8 +67,8 @@ return {
   keys = { "<C-E>", mode = "n" } },
 
 	-- fzf
-	{ "junegunn/fzf", build = "./install --all" },
-	"junegunn/fzf.vim",
+	-- { "junegunn/fzf", build = "./install --all" },
+	-- "junegunn/fzf.vim",
 
 	-- キーバインド表示
 	{
@@ -80,7 +100,7 @@ return {
     opts = {},
     config = true, },
 
-  -- git
-  {"lambdalisue/gin.vim"},
+  -- diff
+  {"sindrets/diffview.nvim"},
 
 }

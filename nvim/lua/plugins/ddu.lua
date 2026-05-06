@@ -58,7 +58,6 @@ return {
       "kamecha/ddu-source-tab",
       "kyoh86/ddu-source-quickfix_history",
 
-
       -- column
       "Shougo/ddu-column-filename",
       "tamago3keran/ddu-column-devicon_filename",
@@ -101,6 +100,10 @@ return {
     }, -- /dependencies
 
     config = function ()
+      -- Warm up denops/ddu early to reduce first keypress latency.
+      pcall(fn["denops#server#start"])
+      pcall(fn["denops#plugin#wait_async"], "ddu", function()
+      end)
 
       -- init
       ddu.window_resize()

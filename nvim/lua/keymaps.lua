@@ -1,3 +1,7 @@
+----------------------------------------------------------------------------------------------------
+-- Keymaps
+-- nvimのcoreのみを使用したキーマップ設定
+----------------------------------------------------------------------------------------------------
 local g = vim.g
 local b = vim.b
 local fn = vim.fn
@@ -6,41 +10,29 @@ local keymap = vim.keymap
 
 local km_opts = require("const.keymap")
 
--- keymap multi line example
---keymap.set("n", "<Space><Space>",
---  ":<C-U>echo 'line1'"
---  .."| echo 'line2'<CR>"
---, km_opts.ns)
-
 local M = {}
 
 function M.setup()
   keymap.set("", "<Space>", "<Nop>", km_opts.ns)
-  -- keymap.set("n", "<Space><Space>",
-  --   ":<C-U>echo 'single'"
-  --   .."| echo 'daul'<CR>"
-  -- , km_opts.ns)
 
   ----------------------------------------------------------------------
   -- Normal --
   ----------------------------------------------------------------------
 
   --------------------------------------------------
+  -- yank
+  --------------------------------------------------
+  keymap.set("n", "Y", "y$", km_opts.ns)
+
+  --------------------------------------------------
   -- quit
   --------------------------------------------------
-  keymap.set("n", "<Space>q", ":<C-U>qa<CR>", km_opts.ns)
-  keymap.set("n", "<Space>Q", ":<C-U>qa!<CR>", km_opts.ns)
+  keymap.set("n", "<Space>qq", ":<C-U>qa!<CR>", km_opts.ns)
 
   --------------------------------------------------
   -- window
   --------------------------------------------------
   keymap.set("n", "<Space>c", ":<C-u>clo<CR>", km_opts.ns)
-  keymap.set("n", "<Space>o", ":<C-u>only<CR>", km_opts.ns)
-
-  --------------------------------------------------
-  -- session
-  --------------------------------------------------
-  keymap.set("n", "<Space>S", ":<C-u>mksession! | echo 'save Session!'<CR>", km_opts.ns)
 
   --------------------------------------------------
   -- messages

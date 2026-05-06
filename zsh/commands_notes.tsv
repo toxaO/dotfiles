@@ -1,0 +1,49 @@
+# type	name	category	description	source
+function	zsh_cmds_menu	core	show zsh commands list (fzf)	function: zsh/func.zsh
+alias	gls	git	git ls-files	alias: git ls-files
+alias	gp	git	git push	alias: git push
+alias	coC	git	git checkout Codex	alias: git checkout Codex
+alias	tm	tmux	tmux	alias: tmux_start
+alias	gr	git	git remote -v	alias: git remote -v
+alias	pip	python	pip3	alias: pip3
+alias	gcb	git	git checkout -b	alias: git checkout -b
+alias	gs	git	git status	alias: git status
+function	colorlist	core	show 256-color palette	function: zsh/func.zsh
+alias	vf	core	fzf pick file to open in vim	alias: f(){ local f; f=$(fzf -1 -0) || return; vim "$f"; }; f
+function	va	core	activate python venv	function: zsh/func.zsh
+alias	nf	core	fzf pick file to open in neovim	alias: f(){ local f; f=$(fzf -1 -0) || return; nvim "$f"; }; f
+function	mkvenv	core	create python venv + direnv helper	function: zsh/func.zsh
+alias	rmDS	core	delete .DS_Store files	alias: find . -name ".DS_Store" -type f -ls -delete
+alias	arm	system	run zsh under arm64e	alias: arch -arm64e zsh
+alias	x86	system	run zsh under x86_64	alias: arch -x86_64 zsh
+alias	gcl	git	git clone	alias: git clone
+alias	gpl	git	git pull	alias: git pull
+alias	gpo	git	git push origin	alias: git push origin
+alias	ns	editor	open neovim session	alias: nvim -S
+function	tmux_start			function: zsh/func.zsh
+alias	nv	editor	open neovim	alias: nvim
+alias	.f	core	cd to dotfiles	alias: cd ~/dotfiles
+alias	co	git	git checkout	alias: git checkout
+function	zsh_cmds_update	core	update zsh commands TSV	function: zsh/func.zsh
+function	tmux_keybinds_update	core	update tmux keybinds TSV	function: zsh/func.zsh
+alias	pr	core	cd to git project root	alias: project_root
+alias	cod	git	git checkout develop	alias: git checkout develop
+alias	cx	tools	codex	alias: codex
+alias	ga	git	git add .	alias: git add .
+alias	gc	git	git commit -m	alias: git commit -m
+alias	.t	core	reload tmux config	alias: tmux_reload
+function	vadeactivate	core	deactivate venv (direnv-safe)	function: zsh/func.zsh
+alias	py	python	python3	alias: python3
+alias	rm	core	rm with prompt	alias: rm'
+alias	gf	git	git fetch	alias: git fetch
+alias	gaa	git	git add -A	alias: git add -A
+function	chpwd	core	refresh tmux status on dir change	function: zsh/func.zsh
+alias	com	git	git checkout main	alias: git checkout main
+alias	da	core	vadeactivate	alias: vadeactivate
+alias	.z	core	reload zshrc	alias: source ~/dotfiles/zsh/zshrc
+function	project_root	core	cd to git project root	function: zsh/func.zsh
+alias	lg	git	lazygit	alias: lazygit
+alias	gl	git	git log (oneline 10)	alias: git log --oneline -n 10
+function	tmux_reload	core	reload tmux config and keybinds TSV	function: zsh/func.zsh
+alias	gm	git	git merge	alias: git merge
+alias	br	git	git branch	alias: git branch
