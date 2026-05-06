@@ -119,3 +119,5 @@ if [[ -o interactive ]] \
     tmux_start
   fi
 fi
+
+. "$HOME/.local/bin/env"
