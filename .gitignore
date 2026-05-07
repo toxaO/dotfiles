@@ -40,6 +40,10 @@
 !/karabiner/assets/**
 !/karabiner/karabiner.json
 
+!/AGENTS.md
+!/templates/
+!/templates/**
+
 !/.gitignore_global
 !/.gitconfig_shared
 !/.gitattributes

@@ -26,6 +26,9 @@ alias	.f	core	cd to dotfiles	alias: cd ~/dotfiles
 alias	co	git	git checkout	alias: git checkout
 function	zsh_cmds_update	core	update zsh commands TSV	function: zsh/func.zsh
 function	tmux_keybinds_update	core	update tmux keybinds TSV	function: zsh/func.zsh
+function	agents_template	tools	create split AGENTS.md and AGENTS_PROJECT.md	function: zsh/func.zsh
+function	agents_migrate	tools	migrate existing AGENTS.md to split BASE/PROJECT layout	function: zsh/func.zsh
+function	agents_refresh	tools	refresh split AGENTS.md BASE link from current environment	function: zsh/func.zsh
 alias	pr	core	cd to git project root	alias: project_root
 alias	cod	git	git checkout develop	alias: git checkout develop
 alias	cx	tools	codex	alias: codex

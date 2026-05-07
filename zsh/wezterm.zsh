@@ -87,7 +87,7 @@ __wezterm_preexec() {
 }
 
 __wezterm_prompt_end() {
-  printf '\033]133;B\007'
+  __wezterm_osc "133;B"
 }
 
 add-zsh-hook precmd __wezterm_precmd

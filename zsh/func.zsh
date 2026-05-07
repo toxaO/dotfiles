@@ -182,36 +182,121 @@ zsh_cmds_menu() {
 
 unalias cx 2>/dev/null
 
+_agents_dotfiles_dir() {
+  local dir="${DOTFILES_DIR:-$HOME/dotfiles}"
+
+  if [ ! -d "$dir" ]; then
+    echo "dotfiles directory not found: $dir" >&2
+    echo "Set DOTFILES_DIR to the dotfiles path." >&2
+    return 1
+  fi
+
+  print -r -- "${dir:A}"
+}
+
+_agents_write_main() {
+  local dest="$1"
+  local dotfiles_dir base
+
+  dotfiles_dir="$(_agents_dotfiles_dir)" || return 1
+  base="$dotfiles_dir/templates/AGENTS_BASE.md"
+  if [ ! -f "$base" ]; then
+    echo "base template not found: $base" >&2
+    return 1
+  fi
+
+  {
+    print -r -- "# AGENTS.md"
+    print -r -- ""
+    print -r -- "@$base"
+    print -r -- "@./AGENTS_PROJECT.md"
+  } > "$dest"
+}
+
 agents_template() {
-  local src="$HOME/dotfiles/templates/AGENTS.md"
-  local dest="${1:-$PWD/AGENTS.md}"
+  local dotfiles_dir project_template dest_dir main project
+  dotfiles_dir="$(_agents_dotfiles_dir)" || return 1
+  project_template="$dotfiles_dir/templates/AGENTS_PROJECT.md"
+  dest_dir="${1:-$PWD}"
 
-  if [ ! -f "$src" ]; then
-    echo "template not found: $src" >&2
+  if [[ "$dest_dir" == */AGENTS.md ]]; then
+    dest_dir="${dest_dir:h}"
+  fi
+
+  main="$dest_dir/AGENTS.md"
+  project="$dest_dir/AGENTS_PROJECT.md"
+
+  if [ ! -f "$project_template" ]; then
+    echo "project template not found: $project_template" >&2
     return 1
   fi
 
-  if [ -e "$dest" ]; then
-    echo "already exists: $dest" >&2
+  if [ -e "$main" ] || [ -e "$project" ]; then
+    echo "already exists: $main or $project" >&2
     return 1
   fi
 
-  cp "$src" "$dest" || return 1
-  echo "created: $dest"
+  cp "$project_template" "$project" || return 1
+  _agents_write_main "$main" || return 1
+  echo "created: $main"
+  echo "created: $project"
+}
+
+agents_migrate() {
+  local dest_dir main project
+  dest_dir="${1:-$PWD}"
+
+  if [[ "$dest_dir" == */AGENTS.md ]]; then
+    dest_dir="${dest_dir:h}"
+  fi
+
+  main="$dest_dir/AGENTS.md"
+  project="$dest_dir/AGENTS_PROJECT.md"
+
+  if [ ! -f "$main" ]; then
+    echo "not found: $main" >&2
+    return 1
+  fi
+
+  if [ -e "$project" ]; then
+    echo "already exists: $project" >&2
+    return 1
+  fi
+
+  cp "$main" "$project" || return 1
+  _agents_write_main "$main" || return 1
+  echo "migrated: $main"
+  echo "created: $project"
+}
+
+agents_refresh() {
+  local dest_dir main project
+  dest_dir="${1:-$PWD}"
+
+  if [[ "$dest_dir" == */AGENTS.md ]]; then
+    dest_dir="${dest_dir:h}"
+  fi
+
+  main="$dest_dir/AGENTS.md"
+  project="$dest_dir/AGENTS_PROJECT.md"
+
+  if [ ! -f "$project" ]; then
+    echo "not found: $project" >&2
+    return 1
+  fi
+
+  _agents_write_main "$main" || return 1
+  echo "refreshed: $main"
 }
 
 function cx {
-  local template="$HOME/dotfiles/templates/AGENTS.md"
   local target="$PWD/AGENTS.md"
+  local project="$PWD/AGENTS_PROJECT.md"
   local agent_editor="${AGENTS_EDITOR:-nvim}"
 
   if [ ! -f "$target" ]; then
-    if [ ! -f "$template" ]; then
-      echo "template not found: $template" >&2
-      return 1
-    fi
-    cp "$template" "$target" || return 1
-    "$agent_editor" "$target" || return 1
+    agents_template "$PWD" || return 1
+    "$agent_editor" "$project" || return 1
   fi
 
   codex "$@"
