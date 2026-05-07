@@ -17,7 +17,6 @@ function M.setup()
   --------------------------------------------------------------------------------
   augroup("my_augroup", { clear = true })
   augroup("my_colorscheme", { clear = true })
-
   --------------------------------------------------------------------------------
   -- Remove whitespace on save
   --------------------------------------------------------------------------------
@@ -91,9 +90,31 @@ function M.setup()
     end})
 
   --------------------------------------------------------------------------------
-  -- python indent --
+  -- set cursorline only in active window
   --------------------------------------------------------------------------------
+  -- アクティブ窓だけ有効化（浮動ウィンドウは対象外）
+  local function apply_active_only()
+    local cur = vim.api.nvim_get_current_win()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      local cfg = vim.api.nvim_win_get_config(win)
+      if cfg.relative == "" then  -- floating window はスキップ
+        local active = (win == cur)
+        pcall(vim.api.nvim_set_option_value, "cursorline",   active, { win = win })
+        pcall(vim.api.nvim_set_option_value, "cursorcolumn", active, { win = win })
+      end
+    end
+  end
 
+  apply_active_only()
+
+  -- ウィンドウ切替/生成/タブ移動/フォーカス変化ごとに再適用
+  local grp = vim.api.nvim_create_augroup("OnlyActiveCursorLC", { clear = true })
+  vim.api.nvim_create_autocmd(
+    { "WinEnter", "WinLeave", "WinNew", "BufWinEnter", "TabEnter", "TabLeave", "FocusGained", "FocusLost" },
+    { group = grp, callback = apply_active_only }
+  )
+
+----------------------------------------------------------------------------------------------------
 end
 
 return M

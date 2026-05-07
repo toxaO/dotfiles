@@ -50,4 +50,14 @@ function M.reg_autocmd()
   )
 end
 
+vim.api.nvim_create_autocmd("User", {
+  pattern = "Ddu:uiDone",
+  callback = function()
+    if vim.b.ddu_ui_name == "file_rec" then
+      vim.fn["ddu#ui#async_action"]("openFilterWindow")
+    end
+  end,
+})
+
+
 return M

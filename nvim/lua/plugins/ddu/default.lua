@@ -59,6 +59,7 @@ function M.setup()
         matchers = {
           "matcher_substring",
           "matcher_hidden",
+          "matcher_ignore_files",
         },
 
         sorters = {"sorter_alpha"},
@@ -77,8 +78,21 @@ function M.setup()
 
       file_rec = {
         matchers = {"matcher_fzf"},
-        sorters = {"sorter_fzf"},
+        sorters = {
+                   "sorter_fzf",
+                   "sorter_alpha",
+                   "sorter_length",
+                  },
       }, -- /sourceOptions-file_rec
+
+      file_external = {
+        matchers = {"matcher_fzf"},
+        sorters = {
+                   "sorter_fzf",
+                   "sorter_alpha",
+                   "sorter_length",
+                  },
+      }, -- /sourceOptions-file_external
 
     }, -- /sourceOptions
 

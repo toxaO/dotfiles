@@ -31,28 +31,40 @@ function M.setup()
     sources = {{name = "arglist"}},
   }) -- /args --
 
-    -- file_rec --
+    -- file_rec (use file_external + fd) --
   ddu.patch_local("file_rec",{
 
     sources = {
-      {name = "file_rec"},
+      {name = "file_external"},
     },
 
     sourceParams = {
 
-      file_rec = {
-
-        ignoredDirectories = {
+      file_external = {
+        cmd = {
+          "fd",
+          ".",
+          "--type",
+          "f",
+          "--hidden",
+          "--follow",
+          "--exclude",
           ".git",
+          "--exclude",
           "node_modules",
+          "--exclude",
           "vendor",
+          "--exclude",
           ".next",
+          "--exclude",
           ".venv",
+          "--exclude",
           "__pycache__",
+          "--exclude",
           ".mypy_cache",
+          "--exclude",
           "out",
         },
-
       },
 
     },
@@ -62,7 +74,7 @@ function M.setup()
    -- project all file --
   ddu.patch_local("project", {
 
-    sources = { {name = "file_rec"}, },
+    sources = { {name = "file_external"}, },
 
     sourceOptions = {
 --          file_rec = {path = fn["expand"](u.fs.get_project_root_current_buf())}
@@ -70,19 +82,31 @@ function M.setup()
 
     sourceParams = {
 
-      file_rec = {
-
-        ignoredDirectories = {
+      file_external = {
+        cmd = {
+          "fd",
+          ".",
+          "--type",
+          "f",
+          "--hidden",
+          "--follow",
+          "--exclude",
           ".git",
+          "--exclude",
           "node_modules",
+          "--exclude",
           "vendor",
+          "--exclude",
           ".next",
+          "--exclude",
           ".venv",
+          "--exclude",
           "__pycache__",
+          "--exclude",
           ".mypy_cache",
+          "--exclude",
           "out",
         },
-
       },
 
     },
@@ -90,7 +114,7 @@ function M.setup()
   }) -- /project all file --
 
     -- project grep --
-  ddu.patch_local("project_grep", {
+  ddu.patch_local("grep", {
 
     uiParams = {
 
@@ -102,15 +126,10 @@ function M.setup()
     },
 
     sources = {
-      --{name = "file_rec"},
       {name = "rg"},
     },
 
     sourceOptions = {
-
-      file_rec = {
-       -- path = u.fs.get_project_root_current_buf()
-      },
 
       rg = {
         matchers = {},
@@ -122,7 +141,8 @@ function M.setup()
     sourceParams = {
 
       rg = {
-        args = {"--column", "--no-heading", "--color", "never"},
+        args = ddu_action.build_rg_args(),
+        globs = ddu_action.build_rg_globs(),
         --input = fn["expand"]("<cword>"),
       },
 
@@ -133,10 +153,23 @@ function M.setup()
     -- help --
   ddu.patch_local("help",{
     sources = {{name = "help",}},
+    uiParams = {
+      ff = {
+        startFilter = true,
+        startAutoAction = true,
+        autoAction = {
+          delay = 0,
+          name = "preview",
+        },
+        previewFloating = true,
+        previewSplit = "vertical",
+      },
+    },
     sourceParams = {
       helpLang = "ja",
     },
   }) -- /help --
+
   ------------------------------
   -- /ff setting --
   ------------------------------
@@ -160,7 +193,30 @@ function M.setup()
     })
   end, km_opts.nsw)
   keymap.set("n", "<F1>",":call ddu#start(#{name: 'help'})<CR>", km_opts.nsw)
-  keymap.set("n", "<Space>g",function()
+  keymap.set("n", "<space>g",function()
+    fn["ddu#start"]({
+      name = "grep",
+      sourceOptions = {
+        _ = {
+          -- Use tab-local cwd for grep base path.
+          path = fn["getcwd"](-1, 0)
+        },
+      },
+      input = fn["expand"]("<cword>"),
+    })
+  end, km_opts.nsw)
+  keymap.set("n", "<Space>G",function()
+    fn["ddu#start"]({
+      name = "grep",
+      sourceOptions = {
+        _ = {
+          path = fn["expand"](".")
+        },
+      },
+      input = fn["expand"]("<cword>"),
+    })
+  end, km_opts.nsw)
+  keymap.set("n", "<Space>G",function()
     fn["ddu#start"]({
       name = "project_grep",
       sourceOptions = {

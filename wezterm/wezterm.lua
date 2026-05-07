@@ -1,0 +1,620 @@
+local wezterm = require("wezterm")
+local act = wezterm.action
+local copy_mode = wezterm.gui.default_key_tables().copy_mode
+
+local config = {}
+
+if wezterm.config_builder then
+  config = wezterm.config_builder()
+end
+
+local function replace_key_binding(bindings, new_binding)
+  for i, binding in ipairs(bindings) do
+    if binding.key == new_binding.key and binding.mods == new_binding.mods then
+      bindings[i] = new_binding
+      return
+    end
+  end
+  table.insert(bindings, new_binding)
+end
+
+-- WSL Ubuntuをデフォルトドメインとして設定し、WSLセッションのCWDをLinuxのホームへ
+if wezterm.target_triple and wezterm.target_triple:find("windows", 1, true) then
+  config.default_domain = "WSL:Ubuntu"
+  config.wsl_domains = {
+    {
+      name = "WSL:Ubuntu",
+      distribution = "Ubuntu",
+      default_cwd = "~",
+    },
+  }
+end
+
+replace_key_binding(copy_mode, {
+  key = "Enter",
+  mods = "NONE",
+  action = act.Multiple({
+    act.CopyTo("ClipboardAndPrimarySelection"),
+    act.Multiple({
+      act.ScrollToBottom,
+      act.CopyMode("Close"),
+    }),
+  }),
+})
+
+local is_nightly =
+  wezterm.version and
+  (wezterm.version:find("nightly", 1, true) or wezterm.version:find("dev", 1, true))
+local TAB_LEFT = wezterm.nerdfonts.ple_lower_right_triangle
+local TAB_RIGHT = wezterm.nerdfonts.ple_upper_left_triangle
+
+wezterm.on("gui-startup", function()
+  local _, _, window = wezterm.mux.spawn_window({
+    cwd = wezterm.home_dir,
+  })
+  window:gui_window():maximize()
+end)
+
+wezterm.on("update-right-status", function(window, _)
+  window:set_left_status("")
+  local names = wezterm.mux.get_workspace_names()
+  if #names == 0 then
+    window:set_right_status("")
+    return
+  end
+  table.sort(names)
+  local current = wezterm.mux.get_active_workspace()
+  local leader_active = window:leader_is_active()
+  local prev_name = ""
+  local next_name = ""
+  for i, name in ipairs(names) do
+    if name == current then
+      prev_name = names[(i - 2) % #names + 1] or ""
+      next_name = names[i % #names + 1] or ""
+      break
+    end
+  end
+  local cells = {
+    { Foreground = { Color = "#c6c8d1" } },
+    { Text = " " .. prev_name .. "  " },
+    { Foreground = { Color = "#c6c8d1" } },
+    { Text = "< " },
+    { Background = { Color = "#84a0c6" } },
+    { Foreground = { Color = "#161821" } },
+    { Text = " " .. current .. " " },
+    { Background = { Color = "#161821" } },
+    { Foreground = { Color = "#c6c8d1" } },
+    { Text = " >" },
+    { Background = { Color = "#161821" } },
+    { Foreground = { Color = "#c6c8d1" } },
+    { Text = "  " .. next_name .. " " },
+  }
+  if leader_active then
+    table.insert(cells, 1, { Foreground = { Color = "#c6c8d1" } })
+    table.insert(cells, 1, { Background = { Color = "#161821" } })
+    table.insert(cells, 1, { Text = " " })
+    table.insert(cells, 1, { Foreground = { Color = "#161821" } })
+    table.insert(cells, 1, { Background = { Color = "#e2a478" } })
+    table.insert(cells, 1, { Text = " LEADER " })
+    table.insert(cells, 1, { Foreground = { Color = "#161821" } })
+    table.insert(cells, 1, { Background = { Color = "#e2a478" } })
+  end
+  window:set_right_status(wezterm.format(cells))
+end)
+
+local function switch_workspace_sorted(window, pane, delta)
+  local names = wezterm.mux.get_workspace_names()
+  if #names == 0 then
+    return
+  end
+  table.sort(names)
+  local current = wezterm.mux.get_active_workspace()
+  local idx = 1
+  for i, name in ipairs(names) do
+    if name == current then
+      idx = i
+      break
+    end
+  end
+  local next_idx = ((idx - 1 + delta) % #names) + 1
+  window:perform_action(
+    act.SwitchToWorkspace({
+      name = names[next_idx],
+    }),
+    pane
+  )
+end
+
+local function load_keybind_choices()
+  local choices = {}
+  local notes_file = wezterm.home_dir .. "/dotfiles/wezterm/keybinds.tsv"
+  local file = io.open(notes_file, "r")
+
+  if not file then
+    return choices
+  end
+
+  for line in file:lines() do
+    if line ~= "" and not line:match("^#") then
+      local shortcut, category, description = line:match("^([^\t]+)\t([^\t]+)\t([^\t]+)\t")
+      if shortcut and category and description then
+        table.insert(choices, {
+          id = shortcut .. ":" .. description,
+          label = string.format("%-22s %-10s %s", shortcut, category, description),
+        })
+      end
+    end
+  end
+
+  file:close()
+  return choices
+end
+
+local function show_keybinds_selector(window, pane)
+  window:perform_action(
+    act.InputSelector({
+      title = "WezTerm keybinds",
+      choices = load_keybind_choices(),
+      fuzzy = true,
+      action = wezterm.action_callback(function() end),
+    }),
+    pane
+  )
+end
+
+wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
+  local background = "#3e445e"
+  local foreground = "#c6c8d1"
+  local edge_background = "#161821"
+
+  if tab.is_active then
+    background = "#84a0c6"
+    foreground = "#161821"
+  end
+
+  local edge_foreground = background
+  local raw_title = tab.tab_title and #tab.tab_title > 0 and tab.tab_title or tab.active_pane.title
+  local title = "   " .. wezterm.truncate_right(raw_title, max_width - 1) .. "   "
+
+  return {
+    { Background = { Color = edge_background } },
+    { Foreground = { Color = edge_foreground } },
+    { Text = TAB_LEFT },
+    { Background = { Color = background } },
+    { Foreground = { Color = foreground } },
+    { Text = title },
+    { Background = { Color = edge_background } },
+    { Foreground = { Color = edge_foreground } },
+    { Text = TAB_RIGHT },
+  }
+end)
+
+local base_config = {
+  default_cwd = wezterm.home_dir,
+  leader = {
+    key = "j",
+    mods = "CTRL",
+    timeout_milliseconds = 1000,
+  },
+  window_decorations = is_nightly and "RESIZE | MACOS_FORCE_SQUARE_CORNERS" or "RESIZE",
+  window_frame = {
+    inactive_titlebar_bg = "none",
+    active_titlebar_bg = "none",
+    border_left_width = "1",
+    border_right_width = "1",
+    border_bottom_height = "1",
+    border_top_height = "1",
+    border_left_color = "#283457",
+    border_right_color = "#283457",
+    border_bottom_color = "#283457",
+    border_top_color = "#283457",
+  },
+  use_fancy_tab_bar = false,
+  show_tabs_in_tab_bar = true,
+  show_new_tab_button_in_tab_bar = false,
+  tab_bar_at_bottom = true,
+  tab_max_width = 32,
+  tab_and_split_indices_are_zero_based = true,
+  hide_tab_bar_if_only_one_tab = false,
+  color_scheme = "iceberg-dark",
+  colors = {
+    split = "#3b4261",
+    tab_bar = {
+      background = "#161821",
+      inactive_tab_edge = "#161821",
+    },
+  },
+  inactive_pane_hsb = {
+    saturation = 0.7,
+    brightness = 0.4,
+  },
+  window_background_opacity = 0.8,
+  skip_close_confirmation_for_processes_named = {},
+  font = wezterm.font_with_fallback({
+    "Hack Nerd Font Mono",
+    "Hack Nerd Font",
+    "Hiragino Sans",
+  }),
+  keys = {
+    {
+      key = "Enter",
+      mods = "OPT",
+      action = act.DisableDefaultAssignment,
+    },
+    {
+      key = "j",
+      mods = "CTRL|LEADER",
+      action = act.SendKey({
+        key = "j",
+        mods = "CTRL",
+      }),
+    },
+    {
+      key = "c",
+      mods = "LEADER",
+      action = act.SpawnTab("CurrentPaneDomain"),
+    },
+    {
+      key = "C",
+      mods = "LEADER|SHIFT",
+      action = act.ActivateCommandPalette,
+    },
+    {
+      key = "s",
+      mods = "LEADER",
+      action = wezterm.action_callback(function(window, pane)
+        local workspaces = {}
+        table.insert(workspaces, {
+          id = "__create_new_workspace__",
+          label = "+ Create new workspace (named)",
+        })
+        local current = wezterm.mux.get_active_workspace()
+        for i, name in ipairs(wezterm.mux.get_workspace_names()) do
+          local marker = name == current and "* " or "  "
+          table.insert(workspaces, {
+            id = name,
+            label = string.format("%s%d. %s", marker, i, name),
+          })
+        end
+        window:perform_action(
+          act.InputSelector({
+            title = "Select workspace",
+            choices = workspaces,
+            fuzzy = true,
+            action = wezterm.action_callback(function(win, p, id, _)
+              if id == "__create_new_workspace__" then
+                win:perform_action(
+                  act.PromptInputLine({
+                    description = "New workspace name:",
+                    action = wezterm.action_callback(function(w, pp, line)
+                      if line and line ~= "" then
+                        w:perform_action(
+                          act.SwitchToWorkspace({
+                            name = line,
+                            spawn = {
+                              cwd = wezterm.home_dir,
+                            },
+                          }),
+                          pp
+                        )
+                      end
+                    end),
+                  }),
+                  p
+                )
+              elseif id then
+                win:perform_action(
+                  act.SwitchToWorkspace({
+                    name = id,
+                  }),
+                  p
+                )
+              end
+            end),
+          }),
+          pane
+        )
+      end),
+    },
+    {
+      key = "S",
+      mods = "LEADER|SHIFT",
+      action = act.PromptInputLine({
+        description = "New workspace name:",
+        action = wezterm.action_callback(function(window, pane, line)
+          if line and line ~= "" then
+            window:perform_action(
+              act.SwitchToWorkspace({
+                name = line,
+                spawn = {
+                  cwd = wezterm.home_dir,
+                },
+              }),
+              pane
+            )
+          end
+        end),
+      }),
+    },
+    {
+      key = ",",
+      mods = "LEADER",
+      action = wezterm.action_callback(function(window, pane)
+        local current = window:active_tab():get_title()
+        window:perform_action(
+          act.PromptInputLine({
+            description = string.format("Rename tab (%s) to:", current),
+            action = wezterm.action_callback(function(win, _, line)
+              if line and line ~= "" then
+                win:active_tab():set_title(line)
+              end
+            end),
+          }),
+          pane
+        )
+      end),
+    },
+    {
+      key = ".",
+      mods = "LEADER",
+      action = wezterm.action_callback(function(window, pane)
+        local current = wezterm.mux.get_active_workspace()
+        window:perform_action(
+          act.PromptInputLine({
+            description = string.format("Rename workspace (%s) to:", current),
+            action = wezterm.action_callback(function(_, _, line)
+              if line and line ~= "" then
+                wezterm.mux.rename_workspace(current, line)
+              end
+            end),
+          }),
+          pane
+        )
+      end),
+    },
+    {
+      key = "/",
+      mods = "LEADER",
+      action = wezterm.action_callback(function(window, pane)
+        show_keybinds_selector(window, pane)
+      end),
+    },
+    {
+      key = "w",
+      mods = "LEADER",
+      action = act.ActivateKeyTable({
+        name = "w",
+        one_shot = true,
+      }),
+    },
+    {
+      key = "x",
+      mods = "LEADER",
+      action = act.CloseCurrentPane({
+        confirm = true,
+      }),
+    },
+    {
+      key = "{",
+      mods = "LEADER",
+      action = act.MoveTabRelative(-1),
+    },
+    {
+      key = "}",
+      mods = "LEADER",
+      action = act.MoveTabRelative(1),
+    },
+    {
+      key = "y",
+      mods = "LEADER",
+      action = act.ActivateCopyMode,
+    },
+    {
+      key = "v",
+      mods = "LEADER",
+      action = act.PasteFrom("Clipboard"),
+    },
+    {
+      key = "h",
+      mods = "LEADER",
+      action = act.ActivatePaneDirection("Left"),
+    },
+    {
+      key = "j",
+      mods = "LEADER",
+      action = act.ActivatePaneDirection("Down"),
+    },
+    {
+      key = "k",
+      mods = "LEADER",
+      action = act.ActivatePaneDirection("Up"),
+    },
+    {
+      key = "l",
+      mods = "LEADER",
+      action = act.ActivatePaneDirection("Right"),
+    },
+    {
+        key = 'g',
+        mods = 'LEADER',
+        action = act.PaneSelect
+    },
+    {
+      key = "LeftArrow",
+      mods = "LEADER",
+      action = act.SwitchWorkspaceRelative(-1),
+    },
+    {
+      key = "RightArrow",
+      mods = "LEADER",
+      action = act.SwitchWorkspaceRelative(1),
+    },
+    {
+      key = "n",
+      mods = "LEADER",
+      action = act.Multiple({
+        act.ActivateTabRelative(1),
+        act.ActivateKeyTable({
+          name = "tab_nav",
+          one_shot = false,
+          timeout_milliseconds = 1200,
+        }),
+      }),
+    },
+    {
+      key = "p",
+      mods = "LEADER",
+      action = act.Multiple({
+        act.ActivateTabRelative(-1),
+        act.ActivateKeyTable({
+          name = "tab_nav",
+          one_shot = false,
+          timeout_milliseconds = 1200,
+        }),
+      }),
+    },
+    {
+      key = "N",
+      mods = "LEADER|SHIFT",
+      action = act.Multiple({
+        wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, 1)
+        end),
+        act.ActivateKeyTable({
+          name = "ws_nav",
+          one_shot = false,
+          timeout_milliseconds = 1200,
+        }),
+      }),
+    },
+    {
+      key = "P",
+      mods = "LEADER|SHIFT",
+      action = act.Multiple({
+        wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, -1)
+        end),
+        act.ActivateKeyTable({
+          name = "ws_nav",
+          one_shot = false,
+          timeout_milliseconds = 1200,
+        }),
+      }),
+    },
+    {
+      key = "LeftArrow",
+      mods = "SHIFT",
+      action = act.ActivatePaneDirection("Left"),
+    },
+    {
+      key = "DownArrow",
+      mods = "SHIFT",
+      action = act.ActivatePaneDirection("Down"),
+    },
+    {
+      key = "UpArrow",
+      mods = "SHIFT",
+      action = act.ActivatePaneDirection("Up"),
+    },
+    {
+      key = "RightArrow",
+      mods = "SHIFT",
+      action = act.ActivatePaneDirection("Right"),
+    },
+  },
+  key_tables = {
+    copy_mode = copy_mode,
+    tab_nav = {
+      {
+        key = "n",
+        action = act.ActivateTabRelative(1),
+      },
+      {
+        key = "p",
+        action = act.ActivateTabRelative(-1),
+      },
+      {
+        key = "Escape",
+        action = act.PopKeyTable,
+      },
+    },
+    ws_nav = {
+      {
+        key = "n",
+        action = wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, 1)
+        end),
+      },
+      {
+        key = "p",
+        action = wezterm.action_callback(function(window, pane)
+          switch_workspace_sorted(window, pane, -1)
+        end),
+      },
+      {
+        key = "Escape",
+        action = act.PopKeyTable,
+      },
+    },
+    w = {
+      {
+        key = "h",
+        action = act.SplitPane({
+          direction = "Left",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
+      {
+        key = "j",
+        action = act.SplitPane({
+          direction = "Down",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
+      {
+        key = "k",
+        action = act.SplitPane({
+          direction = "Up",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
+      {
+        key = "l",
+        action = act.SplitPane({
+          direction = "Right",
+          size = {
+            Percent = 50,
+          },
+        }),
+      },
+      {
+        key = "s",
+        action = act.SplitVertical({
+          domain = "CurrentPaneDomain",
+        }),
+      },
+      {
+        key = "v",
+        action = act.SplitHorizontal({
+          domain = "CurrentPaneDomain",
+        }),
+      },
+      {
+        key = "w",
+        action = act.ShowTabNavigator,
+      },
+    },
+  },
+}
+
+for key, value in pairs(base_config) do
+  config[key] = value
+end
+
+return config

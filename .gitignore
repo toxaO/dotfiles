@@ -23,6 +23,12 @@
 !/tmux/
 !/tmux/tmux.conf
 
+!/wezterm/
+!/wezterm/wezterm.lua
+
+!/powershell/
+!/powershell/**
+
 !/nvim/
 /nvim/lazy-lock.json
 !/nvim/init.lua
@@ -36,8 +42,11 @@
 
 !/.gitignore_global
 !/.gitconfig_shared
+!/.gitattributes
+!/.editorconfig
 
 !/README.md
 !/LICENSE
 !.gitignore
 !.gitkeep
+!init.sh
