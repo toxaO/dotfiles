@@ -459,6 +459,7 @@ local base_config = {
     "Hack Nerd Font",
     "Hiragino Sans",
   }),
+  font_size = 15.0,
   keys = {
     {
       key = "Enter",

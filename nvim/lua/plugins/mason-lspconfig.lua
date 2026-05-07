@@ -38,7 +38,7 @@ return {
       })
 
       local highlight_variable = function(client, bufnr)
-        if client.supports_method("textDocument/document_highlight") then
+        if client.supports_method("textDocument/documentHighlight") then
           local lsp_document_highlight = vim.api.nvim_create_augroup("lsp_document_highlight", { clear = true })
           vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
             group = lsp_document_highlight,
@@ -102,13 +102,32 @@ return {
         local lsp_opts = { on_attach = on_attach }
 
         if server_name == "lua_ls" then
+          local util = require("lspconfig.util")
           lsp_opts.settings = {
             Lua = {
               -- Neovim 設定では `vim` グローバルを使うので、
               -- それを未定義変数として怒られないようにする。
               diagnostics = { globals = { "vim" } },
+              workspace = { checkThirdParty = false },
             },
           }
+          lsp_opts.root_dir = function(fname)
+            local root = util.root_pattern(
+              ".luarc.json",
+              ".luarc.jsonc",
+              ".luacheckrc",
+              ".stylua.toml",
+              "stylua.toml",
+              "selene.toml",
+              "init.lua",
+              ".git"
+            )(fname)
+
+            if root == vim.loop.os_homedir() then
+              return util.path.dirname(fname)
+            end
+            return root or util.path.dirname(fname)
+          end
         end
 
         -- LSP 設定は「言語ごとにサーバーをつなぐ」部分。
