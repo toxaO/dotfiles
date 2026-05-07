@@ -24,5 +24,11 @@ fi
 [ -z "${dir:-}" ] && exit 0
 
 name="$(basename "$dir")"
-name="${name// /_}_$(date +%Y%m%d)"
-tmux new-session -s "$name" -c "$dir"
+name="${name// /_}"
+name="$(printf '%s' "$name" | cut -c 1-10)_$(date +%m%d)"
+if tmux has-session -t "=${name}" 2>/dev/null; then
+  tmux switch-client -t "=${name}"
+else
+  tmux new-session -d -s "$name" -c "$dir"
+  tmux switch-client -t "=${name}"
+fi

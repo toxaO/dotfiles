@@ -23,6 +23,9 @@ alias da='vadeactivate'
 # tmux
 alias tm='tmux_start'
 alias .t='tmux_reload'
+alias tls='tmux list-sessions'
+alias ta='tmux attach -t'
+alias tn='tmux new -A -s'
 
 # zsh
 alias .z='source ~/dotfiles/zsh/zshrc'

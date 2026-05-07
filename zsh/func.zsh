@@ -46,13 +46,18 @@ tmux_reload() {
     echo "tmux not found" >&2
     return 1
   fi
-  if [ -x "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh" ]; then
-    "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
-  fi
   if [ -n "$TMUX" ]; then
-    tmux source-file "$conf" >/dev/null && tmux display-message "Reloaded: $conf"
+    tmux source-file "$conf" >/dev/null || return 1
+    if [ -x "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh" ]; then
+      "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
+    fi
+    tmux display-message "Reloaded: $conf"
   else
-    tmux source-file "$conf" && echo "Reloaded: $conf"
+    tmux source-file "$conf" || return 1
+    if [ -x "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh" ]; then
+      "$HOME/dotfiles/tmux/scripts/update_keybinds_notes.sh"
+    fi
+    echo "Reloaded: $conf"
   fi
 }
 
@@ -70,21 +75,47 @@ tmux_start() {
   sessions=("${(@f)$(tmux list-sessions -F '#S' 2>/dev/null)}")
 
   if (( ${#sessions} > 0 )); then
-    echo "Choose how to start tmux:"
-    select choice in "Choose existing (choose-tree)" "Create new session"; do
-      case "$choice" in
-        "Choose existing (choose-tree)")
-          tmux attach -t "${sessions[1]}" \; choose-tree -Zs
+    if command -v fzf >/dev/null; then
+      local selected action target
+      selected="$(
+        {
+          printf 'new\t+ Create new session\n'
+          for name in "${sessions[@]}"; do
+            printf 'attach\t%s\n' "$name"
+          done
+        } | fzf --prompt="tmux> " --height=40% --with-nth=2.. \
+          --header="Enter: attach/create. Inside tmux help: Prefix(Ctrl-j) H."
+      )"
+
+      [[ -z "$selected" ]] && return 0
+      action="${selected%%$'\t'*}"
+      target="${selected#*$'\t'}"
+
+      case "$action" in
+        attach)
+          tmux attach -t "$target"
           return
           ;;
-        "Create new session")
-          break
-          ;;
-        *)
-          echo "Invalid selection."
+        new)
           ;;
       esac
-    done
+    else
+      echo "Choose how to start tmux:"
+      select choice in "Choose existing (choose-tree)" "Create new session"; do
+        case "$choice" in
+          "Choose existing (choose-tree)")
+            tmux attach -t "${sessions[1]}" \; choose-tree -Zs
+            return
+            ;;
+          "Create new session")
+            break
+            ;;
+          *)
+            echo "Invalid selection."
+            ;;
+        esac
+      done
+    fi
   fi
 
   local base_dir picked_dir
@@ -115,10 +146,11 @@ tmux_start() {
   local dir_name date_suffix
   dir_name="$(basename "$picked_dir")"
   dir_name="${dir_name// /_}"
-  date_suffix="$(date +%Y%m%d)"
+  dir_name="${dir_name[1,10]}"
+  date_suffix="$(date +%m%d)"
   name="${dir_name}_${date_suffix}"
 
-  tmux new -s "$name" -c "$picked_dir"
+  tmux new -A -s "$name" -c "$picked_dir"
 }
 
 tmux_keybinds_update() {

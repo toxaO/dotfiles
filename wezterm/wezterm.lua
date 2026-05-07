@@ -45,8 +45,96 @@ replace_key_binding(copy_mode, {
 local is_nightly =
   wezterm.version and
   (wezterm.version:find("nightly", 1, true) or wezterm.version:find("dev", 1, true))
-local TAB_LEFT = wezterm.nerdfonts.ple_lower_right_triangle
-local TAB_RIGHT = wezterm.nerdfonts.ple_upper_left_triangle
+
+local tmux_neighbor_cache = {
+  current = "",
+  prev = "",
+  next = "",
+  updated_at = 0,
+}
+
+local function tmux_neighbor_sessions(current)
+  if current == "" then
+    return "", ""
+  end
+
+  local now = os.time()
+  if tmux_neighbor_cache.current == current and now - tmux_neighbor_cache.updated_at < 5 then
+    return tmux_neighbor_cache.prev, tmux_neighbor_cache.next
+  end
+
+  local ok, success, stdout = pcall(wezterm.run_child_process, {
+    "zsh",
+    "-lc",
+    "tmux list-sessions -F '#{session_name}' 2>/dev/null",
+  })
+  if not ok or not success or not stdout or stdout == "" then
+    tmux_neighbor_cache.current = current
+    tmux_neighbor_cache.prev = ""
+    tmux_neighbor_cache.next = ""
+    tmux_neighbor_cache.updated_at = now
+    return "", ""
+  end
+
+  local sessions = {}
+  for session in stdout:gmatch("[^\r\n]+") do
+    table.insert(sessions, session)
+  end
+  if #sessions < 2 then
+    tmux_neighbor_cache.current = current
+    tmux_neighbor_cache.prev = ""
+    tmux_neighbor_cache.next = ""
+    tmux_neighbor_cache.updated_at = now
+    return "", ""
+  end
+
+  for i, session in ipairs(sessions) do
+    if session == current then
+      local prev = sessions[((i - 2) % #sessions) + 1]
+      local next = sessions[(i % #sessions) + 1]
+      tmux_neighbor_cache.current = current
+      tmux_neighbor_cache.prev = prev
+      tmux_neighbor_cache.next = next
+      tmux_neighbor_cache.updated_at = now
+      return prev, next
+    end
+  end
+
+  tmux_neighbor_cache.current = current
+  tmux_neighbor_cache.prev = ""
+  tmux_neighbor_cache.next = ""
+  tmux_neighbor_cache.updated_at = now
+  return "", ""
+end
+
+local function truncate_label(text, max_len)
+  if #text <= max_len then
+    return text
+  end
+  return text:sub(1, max_len - 1) .. "…"
+end
+
+local function active_pane_cwd(pane)
+  if not pane then
+    return "", ""
+  end
+
+  local ok, uri = pcall(function()
+    return pane:get_current_working_dir()
+  end)
+  if not ok or not uri then
+    return "", ""
+  end
+
+  local value = tostring(uri)
+  local host, path = value:match("^file://([^/]*)(/.*)$")
+  if not path then
+    return "", ""
+  end
+
+  path = path:gsub("%%20", " ")
+  return host or "", path
+end
 
 wezterm.on("gui-startup", function()
   local _, _, window = wezterm.mux.spawn_window({
@@ -56,50 +144,205 @@ wezterm.on("gui-startup", function()
 end)
 
 wezterm.on("update-right-status", function(window, _)
-  window:set_left_status("")
-  local names = wezterm.mux.get_workspace_names()
-  if #names == 0 then
-    window:set_right_status("")
-    return
-  end
-  table.sort(names)
-  local current = wezterm.mux.get_active_workspace()
-  local leader_active = window:leader_is_active()
-  local prev_name = ""
-  local next_name = ""
-  for i, name in ipairs(names) do
-    if name == current then
-      prev_name = names[(i - 2) % #names + 1] or ""
-      next_name = names[i % #names + 1] or ""
-      break
+  local pane = window:active_pane()
+  local vars = pane and pane:get_user_vars() or {}
+  local tmux_session = vars.WEZTERM_TMUX_SESSION or ""
+  local tmux_session_prev = vars.WEZTERM_TMUX_SESSION_PREV or ""
+  local tmux_session_next = vars.WEZTERM_TMUX_SESSION_NEXT or ""
+  local cwd = vars.WEZTERM_CWD_SHORT or ""
+  local host = vars.WEZTERM_HOST or ""
+  local in_tmux = vars.WEZTERM_IN_TMUX == "1"
+  local separator = utf8.char(0xe0b0)
+  local separator_left = utf8.char(0xe0b2)
+
+  if not in_tmux and cwd == "" then
+    local fallback_host, fallback_cwd = active_pane_cwd(pane)
+    cwd = fallback_cwd
+    if host == "" then
+      host = fallback_host
     end
   end
-  local cells = {
-    { Foreground = { Color = "#c6c8d1" } },
-    { Text = " " .. prev_name .. "  " },
-    { Foreground = { Color = "#c6c8d1" } },
-    { Text = "< " },
-    { Background = { Color = "#84a0c6" } },
-    { Foreground = { Color = "#161821" } },
-    { Text = " " .. current .. " " },
-    { Background = { Color = "#161821" } },
-    { Foreground = { Color = "#c6c8d1" } },
-    { Text = " >" },
-    { Background = { Color = "#161821" } },
-    { Foreground = { Color = "#c6c8d1" } },
-    { Text = "  " .. next_name .. " " },
-  }
-  if leader_active then
-    table.insert(cells, 1, { Foreground = { Color = "#c6c8d1" } })
-    table.insert(cells, 1, { Background = { Color = "#161821" } })
-    table.insert(cells, 1, { Text = " " })
-    table.insert(cells, 1, { Foreground = { Color = "#161821" } })
-    table.insert(cells, 1, { Background = { Color = "#e2a478" } })
-    table.insert(cells, 1, { Text = " LEADER " })
-    table.insert(cells, 1, { Foreground = { Color = "#161821" } })
-    table.insert(cells, 1, { Background = { Color = "#e2a478" } })
+
+  if in_tmux and cwd == "" and pane then
+    local ok, title = pcall(function()
+      return pane:get_title()
+    end)
+    if ok and title then
+      tmux_session = tmux_session ~= "" and tmux_session or (title:match("^(%S+)%s+") or "")
+      cwd = title:match("^%S+%s+(.+)$") or ""
+    end
   end
-  window:set_right_status(wezterm.format(cells))
+
+  if not in_tmux then
+    tmux_session = ""
+    tmux_session_prev = ""
+    tmux_session_next = ""
+  end
+
+  if cwd:find(wezterm.home_dir, 1, true) == 1 then
+    cwd = "~" .. cwd:sub(#wezterm.home_dir + 1)
+  end
+
+  if #cwd > 48 then
+    cwd = "..." .. cwd:sub(#cwd - 44)
+  end
+
+  if in_tmux then
+    local tmux_prev_from_cli, tmux_next_from_cli = tmux_neighbor_sessions(tmux_session)
+    if tmux_prev_from_cli ~= "" then
+      tmux_session_prev = tmux_prev_from_cli
+    end
+    if tmux_next_from_cli ~= "" then
+      tmux_session_next = tmux_next_from_cli
+    end
+  end
+
+  local leader_active = window:leader_is_active()
+  local left_cells = {}
+  local right_cells = {}
+  local previous_bg = nil
+
+  local function push_segment(cells, text, bg, fg)
+    if previous_bg then
+      table.insert(cells, { Background = { Color = bg } })
+      table.insert(cells, { Foreground = { Color = previous_bg } })
+      table.insert(cells, { Text = separator })
+    end
+    table.insert(cells, { Background = { Color = bg } })
+    table.insert(cells, { Foreground = { Color = fg } })
+    table.insert(cells, { Text = " " .. text .. " " })
+    previous_bg = bg
+  end
+
+  local function push_right_segment(cells, text, bg, fg)
+    if not previous_bg then
+      table.insert(cells, { Background = { Color = "#161821" } })
+      table.insert(cells, { Foreground = { Color = bg } })
+      table.insert(cells, { Text = separator_left })
+    elseif previous_bg == "#161821" then
+      table.insert(cells, { Background = { Color = "#161821" } })
+      table.insert(cells, { Foreground = { Color = bg } })
+      table.insert(cells, { Text = separator_left })
+    else
+      table.insert(cells, { Background = { Color = bg } })
+      table.insert(cells, { Foreground = { Color = previous_bg } })
+      table.insert(cells, { Text = separator })
+    end
+    table.insert(cells, { Background = { Color = bg } })
+    table.insert(cells, { Foreground = { Color = fg } })
+    table.insert(cells, { Text = " " .. text .. " " })
+    previous_bg = bg
+  end
+
+  local function close_segments(cells)
+    if previous_bg then
+      table.insert(cells, { Background = { Color = "#161821" } })
+      table.insert(cells, { Foreground = { Color = previous_bg } })
+      table.insert(cells, { Text = separator })
+    end
+    previous_bg = nil
+  end
+
+  local function push_right_current_session(cells, text)
+    local current_bg = "#84a0c6"
+    if previous_bg then
+      table.insert(cells, { Background = { Color = previous_bg } })
+      table.insert(cells, { Foreground = { Color = current_bg } })
+      table.insert(cells, { Text = separator_left })
+    else
+      table.insert(cells, { Background = { Color = "#161821" } })
+      table.insert(cells, { Foreground = { Color = current_bg } })
+      table.insert(cells, { Text = separator_left })
+    end
+    table.insert(cells, { Background = { Color = current_bg } })
+    table.insert(cells, { Foreground = { Color = "#161821" } })
+    table.insert(cells, { Text = " " .. text .. " " })
+    previous_bg = current_bg
+  end
+
+  local function split_path(path)
+    path = path:gsub("/+$", "")
+    if path == "" then
+      return nil, nil, nil
+    end
+
+    local root = ""
+    local rest = path
+    if path == "~" then
+      return nil, nil, "~/"
+    elseif path:sub(1, 2) == "~/" then
+      root = "~"
+      rest = path:sub(3)
+    elseif path:sub(1, 1) == "/" then
+      root = "/"
+      rest = path:sub(2)
+    end
+
+    local parts = {}
+    for part in rest:gmatch("[^/]+") do
+      table.insert(parts, part)
+    end
+
+    if #parts == 0 then
+      return nil, nil, root == "/" and "/" or root .. "/"
+    elseif #parts == 1 then
+      return nil, root ~= "" and root or nil, parts[1] .. "/"
+    end
+
+    local current_dir = parts[#parts] .. "/"
+    local parent = parts[#parts - 1]
+    local ancestors = root
+    for i = 1, #parts - 2 do
+      if ancestors == "" or ancestors == "/" then
+        ancestors = ancestors .. parts[i]
+      else
+        ancestors = ancestors .. "/" .. parts[i]
+      end
+    end
+
+    if ancestors == "" then
+      ancestors = nil
+    end
+
+    return ancestors, parent, current_dir
+  end
+
+  if not in_tmux and host ~= "" then
+    push_segment(left_cells, host, "#454b68", "#c6c8d1")
+  end
+
+  local ancestors, parent, current_dir = split_path(cwd)
+  if ancestors then
+    push_segment(left_cells, ancestors, "#2e3244", "#c6c8d1")
+  end
+  if parent then
+    push_segment(left_cells, parent, "#3e445e", "#c6c8d1")
+  end
+  if current_dir then
+    push_segment(left_cells, current_dir, "#84a0c6", "#161821")
+  end
+  close_segments(left_cells)
+
+  previous_bg = nil
+  if leader_active then
+    push_right_segment(right_cells, "LEADER", "#e2a478", "#161821")
+  end
+
+  if tmux_session_prev ~= "" then
+    push_right_segment(right_cells, truncate_label(tmux_session_prev, 20), "#3e445e", "#c6c8d1")
+  end
+
+  if tmux_session ~= "" then
+    push_right_current_session(right_cells, truncate_label(tmux_session, 20))
+  end
+
+  if tmux_session_next ~= "" then
+    push_segment(right_cells, truncate_label(tmux_session_next, 20), "#2e3244", "#c6c8d1")
+  end
+  close_segments(right_cells)
+
+  window:set_left_status(wezterm.format(left_cells))
+  window:set_right_status(wezterm.format(right_cells))
 end)
 
 local function switch_workspace_sorted(window, pane, delta)
@@ -163,36 +406,16 @@ local function show_keybinds_selector(window, pane)
 end
 
 wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
-  local background = "#3e445e"
-  local foreground = "#c6c8d1"
-  local edge_background = "#161821"
-
-  if tab.is_active then
-    background = "#84a0c6"
-    foreground = "#161821"
-  end
-
-  local edge_foreground = background
-  local raw_title = tab.tab_title and #tab.tab_title > 0 and tab.tab_title or tab.active_pane.title
-  local title = "   " .. wezterm.truncate_right(raw_title, max_width - 1) .. "   "
-
   return {
-    { Background = { Color = edge_background } },
-    { Foreground = { Color = edge_foreground } },
-    { Text = TAB_LEFT },
-    { Background = { Color = background } },
-    { Foreground = { Color = foreground } },
-    { Text = title },
-    { Background = { Color = edge_background } },
-    { Foreground = { Color = edge_foreground } },
-    { Text = TAB_RIGHT },
+    { Background = { Color = "#161821" } },
+    { Text = " " },
   }
 end)
 
 local base_config = {
   default_cwd = wezterm.home_dir,
   leader = {
-    key = "j",
+    key = "b",
     mods = "CTRL",
     timeout_milliseconds = 1000,
   },
@@ -212,8 +435,9 @@ local base_config = {
   use_fancy_tab_bar = false,
   show_tabs_in_tab_bar = true,
   show_new_tab_button_in_tab_bar = false,
-  tab_bar_at_bottom = true,
+  tab_bar_at_bottom = false,
   tab_max_width = 32,
+  status_update_interval = 1000,
   tab_and_split_indices_are_zero_based = true,
   hide_tab_bar_if_only_one_tab = false,
   color_scheme = "iceberg-dark",

@@ -109,15 +109,15 @@ fi
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 #-------------------------------------------------
-# tmux auto attach (iTerm only)
+# tmux auto attach (iTerm / WezTerm)
 #-------------------------------------------------
 if [[ -o interactive ]] \
   && [[ -z "$TMUX" ]] \
-  && [[ -n "$ITERM_SESSION_ID" ]] \
+  && { [[ -n "$ITERM_SESSION_ID" ]] || [[ "$TERM_PROGRAM" == "WezTerm" ]] || [[ -n "$WEZTERM_PANE" ]]; } \
   && command -v tmux >/dev/null; then
   if type tmux_start >/dev/null 2>&1; then
     tmux_start
   fi
 fi
 
-. "$HOME/.local/bin/env"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
