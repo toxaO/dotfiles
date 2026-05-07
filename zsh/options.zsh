@@ -2,8 +2,6 @@
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 # 補完候補を詰めて表示
 setopt list_packed
-# 補完候補一覧をカラー表示
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS:-}
 zmodload zsh/complist
 zstyle ':completion:*' menu select
 # コマンドのスペルを訂正

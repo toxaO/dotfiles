@@ -23,6 +23,9 @@ alias da='vadeactivate'
 # tmux
 alias tm='tmux_start'
 alias .t='tmux_reload'
+alias tls='tmux list-sessions'
+alias ta='tmux attach -t'
+alias tn='tmux new -A -s'
 
 # zsh
 alias .z='source ~/dotfiles/zsh/zshrc'
@@ -58,3 +61,6 @@ alias rmDS='find . -name ".DS_Store" -type f -ls -delete'
 
 # Codex
 alias cr='codex resume'
+
+# Obsidianのサーバーメモを引っ張る
+alias obpl='rsync -rtv --itemize-changes --no-perms --no-owner --no-group toku:/home/tokumasa/ob_drafts/ ~/Nextcloud/obsidian_note/04_drafts'

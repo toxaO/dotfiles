@@ -71,7 +71,11 @@ function M.setup()
     lsp = {
       mark = "[LSP]",
       forceCompletionPattern = { [[\.\w*|:\w*|->\w*]] },
+<<<<<<< HEAD
       -- sorters = { "sorter_lsp-kind" },
+=======
+      sorters = { "sorter_rank" },
+>>>>>>> develop
       minAutoCompleteLength = 1,
     },
 
