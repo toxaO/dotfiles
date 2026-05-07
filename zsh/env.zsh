@@ -1,6 +1,13 @@
 # nvimのddc/mocword用辞書パス
 export MOCWORD_DATA=~/.config/mocword/mocword.sqlite
 
+apply_completion_colors() {
+  local colors="${LS_COLORS:-}"
+
+  zstyle ':completion:*' list-colors "${(s.:.)colors}"
+  zstyle ':completion:*:default' list-colors "${(s.:.)colors}"
+}
+
 case ${OSTYPE} in
   darwin*)
     # pyenv
@@ -34,9 +41,10 @@ case ${OSTYPE} in
     fi
     ;;
 
-    linux*)
+  linux*)
     # ここに Linux 向けの設定
     export PATH="$PATH:/opt/nvim/"
+    export LD_LIBRARY_PATH=/usr/lib/wsl/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
     if command -v dircolors >/dev/null 2>&1; then
       eval "$(dircolors -b)"
@@ -50,8 +58,8 @@ case ${OSTYPE} in
         -e 's/(^|:)tw=[^:]*/\1tw=01;34/g' \
         -e 's/(^|:)st=[^:]*/\1st=01;34/g')
       export LS_COLORS
-
-      zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
     fi
     ;;
 esac
+
+apply_completion_colors
