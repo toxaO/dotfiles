@@ -21,25 +21,43 @@ local M = {
 ------------------------------
 
 function M.reg_autocmd()
-  augroup("my_ddu", { clear = true })
+  local group = augroup("my_ddu", { clear = true })
 
   -- update items
   autocmd({"BufEnter", "TabEnter", "WinEnter", "CursorHold", "FocusGained"},
     {
-      group = my_ddu,
+      group = group,
       pattern = "*",
-      command = "call ddu#ui#do_action('checkItems')"
+      callback = function()
+        local filetype = vim.bo.filetype
+        if filetype == "ddu-ff" or filetype == "ddu-filer" or filetype == "ddu-ff-filter" then
+          return
+        end
+        if vim.b.ddu_ui_name ~= nil or vim.t.ddu_ui_name ~= nil then
+          pcall(vim.fn["ddu#ui#do_action"], "checkItems")
+        end
+      end,
     }
   )
 
   -- window resize
   autocmd({"VimResized"},
     {
-      group = my_ddu,
+      group = group,
       pattern = "*",
       callback = ddu.window_resize,
     }
   )
 end
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "Ddu:uiDone",
+  callback = function()
+    if vim.b.ddu_ui_name == "file_rec" then
+      vim.fn["ddu#ui#async_action"]("openFilterWindow")
+    end
+  end,
+})
+
 
 return M

@@ -8,6 +8,9 @@ local keymap = vim.keymap
 local M = {}
 
 function M.setup()
+  vim.g.c_if0_dimming_enabled = 0
+  vim.g.c_no_if0 = 1
+
   local options = {
     encoding = "utf-8",
     fileencoding = "utf-8",
@@ -24,7 +27,11 @@ function M.setup()
     visualbell = true, -- エラー音を画面表示に,
     helplang = "ja,en", -- ヘルプファイル日本語化
     clipboard = "unnamed", -- クリップボード連携
-    cursorline = true,
+    -- autocmdでactive windowのみtrueにする--------------------
+    cursorline = false,
+    cursorcolumn = false,
+    cursorlineopt = "number,line",  -- 行番号も含めてハイライトしたい場合
+    ------------------------------------------------------------
     number = true,
     syntax = "on",
     relativenumber = false,

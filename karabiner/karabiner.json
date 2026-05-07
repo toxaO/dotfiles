@@ -4,6 +4,46 @@
             "complex_modifications": {
                 "rules": [
                     {
+                        "description": "Windows App専用：無変換を英数に、変換をかなに（ネイティブ入力切替）",
+                        "enabled": false,
+                        "manipulators": [
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.microsoft\\.rdc\\.macos$"
+                                        ],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "description": "無変換を検知したら、Macの入力ソースを直接『英語(en)』にする",
+                                "from": {
+                                    "key_code": "japanese_eisuu",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "select_input_source": { "language": "en" } }],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.microsoft\\.rdc\\.macos$"
+                                        ],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "description": "変換を検知したら、Macの入力ソースを直接『日本語(ja)』にする",
+                                "from": {
+                                    "key_code": "japanese_kana",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "select_input_source": { "language": "ja" } }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "for mac builtin keyboard from fn + number key",
                         "enabled": false,
                         "manipulators": [

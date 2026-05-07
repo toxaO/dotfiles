@@ -26,6 +26,7 @@ function M.setup()
 
   -- source --
   patch_global("sources", {
+    "copilot",
     "lsp",
     "around",
     "file",
@@ -38,13 +39,20 @@ function M.setup()
 
     _ = {
       matchers = { "matcher_fuzzy" },
-      sorters = { "sorter_fuzzy", "sorter_rank" },
+      sorters = { "sorter_fuzzy",},
       converters = { "converter_remove_overlap", "converter_fuzzy" },
       minAutoCompleteLength = 3,
     },
 
     around = {
       mark = "[Around]",
+    },
+
+    copilot = {
+      mark = "[Copilot]",
+      matchers = {},
+      isVolatile = true,
+      minAutoCompleteLength = 0,
     },
 
     file = {
@@ -63,7 +71,7 @@ function M.setup()
     lsp = {
       mark = "[LSP]",
       forceCompletionPattern = { [[\.\w*|:\w*|->\w*]] },
-      sorters = { "sorter_lsp-kind" },
+      sorters = { "sorter_rank" },
       minAutoCompleteLength = 1,
     },
 
@@ -86,6 +94,11 @@ function M.setup()
       enableResolveItem = true,
       enableAdditionalTextEdit = true,
     },
+
+    ["copilot"] = {
+      maxSize = 100,
+    },
+
   })
 
   --vim.g.vsnip_filetypes = {}

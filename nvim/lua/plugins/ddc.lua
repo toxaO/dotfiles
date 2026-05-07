@@ -31,6 +31,11 @@ return{
       fn["ddc#enable"]()
     end
   },
+  {"Shougo/pum.vim",
+      config = function()
+      fn["pum#set_option"]({max_width = 50})
+    end
+  },
 
 	-- ddc lsp
 	{ "uga-rosa/ddc-source-lsp-setup" },
@@ -39,9 +44,10 @@ return{
 		config = function()
 			require("ddc_source_lsp_setup").setup()
 			local capabilities = require("ddc_source_lsp").make_client_capabilities()
-			require("lspconfig").denols.setup({
+			vim.lsp.config("denols", {
 				capabilities = capabilities,
 			})
+			vim.lsp.enable("denols")
 		end,
 	},
 	-- ddc source
@@ -58,6 +64,11 @@ return{
 	{ "Shougo/ddc-source-copilot" },
 	{ "Shougo/ddc-source-line" },
 	{ "tani/ddc-fuzzy" },
+  { "SHougo/ddc-source-copilot",
+    init = function()
+      vim.g.copilot_no_maps = true
+    end,
+  },
 
 	-- ddc filter
 	{ "Shougo/ddc-filter-sorter_rank" },

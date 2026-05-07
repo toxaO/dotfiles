@@ -4,6 +4,9 @@
     "globals": ["vim"],
     // 細かい助言がいらない場合
     "hint.enable": false
-  }
+  },
+    "diagnostics.disable": [
+        "unused-local"
+    ]
 }
 

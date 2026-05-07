@@ -105,7 +105,7 @@ function M.setup()
     keymap.set("n", "C", function()
       local path = fn["ddu#ui#get_item"]()["action"]["path"]
       print('change to "' .. path .. '" !')
-      ddu.do_action("itemAction", { name = "cd" })
+      ddu.do_action("itemAction", { name = "tab_cd" })
     end, km_opts.bnw)
     -- "c" copy --
     keymap.set("n", "c", function()
@@ -230,6 +230,18 @@ function M.setup()
         fn["ddu#ui#do_action"]("toggleAutoAction")
       end, km_opts.bnw)
 
+      -- ",x" toggle temporary rg extension ignore --
+      keymap.set("n", ",x", function()
+        ddu.do_action("toggleRgExcludeExtension")
+      end, km_opts.bnw)
+      -- ",r" clear temporary rg extension ignores --
+      keymap.set("n", ",r", function()
+        ddu.do_action("clearRgExcludeExtensions")
+      end, km_opts.bnw)
+      -- ",X" select extension from visible rg result --
+      keymap.set("n", ",X", function()
+        ddu.do_action("selectRgExcludeExtensionFromVisibleItems")
+      end, km_opts.bnw)
     end,
   }) -- /ff normal keymaps --
 
@@ -260,6 +272,15 @@ function M.setup()
     callback = function()
       -- common --
       common_keymap()
+      if vim.b.ddu_ui_name == "filer_cd" then
+        vim.b.ddu_filer_cd_show_files = false
+        keymap.set("n", "<CR>", function()
+          ddu.do_action("itemAction", { name = "tab_cd", quit = true })
+        end, km_opts.bnw)
+        keymap.set("n", ",f", function()
+          ddu.do_action("toggleFilerCdShowFiles")
+        end, km_opts.bnw)
+      end
       -- "w" --
       keymap.set("n", "w", function()
         fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })

@@ -32,6 +32,14 @@ function M.choose_for_open(path)
   end
 end
 
+-- for file open
+function M.close_for_open()
+  local winid = M.winpick.select({prompt = "Select window to close"})
+  if winid then
+    api.nvim_close_win(winid)
+  end
+end
+
 -- choose window for window move
 function M.choose_for_move()
   --local current_bufnr = fn["bufnr"]('%')
