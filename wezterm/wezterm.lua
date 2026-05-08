@@ -53,6 +53,8 @@ local tmux_neighbor_cache = {
   updated_at = 0,
 }
 
+local cwd_cache = {}
+
 local function tmux_neighbor_sessions(current)
   if current == "" then
     return "", ""
@@ -136,6 +138,21 @@ local function active_pane_cwd(pane)
   return host or "", path
 end
 
+local function active_pane_id(pane)
+  if not pane then
+    return nil
+  end
+
+  local ok, id = pcall(function()
+    return pane:pane_id()
+  end)
+  if not ok or not id then
+    return nil
+  end
+
+  return tostring(id)
+end
+
 wezterm.on("gui-startup", function()
   local _, _, window = wezterm.mux.spawn_window({
     cwd = wezterm.home_dir,
@@ -145,6 +162,7 @@ end)
 
 wezterm.on("update-right-status", function(window, _)
   local pane = window:active_pane()
+  local pane_id = active_pane_id(pane)
   local vars = pane and pane:get_user_vars() or {}
   local tmux_session = vars.WEZTERM_TMUX_SESSION or ""
   local tmux_session_prev = vars.WEZTERM_TMUX_SESSION_PREV or ""
@@ -155,14 +173,6 @@ wezterm.on("update-right-status", function(window, _)
   local separator = utf8.char(0xe0b0)
   local separator_left = utf8.char(0xe0b2)
 
-  if not in_tmux and cwd == "" then
-    local fallback_host, fallback_cwd = active_pane_cwd(pane)
-    cwd = fallback_cwd
-    if host == "" then
-      host = fallback_host
-    end
-  end
-
   if in_tmux and cwd == "" and pane then
     local ok, title = pcall(function()
       return pane:get_title()
@@ -171,6 +181,23 @@ wezterm.on("update-right-status", function(window, _)
       tmux_session = tmux_session ~= "" and tmux_session or (title:match("^(%S+)%s+") or "")
       cwd = title:match("^%S+%s+(.+)$") or ""
     end
+  end
+
+  if cwd == "" then
+    local fallback_host, fallback_cwd = active_pane_cwd(pane)
+    cwd = fallback_cwd
+    if host == "" then
+      host = fallback_host
+    end
+  end
+
+  if cwd == "" and pane_id and cwd_cache[pane_id] then
+    cwd = cwd_cache[pane_id].cwd
+    if host == "" then
+      host = cwd_cache[pane_id].host
+    end
+  elseif cwd ~= "" and pane_id then
+    cwd_cache[pane_id] = { cwd = cwd, host = host }
   end
 
   if not in_tmux then

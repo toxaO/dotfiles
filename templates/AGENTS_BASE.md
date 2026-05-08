@@ -15,12 +15,16 @@
 - 必要に応じて、Obsidian vault を知識整理先として使用してよい。
 - Windows / WSL では `/mnt/c/Users/risin/Nextcloud/obsidian_note` を参照する。
 - macOS では `~/Nextcloud/obsidian_note` を参照する。
-- ユーザーから「要点をまとめて note を取ってほしい」と明示されたときのみ、Obsidian へのメモ化を行う。
+- Nextcloud 復旧中は、`~/ob_drafts` を作業内容や思考の一時的な書き出し先として使用してよい。
+- Nextcloud 復旧後は、`~/Nextcloud/obsidian_note/ob_drafts` を下書き置き場として使用する想定。
+- `ob_drafts` は下書き置き場とし、Obsidian vault 側で整理・構造化して正式な note に編集し直す運用とする。
+- 作業の区切りが明確で、git commit するのにちょうどよい粒度だと判断した場合は、git commit と `ob_drafts` への書き出しをユーザーへ提案する。
 - 実際の読み書きは、その場の sandbox 権限に従う。AGENTS.md は権限付与そのものではなく運用方針を示す。
-- vault へ追記する前に `/mnt/c/Users/risin/Nextcloud/obsidian_note/Obsidian運用ポリシー.md` を読んでから、配置と粒度を判断する。
+- vault または `ob_drafts` へ追記する前に、可能なら `~/ob_drafts/Ob_use_policy.md` または `~/Nextcloud/obsidian_note/ob_drafts/Ob_use_policy.md` を読んでから、配置と粒度を判断する。
 
 ## Communication
 - 基本のユーザー向け応答は日本語で行う。ユーザーが別言語を求めた場合のみ切り替える。
+- git commit するのにちょうどよい粒度の作業が終わった場合のみ、最後に短い summary を日本語と英語で併記する。
 - 返答は簡潔にし、前提・不確実性・トレードオフを明示する。
 - 判断に迷う場合は、黙って決め打ちせず確認する。
 
@@ -74,4 +78,5 @@
 弱い成功条件のまま進めず、「どう確認できれば完了か」を先に定義する。
 
 ## User Context
-- 基本情報技術者資格は所持しているが、応用情報技術者は持っておらず、実務経験のない人間が使用しているので、それを前提にコメントを付記する。
+- 基本情報技術者資格は所持しているが応用情報技術者は持っておらず、実務経験のない人間が使用していることを前提にコメントを付記する。
+- commitの粒度にも不慣れなので、gitの使い方の練習になるように提案していく。必要であるならbranch分岐やtag付け、commit履歴の修正も提案する。
