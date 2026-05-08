@@ -183,11 +183,10 @@ zsh_cmds_menu() {
 unalias cx 2>/dev/null
 
 _agents_dotfiles_dir() {
-  local dir="${DOTFILES_DIR:-$HOME/dotfiles}"
+  local dir="$HOME/dotfiles"
 
   if [ ! -d "$dir" ]; then
     echo "dotfiles directory not found: $dir" >&2
-    echo "Set DOTFILES_DIR to the dotfiles path." >&2
     return 1
   fi
 
