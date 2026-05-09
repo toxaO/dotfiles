@@ -44,6 +44,16 @@
 !/templates/
 !/templates/**
 
+!/codex/
+/codex/**
+!/codex/AGENTS.md
+!/codex/RTK.md
+!/codex/config.toml
+!/codex/rules/
+!/codex/rules/**
+!/codex/scripts/
+!/codex/scripts/notify.py
+
 !/.gitignore_global
 !/.gitconfig_shared
 !/.gitattributes
