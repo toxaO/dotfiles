@@ -34,11 +34,13 @@
 !/nvim/init.lua
 !/nvim/lua/
 !/nvim/lua/**
+nvim/package-lock.json
 
 !/karabiner/
 !/karabiner/assets/
 !/karabiner/assets/**
 !/karabiner/karabiner.json
+karabiner/automatic_backups/*.json
 
 !/AGENTS.md
 !/templates/
@@ -64,3 +66,4 @@
 !.gitignore
 !.gitkeep
 !init.sh
+**/.DS_Store

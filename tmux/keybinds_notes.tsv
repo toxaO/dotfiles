@@ -87,7 +87,7 @@ prefix	]	window	move window right, keep active window	bind-key -r -T prefix ]   
 prefix	c	buffer	copy mode	bind-key    -T prefix c       copy-mode
 prefix	d	session	detach client	bind-key    -T prefix d       detach-client
 prefix	f	ui	find window	bind-key    -T prefix f       command-prompt { find-window -Z "%%" }
-prefix	g	pane	choose pane by number	bind-key    -T prefix g       display-panes
+prefix	g	pane	choose pane by number for 3s	bind-key    -T prefix g       display-panes -d 3000
 prefix	h	pane	focus pane left	bind-key -r -T prefix h       select-pane -L
 prefix	i	ui	display message	bind-key    -T prefix i       display-message
 prefix	j	pane	focus pane down	bind-key -r -T prefix j       select-pane -D
