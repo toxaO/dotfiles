@@ -28,7 +28,10 @@ alias	lg	git	lazygit	alias: lazygit
 alias	nf	core	fzf pick file to open in neovim	alias: f(){ local f; f=$(fzf -1 -0) || return; nvim "$f"; }; f
 alias	ns	editor	open neovim session	alias: nvim -S
 alias	nv	editor	open neovim	alias: nvim
-alias	obpl			alias: rsync -rtv --itemize-changes --no-perms --no-owner --no-group toku:/home/tokumasa/ob_drafts/ ~/Nextcloud/obsidian_note/04_drafts
+alias	obdn			alias: ob_drafts_dry_run
+alias	obdp			alias: ob_drafts_pull
+alias	obds			alias: ob_drafts_status
+alias	obdu			alias: ob_drafts_push
 alias	pip	python	pip3	alias: pip3
 alias	pr	core	cd to git project root	alias: project_root
 alias	py	python	python3	alias: python3
@@ -47,6 +50,10 @@ function	chpwd	core	refresh tmux status on dir change	function: zsh/func.zsh
 function	colorlist	core	show 256-color palette	function: zsh/func.zsh
 function	cx			function: zsh/func.zsh
 function	mkvenv	core	create python venv + direnv helper	function: zsh/func.zsh
+function	ob_drafts_dry_run			function: zsh/func.zsh
+function	ob_drafts_pull			function: zsh/func.zsh
+function	ob_drafts_push			function: zsh/func.zsh
+function	ob_drafts_status			function: zsh/func.zsh
 function	project_root	core	cd to git project root	function: zsh/func.zsh
 function	tmux_keybinds_update	core	update tmux keybinds TSV	function: zsh/func.zsh
 function	tmux_reload	core	reload tmux config and keybinds TSV	function: zsh/func.zsh

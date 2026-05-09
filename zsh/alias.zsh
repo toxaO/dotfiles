@@ -62,5 +62,10 @@ alias rmDS='find . -name ".DS_Store" -type f -ls -delete'
 # Codex
 alias cr='codex resume'
 
-# Obsidianのサーバーメモを引っ張る
-alias obpl='rsync -rtv --itemize-changes --no-perms --no-owner --no-group toku:/home/tokumasa/ob_drafts/ ~/Nextcloud/obsidian_note/04_drafts'
+# Obsidian drafts sync
+alias obdp='ob_drafts_pull'
+alias obdu='ob_drafts_push'
+# n = rsync --dry-run
+alias obdn='ob_drafts_dry_run'
+# s = status
+alias obds='ob_drafts_status'
