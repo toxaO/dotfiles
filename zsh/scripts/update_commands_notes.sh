@@ -40,6 +40,7 @@ awk -v alias_file="$alias_file" -v func_file="$func_file" '
       if (line ~ /^[[:space:]]*function[[:space:]]+/) {
         sub(/^[[:space:]]*function[[:space:]]+/, "", line)
         sub(/[[:space:]]*\(.*/, "", line)
+        sub(/[[:space:]]*\{.*/, "", line)
         name = line
       } else if (index(line, "()") > 0 && index(line, "{") > 0) {
         if (match(line, /^[[:space:]]*[a-zA-Z0-9_]+/)) {
@@ -47,7 +48,7 @@ awk -v alias_file="$alias_file" -v func_file="$func_file" '
         }
       }
 
-      if (name != "") {
+      if (name != "" && name !~ /^_/) {
         key = "function" OFS name
         if (key in notes) {
           split(notes[key], f, "\t")
@@ -59,11 +60,22 @@ awk -v alias_file="$alias_file" -v func_file="$func_file" '
     }
     close(func_file)
 
-    print "# type\tname\tcategory\tdescription\tsource" > "'"$tmp_file"'"
+    rows_file = "'"$tmp_file"'.rows"
     for (k in rows) {
-      print rows[k] >> "'"$tmp_file"'"
+      print rows[k] >> rows_file
     }
   }
 ' "$notes_file"
 
+if [ ! -s "$tmp_file.rows" ]; then
+  echo "no zsh commands found" >&2
+  rm -f "$tmp_file" "$tmp_file.rows"
+  exit 1
+fi
+
+{
+  printf '%s\n' '# type	name	category	description	source'
+  sort -t '	' -k1,1 -k2,2 "$tmp_file.rows"
+} > "$tmp_file"
+rm -f "$tmp_file.rows"
 mv "$tmp_file" "$notes_file"

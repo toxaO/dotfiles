@@ -64,10 +64,18 @@ __wezterm_tmux_neighbor_session() {
   done
 }
 
+__wezterm_update_tmux_status() {
+  [[ -n "${TMUX:-}" ]] || return 0
+  local script="$HOME/dotfiles/tmux/scripts/update_wezterm_status.sh"
+  [[ -x "$script" ]] || return 0
+  "$script" >/dev/null 2>&1
+}
+
 __wezterm_precmd() {
   local last_status=$?
 
   __wezterm_set_cwd
+  __wezterm_update_tmux_status
   __wezterm_set_user_var "WEZTERM_PROG" ""
   __wezterm_set_user_var "WEZTERM_USER" "${USER:-$(id -un 2>/dev/null)}"
   __wezterm_set_user_var "WEZTERM_HOST" "${HOST:-$(hostname 2>/dev/null)}"
@@ -93,5 +101,6 @@ __wezterm_prompt_end() {
 add-zsh-hook precmd __wezterm_precmd
 add-zsh-hook preexec __wezterm_preexec
 add-zsh-hook chpwd __wezterm_set_cwd
+add-zsh-hook chpwd __wezterm_update_tmux_status
 
 PROMPT+='%{$(__wezterm_prompt_end)%}'

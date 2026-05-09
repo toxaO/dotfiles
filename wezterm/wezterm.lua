@@ -395,41 +395,26 @@ local function switch_workspace_sorted(window, pane, delta)
   )
 end
 
-local function load_keybind_choices()
-  local choices = {}
-  local notes_file = wezterm.home_dir .. "/dotfiles/wezterm/keybinds.tsv"
-  local file = io.open(notes_file, "r")
-
-  if not file then
-    return choices
-  end
-
-  for line in file:lines() do
-    if line ~= "" and not line:match("^#") then
-      local shortcut, category, description = line:match("^([^\t]+)\t([^\t]+)\t([^\t]+)\t")
-      if shortcut and category and description then
-        table.insert(choices, {
-          id = shortcut .. ":" .. description,
-          label = string.format("%-22s %-10s %s", shortcut, category, description),
-        })
-      end
+local function tmux_window_action(key)
+  return wezterm.action_callback(function(window, pane)
+    local vars = pane and pane:get_user_vars() or {}
+    if vars.WEZTERM_IN_TMUX ~= "1" then
+      return
     end
-  end
 
-  file:close()
-  return choices
-end
-
-local function show_keybinds_selector(window, pane)
-  window:perform_action(
-    act.InputSelector({
-      title = "WezTerm keybinds",
-      choices = load_keybind_choices(),
-      fuzzy = true,
-      action = wezterm.action_callback(function() end),
-    }),
-    pane
-  )
+    window:perform_action(
+      act.Multiple({
+        act.SendKey({
+          key = "j",
+          mods = "CTRL",
+        }),
+        act.SendKey({
+          key = key,
+        }),
+      }),
+      pane
+    )
+  end)
 end
 
 wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
@@ -625,13 +610,6 @@ local base_config = {
       end),
     },
     {
-      key = "/",
-      mods = "LEADER",
-      action = wezterm.action_callback(function(window, pane)
-        show_keybinds_selector(window, pane)
-      end),
-    },
-    {
       key = "w",
       mods = "LEADER",
       action = act.ActivateKeyTable({
@@ -645,16 +623,6 @@ local base_config = {
       action = act.CloseCurrentPane({
         confirm = true,
       }),
-    },
-    {
-      key = "{",
-      mods = "LEADER",
-      action = act.MoveTabRelative(-1),
-    },
-    {
-      key = "}",
-      mods = "LEADER",
-      action = act.MoveTabRelative(1),
     },
     {
       key = "y",
@@ -700,30 +668,6 @@ local base_config = {
       key = "RightArrow",
       mods = "LEADER",
       action = act.SwitchWorkspaceRelative(1),
-    },
-    {
-      key = "n",
-      mods = "LEADER",
-      action = act.Multiple({
-        act.ActivateTabRelative(1),
-        act.ActivateKeyTable({
-          name = "tab_nav",
-          one_shot = false,
-          timeout_milliseconds = 1200,
-        }),
-      }),
-    },
-    {
-      key = "p",
-      mods = "LEADER",
-      action = act.Multiple({
-        act.ActivateTabRelative(-1),
-        act.ActivateKeyTable({
-          name = "tab_nav",
-          one_shot = false,
-          timeout_milliseconds = 1200,
-        }),
-      }),
     },
     {
       key = "N",
@@ -776,20 +720,6 @@ local base_config = {
   },
   key_tables = {
     copy_mode = copy_mode,
-    tab_nav = {
-      {
-        key = "n",
-        action = act.ActivateTabRelative(1),
-      },
-      {
-        key = "p",
-        action = act.ActivateTabRelative(-1),
-      },
-      {
-        key = "Escape",
-        action = act.PopKeyTable,
-      },
-    },
     ws_nav = {
       {
         key = "n",
@@ -864,6 +794,17 @@ local base_config = {
     },
   },
 }
+
+table.insert(base_config.keys, {
+  key = "Tab",
+  mods = "CTRL",
+  action = tmux_window_action("n"),
+})
+table.insert(base_config.keys, {
+  key = "Tab",
+  mods = "CTRL|SHIFT",
+  action = tmux_window_action("p"),
+})
 
 for key, value in pairs(base_config) do
   config[key] = value

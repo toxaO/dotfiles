@@ -16,7 +16,7 @@ afk='{
   return "other";
 }'
 
-awk -v tmp="$tmp_file" '
+awk -v tmp="$tmp_file" -v home="$HOME" -v shell="$SHELL" '
   BEGIN {
     FS = "\t"; OFS = "\t"
   }
@@ -49,23 +49,25 @@ awk -v tmp="$tmp_file" '
           }
         }
         cmdline = line
+        if (home != "") gsub(home, "$HOME", cmdline)
+        if (shell != "") gsub(shell, "$SHELL", cmdline)
         k = table "\t" key
+        cat = cmdname
+        gsub(/-/, " ", cat)
+        if (cmdname ~ /window/) cat = "window"
+        else if (cmdname ~ /pane/) cat = "pane"
+        else if (cmdname ~ /session|client/) cat = "session"
+        else if (cmdname ~ /buffer|paste|copy/) cat = "buffer"
+        else if (cmdname ~ /layout/) cat = "layout"
+        else if (cmdname ~ /menu|prompt|message|clock/) cat = "ui"
+        else if (cmdname ~ /copy-mode/) cat = "copy"
+        else cat = "other"
         if (k in notes) {
           split(notes[k], f, "\t")
           if (f[3] == "") f[3] = cat
           if (f[4] == "") f[4] = ""
           rows[k] = f[1] OFS f[2] OFS f[3] OFS f[4] OFS cmdline
         } else {
-          cat = cmdname
-          gsub(/-/, " ", cat)
-          if (cmdname ~ /window/) cat = "window"
-          else if (cmdname ~ /pane/) cat = "pane"
-          else if (cmdname ~ /session|client/) cat = "session"
-          else if (cmdname ~ /buffer|paste|copy/) cat = "buffer"
-          else if (cmdname ~ /layout/) cat = "layout"
-          else if (cmdname ~ /menu|prompt|message|clock/) cat = "ui"
-          else if (cmdname ~ /copy-mode/) cat = "copy"
-          else cat = "other"
           desc = ""
           rows[k] = table OFS key OFS cat OFS desc OFS cmdline
         }
@@ -99,23 +101,25 @@ awk -v tmp="$tmp_file" '
           }
         }
         cmdline = line
+        if (home != "") gsub(home, "$HOME", cmdline)
+        if (shell != "") gsub(shell, "$SHELL", cmdline)
         k = table "\t" key
+        cat = cmdname
+        gsub(/-/, " ", cat)
+        if (cmdname ~ /window/) cat = "window"
+        else if (cmdname ~ /pane/) cat = "pane"
+        else if (cmdname ~ /session|client/) cat = "session"
+        else if (cmdname ~ /buffer|paste|copy/) cat = "buffer"
+        else if (cmdname ~ /layout/) cat = "layout"
+        else if (cmdname ~ /menu|prompt|message|clock/) cat = "ui"
+        else if (cmdname ~ /copy-mode/) cat = "copy"
+        else cat = "other"
         if (k in notes) {
           split(notes[k], f, "\t")
           if (f[3] == "") f[3] = cat
           if (f[4] == "") f[4] = ""
           rows[k] = f[1] OFS f[2] OFS f[3] OFS f[4] OFS cmdline
         } else {
-          cat = cmdname
-          gsub(/-/, " ", cat)
-          if (cmdname ~ /window/) cat = "window"
-          else if (cmdname ~ /pane/) cat = "pane"
-          else if (cmdname ~ /session|client/) cat = "session"
-          else if (cmdname ~ /buffer|paste|copy/) cat = "buffer"
-          else if (cmdname ~ /layout/) cat = "layout"
-          else if (cmdname ~ /menu|prompt|message|clock/) cat = "ui"
-          else if (cmdname ~ /copy-mode/) cat = "copy"
-          else cat = "other"
           desc = ""
           rows[k] = table OFS key OFS cat OFS desc OFS cmdline
         }
@@ -125,11 +129,22 @@ awk -v tmp="$tmp_file" '
     }
     close(cmd)
 
-    print "# table\tkey\tcategory\tdescription\tcommand" > tmp
+    rows_file = tmp ".rows"
     for (k in rows) {
-      print rows[k] >> tmp
+      print rows[k] >> rows_file
     }
   }
 ' "$notes_file"
 
+if [ ! -s "$tmp_file.rows" ]; then
+  echo "no tmux keybindings found" >&2
+  rm -f "$tmp_file" "$tmp_file.rows"
+  exit 1
+fi
+
+{
+  printf '%s\n' '# table	key	category	description	command'
+  sort -t '	' -k1,1 -k2,2 "$tmp_file.rows"
+} > "$tmp_file"
+rm -f "$tmp_file.rows"
 mv "$tmp_file" "$notes_file"
