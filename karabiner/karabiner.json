@@ -4,431 +4,18 @@
             "complex_modifications": {
                 "rules": [
                     {
-                        "description": "Windows App専用：無変換を英数に、変換をかなに（ネイティブ入力切替）",
-                        "enabled": false,
-                        "manipulators": [
-                            {
-                                "conditions": [
-                                    {
-                                        "bundle_identifiers": [
-                                            "^com\\.microsoft\\.rdc\\.macos$"
-                                        ],
-                                        "type": "frontmost_application_if"
-                                    }
-                                ],
-                                "description": "無変換を検知したら、Macの入力ソースを直接『英語(en)』にする",
-                                "from": {
-                                    "key_code": "japanese_eisuu",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [{ "select_input_source": { "language": "en" } }],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "bundle_identifiers": [
-                                            "^com\\.microsoft\\.rdc\\.macos$"
-                                        ],
-                                        "type": "frontmost_application_if"
-                                    }
-                                ],
-                                "description": "変換を検知したら、Macの入力ソースを直接『日本語(ja)』にする",
-                                "from": {
-                                    "key_code": "japanese_kana",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [{ "select_input_source": { "language": "ja" } }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
-                        "description": "for mac builtin keyboard from fn + number key",
-                        "enabled": false,
-                        "manipulators": [
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "a",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_1",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "s",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_2",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "d",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_3",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "f",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_4",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "g",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_5",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "h",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_6",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "j",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_7",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "k",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_8",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "l",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_9",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "semicolon",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "keypad_0",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
-                        "description": "for mac builtin keyboard from (fn + ctrl) + hjkl to arrow key",
-                        "enabled": false,
-                        "manipulators": [
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "h",
-                                    "modifiers": {
-                                        "mandatory": ["left_control", "fn"],
-                                        "optional": ["any"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "left_arrow",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "j",
-                                    "modifiers": {
-                                        "mandatory": ["left_control", "fn"],
-                                        "optional": ["any"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "down_arrow",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "k",
-                                    "modifiers": {
-                                        "mandatory": ["left_control", "fn"],
-                                        "optional": ["any"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "up_arrow",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "l",
-                                    "modifiers": {
-                                        "mandatory": ["left_control", "fn"],
-                                        "optional": ["any"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "right_arrow",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
-                        "description": "For mac builtin keyboard, tap space and hold fn",
-                        "enabled": false,
-                        "manipulators": [
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "spacebar",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "parameters": {
-                                    "basic.to_if_alone_timeout_milliseconds": 200,
-                                    "basic.to_if_held_down_threshold_milliseconds": 200
-                                },
-                                "to_if_alone": [{ "key_code": "spacebar" }],
-                                "to_if_held_down": [{ "apple_vendor_top_case_key_code": "keyboard_fn" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
-                        "description": "For mac builtin keyboard, tap ja_eisuu and hold shift",
-                        "enabled": false,
-                        "manipulators": [
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "japanese_eisuu",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "parameters": {
-                                    "basic.to_if_alone_timeout_milliseconds": 150,
-                                    "basic.to_if_held_down_threshold_milliseconds": 150
-                                },
-                                "to_if_alone": [{ "key_code": "japanese_eisuu" }],
-                                "to_if_held_down": [{ "key_code": "left_shift" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
-                        "description": "For mac builtin keyboard, tap ja_kana and hold ctrl",
-                        "enabled": false,
-                        "manipulators": [
-                            {
-                                "conditions": [
-                                    {
-                                        "identifiers": [{ "vendor_id": 1452 }],
-                                        "type": "device_if"
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "japanese_kana",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "parameters": {
-                                    "basic.to_if_alone_timeout_milliseconds": 150,
-                                    "basic.to_if_held_down_threshold_milliseconds": 150
-                                },
-                                "to_if_alone": [{ "key_code": "japanese_kana" }],
-                                "to_if_held_down": [{ "key_code": "left_control" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
                         "description": "For mac builtin keyboard, Space/Eisuu hold layers",
                         "manipulators": [
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "spacebar",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "parameters": {
                                     "basic.to_if_alone_timeout_milliseconds": 200,
@@ -450,31 +37,19 @@
                                         }
                                     }
                                 ],
-                                "to_if_alone": [
-                                    {
-                                        "key_code": "spacebar"
-                                    }
-                                ],
+                                "to_if_alone": [{ "key_code": "spacebar" }],
                                 "type": "basic"
                             },
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "japanese_eisuu",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "parameters": {
                                     "basic.to_if_alone_timeout_milliseconds": 200,
@@ -496,21 +71,13 @@
                                         }
                                     }
                                 ],
-                                "to_if_alone": [
-                                    {
-                                        "key_code": "japanese_eisuu"
-                                    }
-                                ],
+                                "to_if_alone": [{ "key_code": "japanese_eisuu" }],
                                 "type": "basic"
                             },
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -521,11 +88,7 @@
                                 ],
                                 "from": {
                                     "key_code": "a",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -538,11 +101,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -553,11 +112,7 @@
                                 ],
                                 "from": {
                                     "key_code": "s",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -570,11 +125,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -585,11 +136,7 @@
                                 ],
                                 "from": {
                                     "key_code": "d",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -602,11 +149,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -617,11 +160,7 @@
                                 ],
                                 "from": {
                                     "key_code": "f",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -634,11 +173,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -649,11 +184,7 @@
                                 ],
                                 "from": {
                                     "key_code": "g",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -666,11 +197,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -681,11 +208,7 @@
                                 ],
                                 "from": {
                                     "key_code": "h",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -698,11 +221,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -713,11 +232,7 @@
                                 ],
                                 "from": {
                                     "key_code": "j",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -730,11 +245,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -745,11 +256,7 @@
                                 ],
                                 "from": {
                                     "key_code": "k",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -762,11 +269,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -777,11 +280,7 @@
                                 ],
                                 "from": {
                                     "key_code": "l",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -794,11 +293,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -809,11 +304,7 @@
                                 ],
                                 "from": {
                                     "key_code": "semicolon",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -826,11 +317,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -841,18 +328,12 @@
                                 ],
                                 "from": {
                                     "key_code": "q",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f1",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -860,11 +341,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -875,18 +352,12 @@
                                 ],
                                 "from": {
                                     "key_code": "w",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f2",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -894,11 +365,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -909,18 +376,12 @@
                                 ],
                                 "from": {
                                     "key_code": "e",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f3",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -928,11 +389,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -943,18 +400,12 @@
                                 ],
                                 "from": {
                                     "key_code": "r",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f4",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -962,11 +413,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -977,18 +424,12 @@
                                 ],
                                 "from": {
                                     "key_code": "t",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f5",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -996,11 +437,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1011,18 +448,12 @@
                                 ],
                                 "from": {
                                     "key_code": "y",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f6",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -1030,11 +461,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1045,18 +472,12 @@
                                 ],
                                 "from": {
                                     "key_code": "u",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f7",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -1064,11 +485,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1079,18 +496,12 @@
                                 ],
                                 "from": {
                                     "key_code": "i",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f8",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -1098,11 +509,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1113,18 +520,12 @@
                                 ],
                                 "from": {
                                     "key_code": "o",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f9",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -1132,11 +533,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1147,18 +544,12 @@
                                 ],
                                 "from": {
                                     "key_code": "p",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f10",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -1166,11 +557,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1181,18 +568,12 @@
                                 ],
                                 "from": {
                                     "key_code": "open_bracket",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f11",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -1200,11 +581,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1215,18 +592,12 @@
                                 ],
                                 "from": {
                                     "key_code": "close_bracket",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
                                         "key_code": "f12",
-                                        "modifiers": [
-                                            "fn"
-                                        ]
+                                        "modifiers": ["fn"]
                                     }
                                 ],
                                 "type": "basic"
@@ -1234,11 +605,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1249,11 +616,7 @@
                                 ],
                                 "from": {
                                     "key_code": "h",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -1266,11 +629,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1281,11 +640,7 @@
                                 ],
                                 "from": {
                                     "key_code": "j",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -1298,11 +653,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1313,11 +664,7 @@
                                 ],
                                 "from": {
                                     "key_code": "k",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -1330,11 +677,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1345,11 +688,7 @@
                                 ],
                                 "from": {
                                     "key_code": "l",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -1362,11 +701,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1377,11 +712,7 @@
                                 ],
                                 "from": {
                                     "key_code": "n",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -1394,11 +725,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1409,11 +736,7 @@
                                 ],
                                 "from": {
                                     "key_code": "m",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -1426,11 +749,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1441,11 +760,7 @@
                                 ],
                                 "from": {
                                     "key_code": "comma",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
@@ -1458,11 +773,7 @@
                             {
                                 "conditions": [
                                     {
-                                        "identifiers": [
-                                            {
-                                                "vendor_id": 1452
-                                            }
-                                        ],
+                                        "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_if"
                                     },
                                     {
@@ -1473,11 +784,7 @@
                                 ],
                                 "from": {
                                     "key_code": "period",
-                                    "modifiers": {
-                                        "optional": [
-                                            "any"
-                                        ]
-                                    }
+                                    "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [
                                     {
