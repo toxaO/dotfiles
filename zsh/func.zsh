@@ -118,22 +118,36 @@ tmux_start() {
     fi
   fi
 
-  local base_dir picked_dir
+  local base_dir picked_dir dir_roots existing_roots root
   base_dir="$HOME"
+
+  if [[ -n "${TMUX_SESSION_DIR_ROOTS:-}" ]]; then
+    dir_roots=("${(@s.:.)TMUX_SESSION_DIR_ROOTS}")
+  else
+    dir_roots=("$HOME")
+    [[ -d /mnt/c/Users ]] && dir_roots+=("/mnt/c/Users")
+    [[ -d /mnt/d ]] && dir_roots+=("/mnt/d")
+  fi
+  existing_roots=()
+  for root in "${dir_roots[@]}"; do
+    [[ -d "$root" ]] && existing_roots+=("${root:A}")
+  done
+  dir_roots=("${(@u)existing_roots}")
+  (( ${#dir_roots} > 0 )) || dir_roots=("$base_dir")
 
   if command -v fzf >/dev/null; then
     if command -v fd >/dev/null; then
-      picked_dir="$(fd -t d -H --exclude .git --exclude node_modules --exclude .cache --max-depth 3 . "$base_dir" | \
+      picked_dir="$(fd -t d -H --exclude .git --exclude node_modules --exclude .cache --max-depth 3 . "${dir_roots[@]}" | \
         fzf --prompt="Dir> " --height=40% \
         --header="Ctrl-d: deep search / Ctrl-s: shallow search" \
-        --bind="ctrl-d:reload(fd -t d -H --exclude .git --exclude node_modules --exclude .cache . \"$base_dir\")" \
-        --bind="ctrl-s:reload(fd -t d -H --exclude .git --exclude node_modules --exclude .cache --max-depth 3 . \"$base_dir\")")"
+        --bind="ctrl-d:reload(TMUX_SESSION_DIR_ROOTS=\"${TMUX_SESSION_DIR_ROOTS:-}\" sh \"$HOME/dotfiles/tmux/scripts/new_session_fzf.sh\" --list-dirs deep)" \
+        --bind="ctrl-s:reload(TMUX_SESSION_DIR_ROOTS=\"${TMUX_SESSION_DIR_ROOTS:-}\" sh \"$HOME/dotfiles/tmux/scripts/new_session_fzf.sh\" --list-dirs shallow)")"
     else
-      picked_dir="$(find "$base_dir" -maxdepth 3 -type d 2>/dev/null | \
+      picked_dir="$(find "${dir_roots[@]}" -maxdepth 3 -type d 2>/dev/null | \
         fzf --prompt="Dir> " --height=40% \
         --header="Ctrl-d: deep search / Ctrl-s: shallow search" \
-        --bind="ctrl-d:reload(find \"$base_dir\" -type d 2>/dev/null)" \
-        --bind="ctrl-s:reload(find \"$base_dir\" -maxdepth 3 -type d 2>/dev/null)")"
+        --bind="ctrl-d:reload(TMUX_SESSION_DIR_ROOTS=\"${TMUX_SESSION_DIR_ROOTS:-}\" sh \"$HOME/dotfiles/tmux/scripts/new_session_fzf.sh\" --list-dirs deep)" \
+        --bind="ctrl-s:reload(TMUX_SESSION_DIR_ROOTS=\"${TMUX_SESSION_DIR_ROOTS:-}\" sh \"$HOME/dotfiles/tmux/scripts/new_session_fzf.sh\" --list-dirs shallow)")"
     fi
   else
     vared -p "Directory (default: $base_dir): " picked_dir
