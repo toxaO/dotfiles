@@ -27,6 +27,9 @@ trust_level = "trusted"
 [projects."/Users/tokumasa/Nextcloud/office_works/発表データ/2026新人発表用/dicom"]
 trust_level = "trusted"
 
+[projects."/Users/tokumasa/.ssh"]
+trust_level = "trusted"
+
 [notice]
 hide_gpt5_1_migration_prompt = true
 
