@@ -395,28 +395,6 @@ local function switch_workspace_sorted(window, pane, delta)
   )
 end
 
-local function tmux_window_action(key)
-  return wezterm.action_callback(function(window, pane)
-    local vars = pane and pane:get_user_vars() or {}
-    if vars.WEZTERM_IN_TMUX ~= "1" then
-      return
-    end
-
-    window:perform_action(
-      act.Multiple({
-        act.SendKey({
-          key = "j",
-          mods = "CTRL",
-        }),
-        act.SendKey({
-          key = key,
-        }),
-      }),
-      pane
-    )
-  end)
-end
-
 wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
   return {
     { Background = { Color = "#161821" } },
@@ -794,17 +772,6 @@ local base_config = {
     },
   },
 }
-
-table.insert(base_config.keys, {
-  key = "Tab",
-  mods = "CTRL",
-  action = tmux_window_action("n"),
-})
-table.insert(base_config.keys, {
-  key = "Tab",
-  mods = "CTRL|SHIFT",
-  action = tmux_window_action("p"),
-})
 
 for key, value in pairs(base_config) do
   config[key] = value

@@ -62,9 +62,12 @@ fi
 name="$(basename "$dir")"
 name="$(printf '%s' "$name" | tr ' ' '_')"
 name="$(printf '%s' "$name" | cut -c 1-10)_$(date +%m%d)"
-if tmux has-session -t "=${name}" 2>/dev/null; then
-  tmux switch-client -t "=${name}"
-else
-  tmux new-session -d -s "$name" -c "$dir"
-  tmux switch-client -t "=${name}"
-fi
+base_name="$name"
+index=2
+while tmux has-session -t "=${name}" 2>/dev/null; do
+  name="${base_name}_${index}"
+  index=$((index + 1))
+done
+
+tmux new-session -d -s "$name" -c "$dir"
+tmux switch-client -t "=${name}"
