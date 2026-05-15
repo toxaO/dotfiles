@@ -161,6 +161,23 @@ function M.setup()
     end
   end
 
+  local function preview_scroll_keymap()
+    keymap.set("n", "<C-e>", function()
+      ddu.do_action("previewExecute", { command = 'execute "normal! \\<C-e>"' })
+    end, km_opts.bnw)
+    keymap.set("n", "<C-y>", function()
+      ddu.do_action("previewExecute", { command = 'execute "normal! \\<C-y>"' })
+    end, km_opts.bnw)
+  end
+
+  local function switch_ff_source(sources, source_params)
+    ddu.do_action("updateOptions", {
+      sources = sources,
+      sourceParams = source_params or {},
+    })
+    ddu.do_action("redraw", { method = "refreshItems" })
+  end
+
   ------------------------------
   -- ff keymap
   ------------------------------
@@ -176,8 +193,53 @@ function M.setup()
       -- common --
       common_keymap()
       reference_keymap()
+      preview_scroll_keymap()
       keymap.set("n", "e", function()
         ddu.do_action("itemAction", { name = "open_filer" })
+      end, km_opts.bnw)
+      keymap.set("n", "Q", function()
+        ddu.do_action("itemAction", { name = "quickfix" })
+      end, km_opts.bnw)
+      keymap.set("n", "sf", function()
+        switch_ff_source({ { name = "file_external" } })
+      end, km_opts.bnw)
+      keymap.set("n", "sh", function()
+        switch_ff_source({ { name = "path_history" } })
+      end, km_opts.bnw)
+      keymap.set("n", "sr", function()
+        switch_ff_source({ { name = "mr" } }, { mr = { kind = "mru" } })
+      end, km_opts.bnw)
+      keymap.set("n", "sp", function()
+        ddu.do_action("updateOptions", {
+          sources = { { name = "file_external" } },
+          sourceOptions = {
+            _ = {
+              path = fn["expand"](ddu_action.project_root()),
+            },
+          },
+        })
+        ddu.do_action("redraw", { method = "refreshItems" })
+      end, km_opts.bnw)
+      keymap.set("n", "sg", function()
+        ddu.do_action("updateOptions", {
+          sources = { { name = "file_external" } },
+          sourceOptions = {
+            _ = {
+              path = fn["expand"](ddu_action.project_root()),
+            },
+          },
+          sourceParams = {
+            file_external = {
+              cmd = {
+                "git",
+                "ls-files",
+                "-co",
+                "--exclude-standard",
+              },
+            },
+          },
+        })
+        ddu.do_action("redraw", { method = "refreshItems" })
       end, km_opts.bnw)
       -- selection --
       keymap.set("n", "l", function()
@@ -228,7 +290,7 @@ function M.setup()
       -- /shift cursor --
 
       -- filtering --
-      keymap.set("n", "i", function()
+      keymap.set("n", "/", function()
         fn["ddu#ui#do_action"]("openFilterWindow")
       end, km_opts.bnw)
 
@@ -280,6 +342,7 @@ function M.setup()
       -- common --
       common_keymap()
       reference_keymap()
+      preview_scroll_keymap()
       -- "w" --
       keymap.set("n", "w", function()
         fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
@@ -341,27 +404,13 @@ function M.setup()
       end, km_opts.bnw)
       -- /shift cursor --
 
-      -- "/" filter visible files/directories --
+      -- "/" filter visible items --
       keymap.set("n", "/", function()
-        local current = ddu.get_current(vim.b.ddu_ui_name) or {}
-        local ui_params = current.uiParams or {}
-        local filer_params = ui_params.filer or {}
-        vim.ui.input({
-          prompt = "fileFilter regexp: ",
-          default = filer_params.fileFilter or "",
-        }, function(input)
-          if input == nil then
-            return
-          end
-          ddu.do_action("updateOptions", {
-            uiParams = {
-              filer = {
-                fileFilter = input,
-              },
-            },
-          })
-          ddu.do_action("redraw", { method = "refreshItems" })
-        end)
+        fn["ddu#ui#do_action"]("openFilterWindow")
+      end, km_opts.bnw)
+
+      keymap.set("n", "Q", function()
+        ddu.do_action("itemAction", { name = "quickfix" })
       end, km_opts.bnw)
 
       -- "p" preview --

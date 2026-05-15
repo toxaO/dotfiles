@@ -101,7 +101,7 @@ return {
 
     config = function ()
       -- Warm up denops/ddu early to reduce first keypress latency.
-      pcall(fn["denops#server#start"])
+      pcall(fn["denops#server#connect_or_start"])
       pcall(fn["denops#plugin#wait_async"], "ddu", function()
       end)
 

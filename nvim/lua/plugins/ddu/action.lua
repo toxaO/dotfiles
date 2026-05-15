@@ -84,6 +84,20 @@ local function set_reference_dir(slot, dir)
   print(string.format("reference %d -> %s", slot, dir))
 end
 
+local function item_to_qf(item)
+  local action = item and item.action or {}
+  local path = action.path or action.filename
+  if path == nil or path == "" then
+    return nil
+  end
+  return {
+    filename = path,
+    lnum = action.lineNr or action.lnum or 1,
+    col = action.columnNr or action.col or 1,
+    text = item.display or item.word or path,
+  }
+end
+
 local function toggle_hidden(ui_name, source_name)
   local matchers = ddu.get_current(ui_name)["sourceOptions"][source_name]["matchers"]
   or {}
@@ -353,17 +367,21 @@ function M.reg_actions()
     print(vim.inspect(ddu.get_current()))
   end)
 
-  ddu.action("kind", "file", "argadd", function(args)
-    local arglist = {}
+  ddu.action("kind", "file", "quickfix", function(args)
+    local qflist = {}
     for _, item in ipairs(args.items) do
-      local path = item.action.path
-      if item.action.isDirectory then
-        path = path .. "/**"
+      local qf = item_to_qf(item)
+      if qf ~= nil then
+        table.insert(qflist, qf)
       end
-      table.insert(arglist, path)
     end
-    vim.cmd.args(arglist)
-    return 4
+    if #qflist == 0 then
+      print("ddu quickfix: no file items")
+      return 0
+    end
+    fn.setqflist(qflist, "r")
+    vim.cmd("copen")
+    return 0
   end)
 
   ddu.action("kind", "file", "window_choose", function(args)

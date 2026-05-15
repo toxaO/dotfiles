@@ -48,6 +48,7 @@ function M.setup()
           delay = 0,
           name = "preview",
         },
+        pathFilter = "",
 
       }, -- /ui-ff params
     }, -- /ui params
@@ -109,6 +110,8 @@ function M.setup()
       action = {defaultAction = "do"},
       help = {defaultAction = "open"},
       ui_select = {defaultAction = "do"},
+      buffer = {defaultAction = "open"},
+      tab = {defaultAction = "open"},
     }, -- /kindOptions
 
   }) -- /default

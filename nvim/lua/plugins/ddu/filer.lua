@@ -30,6 +30,7 @@ function M.setup()
       splitDirection = "botright",
       sort = "filename",
       sortTreesFirst = true,
+      fileFilter = "",
 
       -- preview setting
       previewSplit = "vertical",
@@ -79,7 +80,11 @@ function M.setup()
 
     ui = "filer",
     uiParams = filer_ui ,
-    sources = { {name = "file"} },
+    sources = {
+      {name = "tab"},
+      {name = "buffer"},
+      {name = "file"},
+    },
     sourceOptions =  filer_sourceOptions ,
     sourceParams = {},
     columnParams = filer_columnParams,

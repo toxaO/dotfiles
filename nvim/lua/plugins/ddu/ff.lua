@@ -113,6 +113,25 @@ function M.setup()
 
   }) -- /project all file --
 
+  ddu.patch_local("git_files", {
+
+    sources = { {name = "file_external"}, },
+
+    sourceParams = {
+
+      file_external = {
+        cmd = {
+          "git",
+          "ls-files",
+          "-co",
+          "--exclude-standard",
+        },
+      },
+
+    },
+
+  }) -- /git files --
+
     -- project grep --
   ddu.patch_local("grep", {
 
@@ -194,6 +213,16 @@ function M.setup()
   keymap.set("n", "<Space>p",function()
     fn["ddu#start"]({
       name = "file_rec",
+      sourceOptions = {
+        _ = {
+          path = fn["expand"](ddu_action.project_root())
+        },
+      },
+    })
+  end, km_opts.nsw)
+  keymap.set("n", "<Space>F", function()
+    fn["ddu#start"]({
+      name = "git_files",
       sourceOptions = {
         _ = {
           path = fn["expand"](ddu_action.project_root())
