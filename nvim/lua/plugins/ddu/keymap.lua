@@ -101,12 +101,6 @@ function M.setup()
     keymap.set("n", "r", function()
       ddu.do_action("itemAction", { name = "rename" })
     end, km_opts.bnw)
-    -- "C" cd --
-    keymap.set("n", "C", function()
-      local path = fn["ddu#ui#get_item"]()["action"]["path"]
-      print('change to "' .. path .. '" !')
-      ddu.do_action("itemAction", { name = "tab_cd" })
-    end, km_opts.bnw)
     -- "c" copy --
     keymap.set("n", "c", function()
       fn["ddu#ui#multi_actions"]({ {"itemAction", {name = "copy"}}, {"clearSelectAllItems"} })
@@ -158,6 +152,15 @@ function M.setup()
     -- /action --
   end -- /common keymaps
 
+  local function reference_keymap()
+    for slot = 1, 4 do
+      local current_slot = slot
+      keymap.set("n", "m<F" .. slot .. ">", function()
+        ddu.do_action("itemAction", { name = "set_reference_dir_" .. current_slot })
+      end, km_opts.bnw)
+    end
+  end
+
   ------------------------------
   -- ff keymap
   ------------------------------
@@ -172,6 +175,10 @@ function M.setup()
     callback = function()
       -- common --
       common_keymap()
+      reference_keymap()
+      keymap.set("n", "e", function()
+        ddu.do_action("itemAction", { name = "open_filer" })
+      end, km_opts.bnw)
       -- selection --
       keymap.set("n", "l", function()
         fn["ddu#ui#do_action"]("toggleSelectItem")
@@ -272,15 +279,7 @@ function M.setup()
     callback = function()
       -- common --
       common_keymap()
-      if vim.b.ddu_ui_name == "filer_cd" then
-        vim.b.ddu_filer_cd_show_files = false
-        keymap.set("n", "<CR>", function()
-          ddu.do_action("itemAction", { name = "tab_cd", quit = true })
-        end, km_opts.bnw)
-        keymap.set("n", ",f", function()
-          ddu.do_action("toggleFilerCdShowFiles")
-        end, km_opts.bnw)
-      end
+      reference_keymap()
       -- "w" --
       keymap.set("n", "w", function()
         fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
@@ -342,18 +341,27 @@ function M.setup()
       end, km_opts.bnw)
       -- /shift cursor --
 
-      -- "i" --
-      keymap.set("n", "i", function()
-        local path = fn["fnamemodify"](fn["input"]("cwd: ", b.ddu_ui_filer_path, "file"), ":p")
-          fn["ddu#ui#do_action"]("itemAction",
-              {
-                name = "narrow",
-                params = {
-                  path = path,
-                }
-              }
-            )
-        fn["ddu#ui#do_action"]("cursorNext")
+      -- "/" filter visible files/directories --
+      keymap.set("n", "/", function()
+        local current = ddu.get_current(vim.b.ddu_ui_name) or {}
+        local ui_params = current.uiParams or {}
+        local filer_params = ui_params.filer or {}
+        vim.ui.input({
+          prompt = "fileFilter regexp: ",
+          default = filer_params.fileFilter or "",
+        }, function(input)
+          if input == nil then
+            return
+          end
+          ddu.do_action("updateOptions", {
+            uiParams = {
+              filer = {
+                fileFilter = input,
+              },
+            },
+          })
+          ddu.do_action("redraw", { method = "refreshItems" })
+        end)
       end, km_opts.bnw)
 
       -- "p" preview --
@@ -375,18 +383,6 @@ function M.setup()
         })
       end, km_opts.bnw)
 
-      -- "^" --
-      keymap.set("n", "^", function()
-        ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand(g.my_initvim_path) } })
-      end, km_opts.bnw)
-      -- "\" --
-      keymap.set("n", ",", function()
-        ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~/dotfiles/mydotfiles") } })
-      end, km_opts.bnw)
-      -- "|" --
-      keymap.set("n", "|", function()
-        ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~/repos") } })
-      end, km_opts.bnw)
       -- "~" --
       keymap.set("n", "~", function()
         ddu.do_action("itemAction", { name = "narrow", params = { path = fn.expand("~") } })

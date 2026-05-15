@@ -170,6 +170,15 @@ function M.setup()
     },
   }) -- /help --
 
+  ddu.patch_local("recent_files", {
+    sources = { { name = "mr" } },
+    sourceParams = {
+      mr = {
+        kind = "mru",
+      },
+    },
+  }) -- /recent files --
+
   ------------------------------
   -- /ff setting --
   ------------------------------
@@ -187,11 +196,12 @@ function M.setup()
       name = "file_rec",
       sourceOptions = {
         _ = {
-          path = fn["expand"](b.project_root)
+          path = fn["expand"](ddu_action.project_root())
         },
       },
     })
   end, km_opts.nsw)
+  keymap.set("n", "<Space>r", ":call ddu#start(#{name: 'recent_files'})<CR>", km_opts.nsw)
   keymap.set("n", "<F1>",":call ddu#start(#{name: 'help'})<CR>", km_opts.nsw)
   keymap.set("n", "<space>g",function()
     fn["ddu#start"]({
@@ -221,7 +231,7 @@ function M.setup()
       name = "project_grep",
       sourceOptions = {
         _ = {
-          path = fn["expand"](b.project_root)
+          path = fn["expand"](ddu_action.project_root())
         },
       },
       input = fn["expand"]("<cword>"),

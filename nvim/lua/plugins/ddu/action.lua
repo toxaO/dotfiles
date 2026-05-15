@@ -57,6 +57,33 @@ local function resolve_target_directory(item)
   return fn.fnamemodify(normalized, ":h")
 end
 
+local function start_filer(path)
+  local dir = fn.fnamemodify(path, ":p")
+  if fn.isdirectory(dir) ~= 1 then
+    dir = fn.fnamemodify(dir, ":h")
+  end
+  if dir == "" then
+    return false
+  end
+  vim.t.ddu_ui_filer_main_path = dir
+  fn["ddu#start"]({
+    name = "filer",
+    sourceOptions = {
+      file = {
+        path = dir,
+      },
+    },
+  })
+  pcall(fn["ddu#ui#do_action"], "cursorNext")
+  return true
+end
+
+local function set_reference_dir(slot, dir)
+  vim.g.ddu_reference_dirs = vim.g.ddu_reference_dirs or {}
+  vim.g.ddu_reference_dirs[slot] = dir
+  print(string.format("reference %d -> %s", slot, dir))
+end
+
 local function toggle_hidden(ui_name, source_name)
   local matchers = ddu.get_current(ui_name)["sourceOptions"][source_name]["matchers"]
   or {}
@@ -177,26 +204,6 @@ local function show_extension_list_message(exts)
   vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "ddu rg extensions" })
 end
 
-local function build_filer_cd_cmd(show_files)
-  local cmd = {
-    "fd",
-    ".",
-    "--max-depth",
-    "1",
-    "--hidden",
-    "--follow",
-    "--exclude",
-    ".git",
-    "--type",
-    "d",
-  }
-  if show_files then
-    table.insert(cmd, "--type")
-    table.insert(cmd, "f")
-  end
-  return cmd
-end
-
 local function refresh_rg_items()
   local params = {
     rg = {
@@ -228,6 +235,31 @@ function M.build_rg_globs()
     table.insert(globs, string.format("!*.%s", ext))
   end
   return globs
+end
+
+function M.project_root()
+  local root = vim.b.project_root
+  if root == nil or root == "" then
+    root = u.fs.get_project_root_current_buf()
+  end
+  if root == nil or root == "" then
+    root = fn["getcwd"](-1, 0)
+  end
+  return root
+end
+
+function M.start_filer(path)
+  return start_filer(path)
+end
+
+function M.start_reference_filer(slot)
+  local dirs = vim.g.ddu_reference_dirs or {}
+  local dir = dirs[slot]
+  if dir == nil or dir == "" then
+    print(string.format("reference %d is empty", slot))
+    return false
+  end
+  return start_filer(dir)
 end
 
 -- 工事中
@@ -313,24 +345,6 @@ function M.reg_actions()
     return 0
   end)
 
-  ddu.action("ui", "_", "toggleFilerCdShowFiles", function(_)
-    if vim.b.ddu_ui_name ~= "filer_cd" then
-      return 0
-    end
-    vim.b.ddu_filer_cd_show_files = not (vim.b.ddu_filer_cd_show_files == true)
-    local show_files = vim.b.ddu_filer_cd_show_files == true
-    ddu.do_action("updateOptions", {
-      sourceParams = {
-        file_external = {
-          cmd = build_filer_cd_cmd(show_files),
-        },
-      },
-    })
-    ddu.do_action("redraw", { method = "refreshItems" })
-    print("filer_cd: " .. (show_files and "directories + files" or "directories only"))
-    return 0
-  end)
-
   ddu.action("ui", "_", "current", function(_)
     print(vim.inspect(ddu.get_current()))
   end)
@@ -364,14 +378,35 @@ function M.reg_actions()
       return 0
     end
     vim.cmd("tcd " .. fn.fnameescape(dir))
-    if vim.b.ddu_ui_name == "filer_cd" then
-      vim.t.ddu_ui_filer_cd_path = dir
-    else
-      vim.t.ddu_ui_filer_main_path = dir
-    end
+    vim.t.ddu_ui_filer_main_path = dir
     print('tab cwd -> "' .. dir .. '"')
     return 0
   end)
+
+  ddu.action("kind", "file", "open_filer", function(args)
+    local item = args.items and args.items[1] or nil
+    local dir = resolve_target_directory(item)
+    if dir == "" then
+      print("ddu open_filer: directory not found")
+      return 0
+    end
+    start_filer(dir)
+    return 0
+  end)
+
+  for slot = 1, 4 do
+    local current_slot = slot
+    ddu.action("kind", "file", "set_reference_dir_" .. slot, function(args)
+      local item = args.items and args.items[1] or nil
+      local dir = resolve_target_directory(item)
+      if dir == "" then
+        print("ddu reference: directory not found")
+        return 0
+      end
+      set_reference_dir(current_slot, dir)
+      return 4
+    end)
+  end
 
   ddu.action("ui", "_", "confirm_item", function(args)
     return item_data(args)

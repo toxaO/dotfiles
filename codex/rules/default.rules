@@ -41,3 +41,4 @@ prefix_rule(pattern=["rtk", "sh", "tmux/scripts/update_keybinds_notes.sh"], deci
 prefix_rule(pattern=["rtk", "tmux", "list-keys"], decision="allow")
 prefix_rule(pattern=["rtk", "rg", "(display-popup|choose-tree -Zs|new-window|respawn|capture_pane|swap-window|toggle_pipe|paste-buffer|list-buffers|copy-mode|pipe-pane|^bind-key.*[csStTRYLcvV\\[\\]])"], decision="allow")
 prefix_rule(pattern=["rtk", "rg", " T | t | R | w"], decision="allow")
+prefix_rule(pattern=["rtk", "nvim", "--headless"], decision="allow")
