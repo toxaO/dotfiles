@@ -59,8 +59,10 @@ local DIRECTORY_EXTERNAL_CMD = {
   "out",
 }
 local RG_BASE_ARGS = { "--json" }
+local RECENT_DIRECTORY_LIMIT = 50
 local rg_globs = {}
 local rg_excluded_extensions = {}
+local recent_directories = {}
 
 ------------------------------
 -- action functions
@@ -106,6 +108,27 @@ local function resolve_target_directory(item)
   return fn.fnamemodify(normalized, ":h")
 end
 
+local function add_recent_directory(path)
+  local dir = fn.fnamemodify(path, ":p")
+  if fn.isdirectory(dir) ~= 1 then
+    dir = fn.fnamemodify(dir, ":h")
+  end
+  if dir == "" then
+    return
+  end
+
+  for i = #recent_directories, 1, -1 do
+    if recent_directories[i] == dir then
+      table.remove(recent_directories, i)
+    end
+  end
+  table.insert(recent_directories, 1, dir)
+
+  while #recent_directories > RECENT_DIRECTORY_LIMIT do
+    table.remove(recent_directories)
+  end
+end
+
 local function start_filer(path)
   local dir = fn.fnamemodify(path, ":p")
   if fn.isdirectory(dir) ~= 1 then
@@ -114,6 +137,7 @@ local function start_filer(path)
   if dir == "" then
     return false
   end
+  add_recent_directory(dir)
   vim.t.ddu_ui_filer_main_path = dir
   fn["ddu#start"]({
     name = "filer",
@@ -318,6 +342,7 @@ local function unique_directories(items)
       local dir = resolve_target_directory(item)
       if dir ~= "" and not seen[dir] then
         seen[dir] = true
+        add_recent_directory(dir)
         table.insert(dirs, dir)
       end
     end
@@ -390,6 +415,9 @@ local function start_ff_from_paths(paths)
     print("ddu ff: file items not found")
     return false
   end
+  for _, path in ipairs(paths) do
+    add_recent_directory(path)
+  end
 
   local options = {
     sources = { { name = "file_external" } },
@@ -438,6 +466,14 @@ function M.build_directory_external_params()
   return {
     cmd = vim.deepcopy(DIRECTORY_EXTERNAL_CMD),
   }
+end
+
+function M.build_recent_directory_params()
+  local cmd = { "sh", "-c", "for path do printf '%s\\n' \"$path\"; done", "ddu-recent-dirs" }
+  for _, dir in ipairs(recent_directories) do
+    table.insert(cmd, dir)
+  end
+  return { cmd = cmd }
 end
 
 function M.build_file_external_selected_params(paths)

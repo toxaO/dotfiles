@@ -305,11 +305,19 @@ function M.setup()
         ddu.do_action("updateOptions", options)
         ddu.do_action("redraw", { method = "refreshItems" })
       end, km_opts.bnw)
-      keymap.set("n", "sh", function()
-        switch_ff_source({ { name = "path_history" } })
-      end, km_opts.bnw)
       keymap.set("n", "sr", function()
         switch_ff_source({ { name = "mr" } }, { mr = { kind = "mru" } })
+      end, km_opts.bnw)
+      keymap.set("n", "sR", function()
+        local options = {
+          sources = { { name = "file_external" } },
+          sourceParams = {
+            file_external = ddu_action.build_recent_directory_params(),
+          },
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
+        ddu.do_action("redraw", { method = "refreshItems" })
       end, km_opts.bnw)
       keymap.set("n", "sH", function()
         local options = {

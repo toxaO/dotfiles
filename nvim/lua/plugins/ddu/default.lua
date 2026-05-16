@@ -75,7 +75,7 @@ function M.setup()
       }, --/sourceOptions-default
 
       buffer = {sorters = {},},
-      action = {matchers = {}}, -- source-actionにmatcher-hiddenを入れるとsourceが取れない
+      action = {matchers = {"matcher_substring"}}, -- source-actionにmatcher-hiddenを入れるとsourceが取れない
 
       file_rec = {
         matchers = {"matcher_fzf"},
