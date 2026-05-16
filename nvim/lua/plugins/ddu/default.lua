@@ -37,7 +37,7 @@ function M.setup()
         filterFloatingPosition = "top",
         filterSplitDirection = "floating",
         prompt = ">>",
-        startFilter =  true,
+        startFilter = false,
 
         -- preview setting
         previewFloatingTitle = "Preview",

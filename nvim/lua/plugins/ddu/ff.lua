@@ -40,32 +40,7 @@ function M.setup()
 
     sourceParams = {
 
-      file_external = {
-        cmd = {
-          "fd",
-          ".",
-          "--type",
-          "f",
-          "--hidden",
-          "--follow",
-          "--exclude",
-          ".git",
-          "--exclude",
-          "node_modules",
-          "--exclude",
-          "vendor",
-          "--exclude",
-          ".next",
-          "--exclude",
-          ".venv",
-          "--exclude",
-          "__pycache__",
-          "--exclude",
-          ".mypy_cache",
-          "--exclude",
-          "out",
-        },
-      },
+      file_external = ddu_action.build_file_external_params(),
 
     },
 
@@ -82,32 +57,7 @@ function M.setup()
 
     sourceParams = {
 
-      file_external = {
-        cmd = {
-          "fd",
-          ".",
-          "--type",
-          "f",
-          "--hidden",
-          "--follow",
-          "--exclude",
-          ".git",
-          "--exclude",
-          "node_modules",
-          "--exclude",
-          "vendor",
-          "--exclude",
-          ".next",
-          "--exclude",
-          ".venv",
-          "--exclude",
-          "__pycache__",
-          "--exclude",
-          ".mypy_cache",
-          "--exclude",
-          "out",
-        },
-      },
+      file_external = ddu_action.build_file_external_params(),
 
     },
 
@@ -151,7 +101,9 @@ function M.setup()
     sourceOptions = {
 
       rg = {
+        converters = {},
         matchers = {},
+        sorters = {},
         volatile = true,
       },
 
@@ -185,7 +137,9 @@ function M.setup()
       },
     },
     sourceParams = {
-      helpLang = "ja",
+      help = {
+        helpLang = "ja",
+      },
     },
   }) -- /help --
 
@@ -205,66 +159,8 @@ function M.setup()
   ------------------------------
   -- ff starter
   ------------------------------
-  keymap.set("n", "<Space>b",":call ddu#start(#{name: 'buffer'})<CR>", km_opts.nsw)
-  keymap.set("n", "<Space>a",":call ddu#start(#{name: 'args'})<CR>", km_opts.nsw)
-  keymap.set("n", "<Space>f",":call ddu#start(#{name: 'file_rec'})<CR>", km_opts.nsw)
-  keymap.set("n", "<Space>h",
-    ":call ddu#start(#{name: 'file_rec', sources: [#{name: 'path_history'}]})<CR>", km_opts.nsw)
-  keymap.set("n", "<Space>p",function()
-    fn["ddu#start"]({
-      name = "file_rec",
-      sourceOptions = {
-        _ = {
-          path = fn["expand"](ddu_action.project_root())
-        },
-      },
-    })
-  end, km_opts.nsw)
-  keymap.set("n", "<Space>F", function()
-    fn["ddu#start"]({
-      name = "git_files",
-      sourceOptions = {
-        _ = {
-          path = fn["expand"](ddu_action.project_root())
-        },
-      },
-    })
-  end, km_opts.nsw)
-  keymap.set("n", "<Space>r", ":call ddu#start(#{name: 'recent_files'})<CR>", km_opts.nsw)
-  keymap.set("n", "<F1>",":call ddu#start(#{name: 'help'})<CR>", km_opts.nsw)
-  keymap.set("n", "<space>g",function()
-    fn["ddu#start"]({
-      name = "grep",
-      sourceOptions = {
-        _ = {
-          -- Use tab-local cwd for grep base path.
-          path = fn["getcwd"](-1, 0)
-        },
-      },
-      input = fn["expand"]("<cword>"),
-    })
-  end, km_opts.nsw)
-  keymap.set("n", "<Space>G",function()
-    fn["ddu#start"]({
-      name = "grep",
-      sourceOptions = {
-        _ = {
-          path = fn["expand"](".")
-        },
-      },
-      input = fn["expand"]("<cword>"),
-    })
-  end, km_opts.nsw)
-  keymap.set("n", "<Space>G",function()
-    fn["ddu#start"]({
-      name = "project_grep",
-      sourceOptions = {
-        _ = {
-          path = fn["expand"](ddu_action.project_root())
-        },
-      },
-      input = fn["expand"]("<cword>"),
-    })
+  keymap.set("n", "<Space>f", function()
+    fn["ddu#start"](vim.g.ddu_ff_last_start_options or { name = "buffer" })
   end, km_opts.nsw)
   ------------------------------
   -- /ff starter

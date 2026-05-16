@@ -25,6 +25,47 @@ function M.setup()
   ------------------------------
   -- common
   ------------------------------
+  local function current_item_action(params)
+    fn["ddu#ui#do_action"]("clearSelectAllItems")
+    vim.schedule(function()
+      fn["ddu#ui#do_action"]("itemAction", params)
+    end)
+  end
+
+  local function cursor_item_edge(direction)
+    local action = direction == "top" and "cursorPrevious" or "cursorNext"
+    fn["ddu#ui#do_action"](action, { count = 999999, loop = false })
+  end
+
+  local function cursor_source(direction)
+    local items = fn["ddu#ui#get_items"]()
+    local current = fn["ddu#ui#get_item"]()
+    local source_name = current and current.__sourceName or nil
+    local cursor_line = fn.line(".")
+    if type(items) ~= "table" or source_name == nil then
+      return
+    end
+
+    if direction == "next" then
+      for i = cursor_line + 1, #items do
+        if items[i].__sourceName ~= source_name then
+          fn["ddu#ui#do_action"]("cursorNext", { count = i - cursor_line, loop = false })
+          return
+        end
+      end
+    else
+      for i = cursor_line - 1, 1, -1 do
+        if items[i].__sourceName ~= source_name then
+          while i > 1 and items[i - 1].__sourceName == items[i].__sourceName do
+            i = i - 1
+          end
+          fn["ddu#ui#do_action"]("cursorPrevious", { count = cursor_line - i, loop = false })
+          return
+        end
+      end
+    end
+  end
+
   local function common_keymap()
     -- <CR> open --
     keymap.set("n", "<CR>", function()
@@ -35,7 +76,7 @@ function M.setup()
 
     -- buffer open --
     keymap.set("n", "b", function()
-      ddu.do_action("itemAction", { name = "open", quit = false })
+      current_item_action({ name = "open", quit = false })
     end, km_opts.bnw)
 
     -- cursor --
@@ -49,26 +90,38 @@ function M.setup()
       b.SelectStartLine = 0
       fn["ddu#ui#do_action"]("cursorPrevious", {loop = true})
     end, km_opts.bnw)
+    keymap.set("n", "{", function()
+      cursor_source("previous")
+    end, km_opts.bnw)
+    keymap.set("n", "}", function()
+      cursor_source("next")
+    end, km_opts.bnw)
+    keymap.set("n", "<Home>", function()
+      cursor_item_edge("top")
+    end, km_opts.bnw)
+    keymap.set("n", "<End>", function()
+      cursor_item_edge("bottom")
+    end, km_opts.bnw)
     -- /cursor --
 
     -- "v" vsplit --
     keymap.set("n", "v", function()
       return ddu.item.is_tree() and ddu.do_action("expandItem")
-      or ddu.do_action("itemAction", { name = "open", params = { command = "vsplit" } })
+      or current_item_action({ name = "open", params = { command = "vsplit" } })
     end, km_opts.bnw)
-    -- "s" split --
-    keymap.set("n", "s", function()
+    -- "h" horizontal split --
+    keymap.set("n", "h", function()
       return ddu.item.is_tree() and ddu.do_action("expandItem")
-      or ddu.do_action("itemAction", { name = "open", params = { command = "split" } })
+      or current_item_action({ name = "open", params = { command = "split" } })
     end, km_opts.bnw)
     -- "t" tabnew --
     keymap.set("n", "t", function()
-      fn["ddu#ui#do_action"]("itemAction", { name = "open", params = { command = "tabe" } })
+      current_item_action({ name = "open", params = { command = "tabe" } })
     end, km_opts.bnw)
 
     -- "w" window choose --
     keymap.set("n", "w", function()
-      fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
+      current_item_action({ name = "window_choose" })
     end, km_opts.bnw)
 
     -- "q" quit --
@@ -170,11 +223,19 @@ function M.setup()
     end, km_opts.bnw)
   end
 
+  local function remember_ff_start_options(options)
+    local start_options = vim.deepcopy(options)
+    start_options.input = nil
+    vim.g.ddu_ff_last_start_options = start_options
+  end
+
   local function switch_ff_source(sources, source_params)
-    ddu.do_action("updateOptions", {
+    local options = {
       sources = sources,
       sourceParams = source_params or {},
-    })
+    }
+    remember_ff_start_options(options)
+    ddu.do_action("updateOptions", options)
     ddu.do_action("redraw", { method = "refreshItems" })
   end
 
@@ -195,13 +256,54 @@ function M.setup()
       reference_keymap()
       preview_scroll_keymap()
       keymap.set("n", "e", function()
-        ddu.do_action("itemAction", { name = "open_filer" })
+        current_item_action({ name = "open_filer" })
+      end, km_opts.bnw)
+      keymap.set("n", "f", function()
+        ddu.do_action("openFfFromSelectedFileItems")
+      end, km_opts.bnw)
+      keymap.set("n", "g", function()
+        ddu.do_action("itemAction", { name = "grep" })
       end, km_opts.bnw)
       keymap.set("n", "Q", function()
         ddu.do_action("itemAction", { name = "quickfix" })
       end, km_opts.bnw)
+      keymap.set("n", "sb", function()
+        switch_ff_source({ { name = "buffer" } })
+      end, km_opts.bnw)
+      keymap.set("n", "sa", function()
+        switch_ff_source({ { name = "arglist" } })
+      end, km_opts.bnw)
       keymap.set("n", "sf", function()
-        switch_ff_source({ { name = "file_external" } })
+        local options = {
+          sources = { { name = "file_external" } },
+          sourceOptions = {
+            _ = {
+              path = fn["getcwd"](-1, 0),
+            },
+          },
+          sourceParams = {
+            file_external = ddu_action.build_file_external_params(),
+          },
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
+        ddu.do_action("redraw", { method = "refreshItems" })
+      end, km_opts.bnw)
+      keymap.set("n", "sd", function()
+        local options = {
+          sources = { { name = "file_external" } },
+          sourceOptions = {
+            _ = {
+              path = fn["getcwd"](-1, 0),
+            },
+          },
+          sourceParams = {
+            file_external = ddu_action.build_directory_external_params(),
+          },
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
+        ddu.do_action("redraw", { method = "refreshItems" })
       end, km_opts.bnw)
       keymap.set("n", "sh", function()
         switch_ff_source({ { name = "path_history" } })
@@ -209,19 +311,48 @@ function M.setup()
       keymap.set("n", "sr", function()
         switch_ff_source({ { name = "mr" } }, { mr = { kind = "mru" } })
       end, km_opts.bnw)
+      keymap.set("n", "sH", function()
+        local options = {
+          sources = { { name = "help" } },
+          uiParams = {
+            ff = {
+              startAutoAction = true,
+              autoAction = {
+                delay = 0,
+                name = "preview",
+              },
+              previewFloating = true,
+              previewSplit = "vertical",
+            },
+          },
+          sourceParams = {
+            help = {
+              helpLang = "ja",
+            },
+          },
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
+        ddu.do_action("redraw", { method = "refreshItems" })
+      end, km_opts.bnw)
       keymap.set("n", "sp", function()
-        ddu.do_action("updateOptions", {
+        local options = {
           sources = { { name = "file_external" } },
           sourceOptions = {
             _ = {
               path = fn["expand"](ddu_action.project_root()),
             },
           },
-        })
+          sourceParams = {
+            file_external = ddu_action.build_file_external_params(),
+          },
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
         ddu.do_action("redraw", { method = "refreshItems" })
       end, km_opts.bnw)
       keymap.set("n", "sg", function()
-        ddu.do_action("updateOptions", {
+        local options = {
           sources = { { name = "file_external" } },
           sourceOptions = {
             _ = {
@@ -238,7 +369,57 @@ function M.setup()
               },
             },
           },
-        })
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
+        ddu.do_action("redraw", { method = "refreshItems" })
+      end, km_opts.bnw)
+      keymap.set("n", "s/", function()
+        local options = {
+          name = "grep",
+          sources = { { name = "rg" } },
+          sourceOptions = {
+            rg = {
+              converters = {},
+              matchers = {},
+              sorters = {},
+              volatile = true,
+            },
+            _ = {
+              path = fn["getcwd"](-1, 0),
+            },
+          },
+          sourceParams = {
+            rg = ddu_action.build_rg_params({ fn["getcwd"](-1, 0) }),
+          },
+          input = fn["expand"]("<cword>"),
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
+        ddu.do_action("redraw", { method = "refreshItems" })
+      end, km_opts.bnw)
+      keymap.set("n", "sG", function()
+        local options = {
+          name = "grep",
+          sources = { { name = "rg" } },
+          sourceOptions = {
+            rg = {
+              converters = {},
+              matchers = {},
+              sorters = {},
+              volatile = true,
+            },
+            _ = {
+              path = fn["expand"](ddu_action.project_root()),
+            },
+          },
+          sourceParams = {
+            rg = ddu_action.build_rg_params({ fn["expand"](ddu_action.project_root()) }),
+          },
+          input = fn["expand"]("<cword>"),
+        }
+        remember_ff_start_options(options)
+        ddu.do_action("updateOptions", options)
         ddu.do_action("redraw", { method = "refreshItems" })
       end, km_opts.bnw)
       -- selection --
@@ -249,7 +430,7 @@ function M.setup()
         fn["ddu#ui#do_action"]("clearSelectAllItems")
       end, km_opts.bnw)
       keymap.set("n", "*", function()
-        fn["ddu#ui#do_action"]("toggleSelectItem")
+        fn["ddu#ui#do_action"]("toggleAllItems")
       end, km_opts.bnw)
       -- /selection --
       -- shift cursor --
@@ -292,6 +473,9 @@ function M.setup()
       -- filtering --
       keymap.set("n", "/", function()
         fn["ddu#ui#do_action"]("openFilterWindow")
+      end, km_opts.bnw)
+      keymap.set("n", "<C-g>", function()
+        ddu.do_action("editRgGlobs")
       end, km_opts.bnw)
 
       -- "p" preview --
@@ -345,7 +529,7 @@ function M.setup()
       preview_scroll_keymap()
       -- "w" --
       keymap.set("n", "w", function()
-        fn["ddu#ui#do_action"]("itemAction", { name = "window_choose" })
+        current_item_action({ name = "window_choose" })
       end, km_opts.bnw)
       -- /open --
 
@@ -404,13 +588,26 @@ function M.setup()
       end, km_opts.bnw)
       -- /shift cursor --
 
+      keymap.set("n", "<PageUp>", function()
+        fn["ddu#ui#do_action"]("cursorTreeTop")
+      end, km_opts.bnw)
+      keymap.set("n", "<PageDown>", function()
+        fn["ddu#ui#do_action"]("cursorTreeBottom")
+      end, km_opts.bnw)
+
       -- "/" filter visible items --
       keymap.set("n", "/", function()
         fn["ddu#ui#do_action"]("openFilterWindow")
       end, km_opts.bnw)
+      keymap.set("n", "<C-g>", function()
+        ddu.do_action("editRgGlobs")
+      end, km_opts.bnw)
 
       keymap.set("n", "Q", function()
         ddu.do_action("itemAction", { name = "quickfix" })
+      end, km_opts.bnw)
+      keymap.set("n", "g", function()
+        ddu.do_action("itemAction", { name = "grep" })
       end, km_opts.bnw)
 
       -- "p" preview --
@@ -418,18 +615,8 @@ function M.setup()
         fn["ddu#ui#do_action"]("togglePreview")
       end, km_opts.bnw)
 
-      -- "f" --
       keymap.set("n", "f",function()
-        local path = fn["ddu#ui#get_item"]()["action"]["path"]
-        fn["ddu#ui#do_action"]("quit")
-        fn["ddu#start"]({
-          name = "file_rec",
-          sourceOptions = {
-            _ = {
-              path = path
-            },
-          }
-        })
+        ddu.do_action("openFfFromSelectedFileItems")
       end, km_opts.bnw)
 
       -- "~" --

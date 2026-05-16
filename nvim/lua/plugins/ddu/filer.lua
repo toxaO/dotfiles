@@ -6,7 +6,6 @@ local keymap = vim.keymap
 local opt = vim.opt
 
 local ddu = require("plugins.ddu.ddu_util")
-local ddu_action = require("plugins.ddu.action")
 local ddu_autocmd = require("plugins.ddu.autocmd")
 local ddu_default = require("plugins.ddu.default")
 local u = require("utils")
@@ -111,17 +110,6 @@ function M.setup()
     fn["ddu#start"]( filer_setting )
     fn["ddu#ui#do_action"]("cursorNext") -- デフォルトのカーソル位置がファイルパスに被るため
   end, km_opts.nsw)
-
-  keymap.set("n", "<Space>E", function()
-    ddu_action.start_filer(ddu_action.project_root())
-  end, km_opts.nsw)
-
-  for slot = 1, 4 do
-    local current_slot = slot
-    keymap.set("n", "<Space><F" .. slot .. ">", function()
-      ddu_action.start_reference_filer(current_slot)
-    end, km_opts.nsw)
-  end
 
   ------------------------------
   -- /filer starter --

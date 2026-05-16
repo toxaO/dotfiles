@@ -10,7 +10,56 @@ local u= require("utils")
 local ddu = require("plugins.ddu.ddu_util")
 
 local M = {}
-local RG_BASE_ARGS = { "--column", "--no-heading", "--color", "never" }
+local FILE_EXTERNAL_CMD = {
+  "fd",
+  ".",
+  "--type",
+  "f",
+  "--hidden",
+  "--follow",
+  "--exclude",
+  ".git",
+  "--exclude",
+  "node_modules",
+  "--exclude",
+  "vendor",
+  "--exclude",
+  ".next",
+  "--exclude",
+  ".venv",
+  "--exclude",
+  "__pycache__",
+  "--exclude",
+  ".mypy_cache",
+  "--exclude",
+  "out",
+}
+local DIRECTORY_EXTERNAL_CMD = {
+  "fd",
+  ".",
+  "--type",
+  "d",
+  "--hidden",
+  "--follow",
+  "--exclude",
+  ".git",
+  "--exclude",
+  "node_modules",
+  "--exclude",
+  "vendor",
+  "--exclude",
+  ".next",
+  "--exclude",
+  ".venv",
+  "--exclude",
+  "__pycache__",
+  "--exclude",
+  ".mypy_cache",
+  "--exclude",
+  "out",
+}
+local RG_BASE_ARGS = { "--json" }
+local rg_globs = {}
 local rg_excluded_extensions = {}
 
 ------------------------------
@@ -218,12 +267,24 @@ local function show_extension_list_message(exts)
   vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "ddu rg extensions" })
 end
 
+local function current_uses_rg(current)
+  local sources = current and current.sources or {}
+  for _, source in ipairs(sources) do
+    if source.name == "rg" then
+      return true
+    end
+  end
+  return false
+end
+
 local function refresh_rg_items()
+  local current = ddu.get_current(vim.b.ddu_ui_name)
+  if not current_uses_rg(current) then
+    return
+  end
+  local current_rg_params = current and current.sourceParams and current.sourceParams.rg or {}
   local params = {
-    rg = {
-      args = M.build_rg_args(),
-      globs = M.build_rg_globs(),
-    },
+    rg = M.build_rg_params(current_rg_params.paths),
   }
 
   -- Keep local profile in sync so restart/resume and next start share the same excludes.
@@ -237,18 +298,173 @@ local function refresh_rg_items()
   ddu.do_action("redraw", { method = "refreshItems" })
 end
 
+local function parse_globs(input)
+  local globs = {}
+  if type(input) ~= "string" or input == "" then
+    return globs
+  end
+  for glob in input:gmatch("%S+") do
+    table.insert(globs, glob)
+  end
+  return globs
+end
+
+local function unique_directories(items)
+  local seen = {}
+  local dirs = {}
+
+  for _, item in ipairs(items or {}) do
+    if item and item.kind == "file" then
+      local dir = resolve_target_directory(item)
+      if dir ~= "" and not seen[dir] then
+        seen[dir] = true
+        table.insert(dirs, dir)
+      end
+    end
+  end
+
+  table.sort(dirs)
+  return dirs
+end
+
+local function unique_file_paths(items)
+  local seen = {}
+  local paths = {}
+
+  for _, item in ipairs(items or {}) do
+    if item and item.kind == "file" then
+      local path = item.action and item.action.path or ""
+      if path ~= "" then
+        path = fn.fnamemodify(path, ":p")
+        if not seen[path] then
+          seen[path] = true
+          table.insert(paths, path)
+        end
+      end
+    end
+  end
+
+  return paths
+end
+
+local function get_selected_file_items()
+  local items = fn["ddu#ui#get_selected_items"]() or {}
+  local file_items = {}
+  for _, item in ipairs(items) do
+    if item.kind == "file" then
+      table.insert(file_items, item)
+    end
+  end
+  return file_items
+end
+
+local function start_grep(paths)
+  if #paths == 0 then
+    print("ddu grep: directory not found")
+    return false
+  end
+
+  local options = {
+    name = "grep",
+    sources = { { name = "rg" } },
+    sourceOptions = {
+      rg = {
+        converters = {},
+        matchers = {},
+        sorters = {},
+        volatile = true,
+      },
+    },
+    sourceParams = {
+      rg = M.build_rg_params(paths),
+    },
+  }
+
+  vim.g.ddu_ff_last_start_options = vim.deepcopy(options)
+  fn["ddu#start"](options)
+  return true
+end
+
+local function start_ff_from_paths(paths)
+  if #paths == 0 then
+    print("ddu ff: file items not found")
+    return false
+  end
+
+  local options = {
+    sources = { { name = "file_external" } },
+    sourceParams = {
+      file_external = M.build_file_external_selected_params(paths),
+    },
+  }
+
+  vim.g.ddu_ff_last_start_options = vim.deepcopy(options)
+  fn["ddu#start"](options)
+  return true
+end
+
 function M.build_rg_args()
   return vim.deepcopy(RG_BASE_ARGS)
 end
 
 function M.build_rg_globs()
-  local globs = {}
+  local globs = vim.deepcopy(rg_globs)
   local excludes = get_rg_excluded_extensions()
   table.sort(excludes)
   for _, ext in ipairs(excludes) do
     table.insert(globs, string.format("!*.%s", ext))
   end
   return globs
+end
+
+function M.build_rg_params(paths)
+  local params = {
+    args = M.build_rg_args(),
+    globs = M.build_rg_globs(),
+  }
+  if paths ~= nil then
+    params.paths = paths
+  end
+  return params
+end
+
+function M.build_file_external_params()
+  return {
+    cmd = vim.deepcopy(FILE_EXTERNAL_CMD),
+  }
+end
+
+function M.build_directory_external_params()
+  return {
+    cmd = vim.deepcopy(DIRECTORY_EXTERNAL_CMD),
+  }
+end
+
+function M.build_file_external_selected_params(paths)
+  local script = [[
+{
+  for path do
+    if [ -d "$path" ]; then
+      fd . "$path" --type f --hidden --follow \
+        --exclude .git \
+        --exclude node_modules \
+        --exclude vendor \
+        --exclude .next \
+        --exclude .venv \
+        --exclude __pycache__ \
+        --exclude .mypy_cache \
+        --exclude out
+    elif [ -e "$path" ]; then
+      printf '%s\n' "$path"
+    fi
+  done
+} | sort -u
+]]
+  local cmd = { "sh", "-c", script, "ddu-open-ff" }
+  for _, path in ipairs(paths) do
+    table.insert(cmd, path)
+  end
+  return { cmd = cmd }
 end
 
 function M.project_root()
@@ -359,6 +575,38 @@ function M.reg_actions()
     return 0
   end)
 
+  ddu.action("ui", "_", "editRgGlobs", function(_)
+    local current = ddu.get_current(vim.b.ddu_ui_name)
+    local source_params = current and current.sourceParams or {}
+    local current_globs = source_params.rg and source_params.rg.globs or M.build_rg_globs()
+
+    vim.ui.input({
+      prompt = "rg globs: ",
+      default = table.concat(current_globs, " "),
+    }, function(input)
+      if input == nil then
+        return
+      end
+      rg_globs = parse_globs(input)
+      if current_uses_rg(current) then
+        refresh_rg_items()
+      else
+        vim.notify(
+          "rg globs -> " .. table.concat(M.build_rg_globs(), " "),
+          vim.log.levels.INFO,
+          { title = "ddu rg" }
+        )
+      end
+    end)
+    return 0
+  end)
+
+  ddu.action("ui", "_", "openFfFromSelectedFileItems", function(_)
+    local paths = unique_file_paths(get_selected_file_items())
+    start_ff_from_paths(paths)
+    return 0
+  end)
+
   ddu.action("ui", "_", "current", function(_)
     print(vim.inspect(ddu.get_current()))
   end)
@@ -409,6 +657,16 @@ function M.reg_actions()
       return 0
     end
     start_filer(dir)
+    return 0
+  end)
+
+  ddu.action("kind", "file", "grep", function(args)
+    local dirs = unique_directories(args.items)
+    if #dirs == 0 then
+      print("ddu grep: directory not found")
+      return 0
+    end
+    start_grep(dirs)
     return 0
   end)
 
