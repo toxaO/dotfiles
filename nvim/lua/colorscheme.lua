@@ -31,6 +31,7 @@ function M.setup()
 
 -- floating window --
   vim.cmd("autocmd my_colorscheme ColorScheme * highlight FloatBorder ctermfg=109 guifg=#89b8c2")
+  vim.cmd("autocmd my_colorscheme ColorScheme * highlight DduSelected ctermbg=216 guibg=#e2a478")
 
   vim.cmd(
   "autocmd my_colorscheme ColorScheme * highlight LspReferenceText "

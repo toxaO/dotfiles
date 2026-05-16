@@ -35,7 +35,10 @@ function M.setup()
       previewSplit = "vertical",
       previewFloatingTitle = "Preview",
       previewFloating= true,
-      previewFloatingBorder = "rounded"
+      previewFloatingBorder = "rounded",
+      highlights = {
+        selected = "DduSelected",
+      },
 
     }
 

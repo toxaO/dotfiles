@@ -31,6 +31,7 @@ function M.setup()
         highlights = {
           floating = "Pmenu",
           floatingBorder = "Pmenu",
+          selected = "DduSelected",
         },
 
         floatingBorder = "rounded",
