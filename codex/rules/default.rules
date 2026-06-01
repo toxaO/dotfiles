@@ -69,3 +69,6 @@ prefix_rule(pattern=["rtk", "rg", "DiffviewOpen|conflictstyle|diff-filter=U|samp
 prefix_rule(pattern=["rtk", "rg", "Diffview|<leader>g|<leader>h|git conflict|diffview", "nvim", "/Users/tokumasa/Nextcloud/obsidian_note/04_drafts", "-n"], decision="allow")
 prefix_rule(pattern=["rtk", "cp", "/Users/tokumasa/Nextcloud/obsidian_note/04_drafts/git_conflict_workflow_2026-05-17.md", "/private/tmp/git_conflict_workflow_2026-05-17.md"], decision="allow")
 prefix_rule(pattern=["rtk", "rg", "<leader>gm|<leader>gq|必要なら.*<leader>gm|:DiffviewOpen", "/Users/tokumasa/Nextcloud/obsidian_note/04_drafts/git_conflict_workflow_2026-05-17.md", "-n"], decision="allow")
+prefix_rule(pattern=["git", "-C", "vial-qmk", "restore"], decision="allow")
+prefix_rule(pattern=["rm", "-rf", "src/bbmanager/__pycache__", "src/bbmanager/services/__pycache__", "src/bbmanager/ui/__pycache__", "tests/__pycache__"], decision="allow")
+prefix_rule(pattern=["rm", "-f", "bbmanager.sqlite"], decision="allow")
