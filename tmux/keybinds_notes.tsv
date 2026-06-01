@@ -81,10 +81,10 @@ prefix	M-p	window	previous window (last used order)	bind-key    -T prefix M-p   
 prefix	M-Right	pane	resize pane right	bind-key -r -T prefix M-Right resize-pane -R 5
 prefix	M-Up	pane	resize pane up	bind-key -r -T prefix M-Up    resize-pane -U 5
 prefix	n	window	next window	bind-key -r -T prefix n       next-window
-prefix	N	session	next session	bind-key    -T prefix N       switch-client -n
+prefix	N	session	next session	bind-key -r -T prefix N       switch-client -n
 prefix	o	pane	next pane	bind-key    -T prefix o       select-pane -t :.+
 prefix	p	window	previous window	bind-key -r -T prefix p       previous-window
-prefix	P	session	previous session	bind-key    -T prefix P       switch-client -p
+prefix	P	session	previous session	bind-key -r -T prefix P       switch-client -p
 prefix	PPage	buffer	copy mode (top)	bind-key    -T prefix PPage   copy-mode -u
 prefix	q	pane	show pane numbers	bind-key    -T prefix q       display-panes
 prefix	r	pane	respawn pane	bind-key    -T prefix r       confirm-before -p "respawn-pane #P? (y/n)" "respawn-pane -k"

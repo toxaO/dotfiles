@@ -72,3 +72,8 @@ prefix_rule(pattern=["rtk", "rg", "<leader>gm|<leader>gq|必要なら.*<leader>g
 prefix_rule(pattern=["git", "-C", "vial-qmk", "restore"], decision="allow")
 prefix_rule(pattern=["rm", "-rf", "src/bbmanager/__pycache__", "src/bbmanager/services/__pycache__", "src/bbmanager/ui/__pycache__", "tests/__pycache__"], decision="allow")
 prefix_rule(pattern=["rm", "-f", "bbmanager.sqlite"], decision="allow")
+prefix_rule(pattern=["rtk", "python", "-m", "bbmanager.main"], decision="allow")
+prefix_rule(pattern=["rtk", "ps", "-ax", "-o", "pid,command"], decision="allow")
+prefix_rule(pattern=["rtk", "pgrep", "-af", "bbmanager.main"], decision="allow")
+prefix_rule(pattern=["rtk", "ps", "-p", "64733,64745,65265", "-o", "pid,command"], decision="allow")
+prefix_rule(pattern=["rtk", "kill", "64733", "64745"], decision="allow")
