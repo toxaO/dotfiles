@@ -97,7 +97,7 @@ prefix	S-Left	pane	resize pane left	bind-key -r -T prefix S-Left  resize-pane -L
 prefix	S-Right	pane	resize pane right	bind-key -r -T prefix S-Right resize-pane -R 5
 prefix	S-Up	pane	resize pane up	bind-key -r -T prefix S-Up    resize-pane -U 5
 prefix	Space	layout	next layout	bind-key    -T prefix Space   next-layout
-prefix	t	window	new window	bind-key    -T prefix t       new-window
+prefix	t	window	new window	bind-key    -T prefix t       new-window -c "#{pane_current_path}"
 prefix	Up	pane	move pane up, keep active pane	bind-key -r -T prefix Up      swap-pane -d -t "{up-of}"
 prefix	v	buffer	paste	bind-key    -T prefix v       paste-buffer -p
 prefix	V	buffer	list buffers	bind-key    -T prefix V       list-buffers
