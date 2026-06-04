@@ -16,6 +16,17 @@ local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 
 local M = {}
 
+local function remember_ff_start_options(options)
+  local start_options = vim.deepcopy(options)
+  start_options.input = nil
+  vim.g.ddu_ff_last_start_options = start_options
+end
+
+local function start_ff(options)
+  remember_ff_start_options(options)
+  fn["ddu#start"](options)
+end
+
 function M.setup()
 
   ------------------------------
@@ -161,6 +172,24 @@ function M.setup()
   ------------------------------
   keymap.set("n", "<Space>f", function()
     fn["ddu#start"](vim.g.ddu_ff_last_start_options or { name = "buffer" })
+  end, km_opts.nsw)
+  keymap.set("n", "<F1>", function()
+    start_ff({ name = "help" })
+  end, km_opts.nsw)
+  keymap.set("n", "<Space>g", function()
+    local project_root = fn["expand"](ddu_action.project_root())
+    start_ff({
+      name = "grep",
+      sourceOptions = {
+        _ = {
+          path = project_root,
+        },
+      },
+      sourceParams = {
+        rg = ddu_action.build_rg_params({ project_root }),
+      },
+      input = fn["expand"]("<cword>"),
+    })
   end, km_opts.nsw)
   ------------------------------
   -- /ff starter

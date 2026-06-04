@@ -319,30 +319,6 @@ function M.setup()
         ddu.do_action("updateOptions", options)
         ddu.do_action("redraw", { method = "refreshItems" })
       end, km_opts.bnw)
-      keymap.set("n", "sH", function()
-        local options = {
-          sources = { { name = "help" } },
-          uiParams = {
-            ff = {
-              startAutoAction = true,
-              autoAction = {
-                delay = 0,
-                name = "preview",
-              },
-              previewFloating = true,
-              previewSplit = "vertical",
-            },
-          },
-          sourceParams = {
-            help = {
-              helpLang = "ja",
-            },
-          },
-        }
-        remember_ff_start_options(options)
-        ddu.do_action("updateOptions", options)
-        ddu.do_action("redraw", { method = "refreshItems" })
-      end, km_opts.bnw)
       keymap.set("n", "sp", function()
         local options = {
           sources = { { name = "file_external" } },
@@ -377,54 +353,6 @@ function M.setup()
               },
             },
           },
-        }
-        remember_ff_start_options(options)
-        ddu.do_action("updateOptions", options)
-        ddu.do_action("redraw", { method = "refreshItems" })
-      end, km_opts.bnw)
-      keymap.set("n", "s/", function()
-        local options = {
-          name = "grep",
-          sources = { { name = "rg" } },
-          sourceOptions = {
-            rg = {
-              converters = {},
-              matchers = {},
-              sorters = {},
-              volatile = true,
-            },
-            _ = {
-              path = fn["getcwd"](-1, 0),
-            },
-          },
-          sourceParams = {
-            rg = ddu_action.build_rg_params({ fn["getcwd"](-1, 0) }),
-          },
-          input = fn["expand"]("<cword>"),
-        }
-        remember_ff_start_options(options)
-        ddu.do_action("updateOptions", options)
-        ddu.do_action("redraw", { method = "refreshItems" })
-      end, km_opts.bnw)
-      keymap.set("n", "sG", function()
-        local options = {
-          name = "grep",
-          sources = { { name = "rg" } },
-          sourceOptions = {
-            rg = {
-              converters = {},
-              matchers = {},
-              sorters = {},
-              volatile = true,
-            },
-            _ = {
-              path = fn["expand"](ddu_action.project_root()),
-            },
-          },
-          sourceParams = {
-            rg = ddu_action.build_rg_params({ fn["expand"](ddu_action.project_root()) }),
-          },
-          input = fn["expand"]("<cword>"),
         }
         remember_ff_start_options(options)
         ddu.do_action("updateOptions", options)
