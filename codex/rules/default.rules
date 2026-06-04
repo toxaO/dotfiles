@@ -104,3 +104,6 @@ prefix_rule(pattern=["rm", "-f", "docs/assets/gui_history_query_check.png", "doc
 prefix_rule(pattern=["rm", "-f", "docs/assets/gui_cancel_message_check.png", "docs/assets/gui_scan_message_black_check.png"], decision="allow")
 prefix_rule(pattern=["rm", "-f", "docs/assets/gui_scan_detail_large_check.png", "docs/assets/gui_error_side_frame_check.png"], decision="allow")
 prefix_rule(pattern=["rm", "-f", "docs/assets/gui_scan_compact_row_check.png", "docs/assets/gui_scan_error_reserved_check.png", "docs/assets/gui_open_loans_filter_check.png"], decision="allow")
+prefix_rule(pattern=["git", "remote"], decision="allow")
+prefix_rule(pattern=["git", "add"], decision="allow")
+prefix_rule(pattern=["git", "commit"], decision="allow")
