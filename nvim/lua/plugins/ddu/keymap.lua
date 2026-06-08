@@ -69,14 +69,17 @@ function M.setup()
   local function common_keymap()
     -- <CR> open --
     keymap.set("n", "<CR>", function()
-      return ddu.item.is_tree() and ddu.do_action("itemAction", { name = "narrow" })
-      and fn["ddu#ui#do_action"]("cursorNext")
-      or ddu.do_action("itemAction", { quit = true })
+      if ddu.item.is_tree() then
+        ddu.do_action("itemAction", { name = "narrow" })
+        fn["ddu#ui#do_action"]("cursorNext")
+        return
+      end
+      current_item_action({ name = "open", params = { command = "tabe" } })
     end, km_opts.bnw)
 
     -- buffer open --
     keymap.set("n", "b", function()
-      current_item_action({ name = "open", quit = false })
+      current_item_action({ name = "open", params = { command = "edit" }, quit = true })
     end, km_opts.bnw)
 
     -- cursor --

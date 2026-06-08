@@ -431,6 +431,8 @@ local base_config = {
   tab_and_split_indices_are_zero_based = true,
   hide_tab_bar_if_only_one_tab = false,
   color_scheme = "iceberg-dark",
+  send_composed_key_when_left_alt_is_pressed = true,
+  send_composed_key_when_right_alt_is_pressed = true,
   colors = {
     split = "#3b4261",
     tab_bar = {
@@ -451,6 +453,11 @@ local base_config = {
   }),
   font_size = 15.0,
   keys = {
+    {
+      key = "¥",
+      mods = "OPT",
+      action = act.SendString("\\"),
+    },
     {
       key = "Enter",
       mods = "OPT",
