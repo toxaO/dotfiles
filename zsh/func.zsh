@@ -360,6 +360,64 @@ function cx {
 }
 
 #--------------------------------------------------
+# Hermes
+#--------------------------------------------------
+_hermes_ollama_wait() {
+  local url="${HERMES_OLLAMA_HEALTH_URL:-http://127.0.0.1:11434/api/tags}"
+  local timeout="${HERMES_OLLAMA_START_TIMEOUT:-20}"
+  local i
+
+  for (( i = 1; i <= timeout; i++ )); do
+    if curl -fsS "$url" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+
+  echo "ollama did not become ready: $url" >&2
+  return 1
+}
+
+hermes_ollama_tui() {
+  local model="${HERMES_OLLAMA_MODEL:-qwen3.6:27b}"
+  local log="${HERMES_OLLAMA_LOG:-/tmp/ollama-serve.log}"
+
+  if ! command -v hermes >/dev/null; then
+    echo "hermes not found" >&2
+    return 1
+  fi
+  if ! command -v ollama >/dev/null; then
+    echo "ollama not found" >&2
+    return 1
+  fi
+
+  if ! curl -fsS http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
+    echo "starting ollama serve..."
+    ollama serve > "$log" 2>&1 &
+    disown
+    _hermes_ollama_wait || return 1
+  fi
+
+  hermes chat --tui --provider custom --model "$model" "$@"
+}
+
+hermes_openai_tui() {
+  local provider="${HERMES_OPENAI_PROVIDER:-openai}"
+  local model="${HERMES_OPENAI_MODEL:-gpt-5.3-codex}"
+
+  if ! command -v hermes >/dev/null; then
+    echo "hermes not found" >&2
+    return 1
+  fi
+  if [[ "$provider" == "openai" && -z "${OPENAI_API_KEY:-}" ]]; then
+    echo "OPENAI_API_KEY is not set" >&2
+    return 1
+  fi
+
+  hermes chat --tui --provider "$provider" --model "$model" "$@"
+}
+
+#--------------------------------------------------
 # python
 #--------------------------------------------------
 # venvの作成関数
