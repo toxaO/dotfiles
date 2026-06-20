@@ -53,6 +53,7 @@ left-prompt() {
   local machine_t=$'141m%}' machine_b=$'016m%}' path_t=$'255m%}' path_b=$'031m%}'
   local text_color=$'%{\e[38;5;' back_color=$'%{\e[30;48;5;' reset=$'%{\e[0m%}' sharp=$'\uE0B0'
   case "$HOST" in tokuserver) machine_t='014m%}'; machine_b='016m%}';; esac
+  case "$HOST" in tokuserver3) machine_t='014m%}'; machine_b='016m%}';; esac
   local clock="${back_color}${clock_b}${text_color}${clock_t}"
   local user="${back_color}${name_b}${text_color}${name_t}"
   local machine="${back_color}${machine_b}${text_color}${machine_t}"

@@ -1,4 +1,13 @@
 #!/bin/zsh
+# --------------------------------------------------
+# completion path
+# --------------------------------------------------
+completion_dir="$HOME/.zsh/completions"
+if [[ -d "$completion_dir" && -z ${fpath[(r)$completion_dir]} ]]; then
+  fpath=("$completion_dir" $fpath)
+fi
+unset completion_dir
+
 # -----------------------------------------------------------
 # prezto初期設定
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
