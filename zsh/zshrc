@@ -1,3 +1,5 @@
+# Add deno completions to search path
+if [[ ":$FPATH:" != *":/home/toku/.zsh/completions:"* ]]; then export FPATH="/home/toku/.zsh/completions:$FPATH"; fi
 #!/bin/zsh
 # --------------------------------------------------
 # completion path
@@ -131,3 +133,4 @@ if [[ -o interactive ]] \
 fi
 
 [[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
+. "/home/toku/.deno/env"

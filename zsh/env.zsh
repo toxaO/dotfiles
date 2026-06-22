@@ -43,7 +43,7 @@ case ${OSTYPE} in
 
   linux*)
     # ここに Linux 向けの設定
-    export PATH="$PATH:/opt/nvim/"
+    export PATH="$PATH:/opt/nvim/bin"
     export LD_LIBRARY_PATH=/usr/lib/wsl/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
     if command -v dircolors >/dev/null 2>&1; then

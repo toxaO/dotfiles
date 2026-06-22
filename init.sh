@@ -12,9 +12,13 @@ clone_or_update() {
   recursive=${3:-}
 
   if [ -d "$dest_dir/.git" ]; then
-    git -C "$dest_dir" pull --ff-only
-    if [ "$recursive" = recursive ]; then
-      git -C "$dest_dir" submodule update --init --recursive
+    if git -C "$dest_dir" rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+      git -C "$dest_dir" pull --ff-only
+      if [ "$recursive" = recursive ]; then
+        git -C "$dest_dir" submodule update --init --recursive
+      fi
+    else
+      echo "skip update: $dest_dir has no upstream branch" >&2
     fi
   elif [ -e "$dest_dir" ]; then
     echo "skip clone: $dest_dir already exists and is not a git repository" >&2
@@ -74,6 +78,33 @@ sudo apt install -y unzip
 
 # denoをインストールする
 curl -fsSL https://deno.land/x/install/install.sh | sh
+
+# nvim
+case "$(uname -m)" in
+  x86_64) nvim_arch="x86_64" ;;
+  aarch64|arm64) nvim_arch="arm64" ;;
+  *)
+    echo "unsupported architecture for nvim: $(uname -m)" >&2
+    exit 1
+    ;;
+esac
+
+tmpdir="$(mktemp -d)"
+curl -fsSL \
+  -o "$tmpdir/nvim.tar.gz" \
+  "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${nvim_arch}.tar.gz"
+sudo rm -rf /opt/nvim
+sudo tar -xzf "$tmpdir/nvim.tar.gz" -C /opt
+sudo mv "/opt/nvim-linux-${nvim_arch}" /opt/nvim
+rm -rf "$tmpdir"
+
+# rtk
+tmpdir="$(mktemp -d)"
+curl -fsSL \
+  -o "$tmpdir/rtk-install.sh" \
+  "https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh"
+sh "$tmpdir/rtk-install.sh"
+rm -rf "$tmpdir"
 
 # luaのインストール
 sudo apt install -y lua5.3
