@@ -19,6 +19,8 @@ alias	gf	git	git fetch	alias: git fetch
 alias	gl	git	git log (oneline 10)	alias: git log --oneline -n 10
 alias	gls	git	git ls-files	alias: git ls-files
 alias	gm	git	git merge	alias: git merge
+alias	hmc	ai	Hermes TUI with OpenAI API	alias: hermes_openai_tui
+alias	hmo	ai	Hermes TUI with local Ollama	alias: hermes_ollama_tui
 alias	gp	git	git push	alias: git push
 alias	gpl	git	git pull	alias: git pull
 alias	gpo	git	git push origin	alias: git push origin
@@ -49,6 +51,8 @@ function	agents_template	tools	create split AGENTS.md and AGENTS_PROJECT.md	func
 function	chpwd	core	refresh tmux status on dir change	function: zsh/func.zsh
 function	colorlist	core	show 256-color palette	function: zsh/func.zsh
 function	cx			function: zsh/func.zsh
+function	hermes_ollama_tui	ai	start Ollama if needed and open Hermes TUI	function: zsh/func.zsh
+function	hermes_openai_tui	ai	open Hermes TUI with OpenAI API	function: zsh/func.zsh
 function	mkvenv	core	create python venv + direnv helper	function: zsh/func.zsh
 function	ob_drafts_dry_run			function: zsh/func.zsh
 function	ob_drafts_pull			function: zsh/func.zsh
