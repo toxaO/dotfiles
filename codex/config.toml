@@ -1,4 +1,4 @@
-model = "gpt-5.5"
+model = "gpt-5.4-mini"
 personality = "pragmatic"
 model_reasoning_effort = "medium"
 notify = ["python3", "/Users/tokumasa/dotfiles/codex/scripts/notify.py"]
