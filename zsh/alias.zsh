@@ -3,7 +3,7 @@ alias .f='cd ~/dotfiles'
 alias pr='project_root'
 
 # windows wakeonlan
-alias wakewin='ssh tokumasa@toku wakeonlan f0:2f:74:4d:9b:7c'
+alias wakewin='ssh toku@toku3 wakeonlan f0:2f:74:4d:9b:7c'
 
 # vim / nvim
 alias nv='nvim'
