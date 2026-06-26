@@ -18,8 +18,8 @@ case ${OSTYPE} in
       export PYENV_ROOT="$HOME/.pyenv_x86"
       export PATH="$PYENV_ROOT/bin:$PATH"
     fi
-    command -v pyenv >/dev/null && eval "$(pyenv init -)"
-    command -v pyenv >/dev/null && eval "$(pyenv init --path)"
+    command -v pyenv >/dev/null && eval "$(pyenv init --no-rehash -)"
+    command -v pyenv >/dev/null && eval "$(pyenv init --no-rehash --path)"
 
     # Homebrew
     if [[ $(uname -m) == arm64 ]]; then

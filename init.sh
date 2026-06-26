@@ -2,8 +2,11 @@
 
 set -eu
 
-DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
-ZDOTDIR="${ZDOTDIR:-$HOME}"
+TARGET_USER="${SUDO_USER:-${USER:-$(id -un)}}"
+TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
+
+DOTFILES_DIR="${DOTFILES_DIR:-$TARGET_HOME/dotfiles}"
+ZDOTDIR="${ZDOTDIR:-$TARGET_HOME}"
 ZPREZTO_DIR="$ZDOTDIR/.zprezto"
 
 clone_or_update() {
@@ -77,7 +80,7 @@ fi
 sudo apt install -y unzip
 
 # denoをインストールする
-curl -fsSL https://deno.land/x/install/install.sh | sh
+curl -fsSL https://deno.land/x/install/install.sh | HOME="$TARGET_HOME" sh
 
 # nvim
 case "$(uname -m)" in
@@ -110,20 +113,20 @@ rm -rf "$tmpdir"
 sudo apt install -y lua5.3
 
 #.configのリンク作成
-mkdir -p "$HOME/.config"
-link_file "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
-link_file "$DOTFILES_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
+mkdir -p "$TARGET_HOME/.config"
+link_file "$DOTFILES_DIR/nvim" "$TARGET_HOME/.config/nvim"
+link_file "$DOTFILES_DIR/tmux/tmux.conf" "$TARGET_HOME/.tmux.conf"
 
 # git
-git config --global user.email "material.xyz.44@gmail.com"
-git config --global user.name "toxaO"
+HOME="$TARGET_HOME" git config --global user.email "material.xyz.44@gmail.com"
+HOME="$TARGET_HOME" git config --global user.name "toxaO"
 
 # rust install
-PATH="$HOME/.cargo/bin:$PATH"
+PATH="$TARGET_HOME/.cargo/bin:$PATH"
 if command -v rustup >/dev/null 2>&1; then
-  rustup update
+  HOME="$TARGET_HOME" rustup update
 else
-  curl https://sh.rustup.rs -sSf | sh -s -- -y
+  curl https://sh.rustup.rs -sSf | HOME="$TARGET_HOME" sh -s -- -y
 fi
 
 # mocword
@@ -133,11 +136,11 @@ if ! command -v mocword >/dev/null 2>&1; then
   cargo install mocword
 fi
 
-mkdir -p "$HOME/.config/mocword"
-if [ ! -f "$HOME/.config/mocword/mocword.sqlite" ]; then
+mkdir -p "$TARGET_HOME/.config/mocword"
+if [ ! -f "$TARGET_HOME/.config/mocword/mocword.sqlite" ]; then
   curl -sLJO https://github.com/high-moctane/mocword-data/releases/download/eng20200217/mocword.sqlite.gz
   gunzip -f mocword.sqlite.gz
-  mv "$HOME/mocword.sqlite" "$HOME/.config/mocword"
+  mv "$TARGET_HOME/mocword.sqlite" "$TARGET_HOME/.config/mocword"
 fi
 
 # Masonのpyrightを入れるためのnpmのインストール
@@ -145,7 +148,7 @@ sudo apt install -y nodejs npm
 
 
 # cdr
-mkdir -p $HOME/.cache/shell/
+mkdir -p "$TARGET_HOME/.cache/shell/"
 
 # luacheck
 sudo apt install -y luarocks
