@@ -2,6 +2,8 @@
 # 対話シェル以外では何もしない
 [[ -o interactive ]] || return 0
 
+autoload -Uz add-zsh-hook
+
 # --- virtualenv info ---
 virtualenv_info() {
   local pyicon=$'\U000F0320 '
@@ -47,18 +49,55 @@ rprompt-git-current-branch() {
   echo "${mark}${name}${reset}"
 }
 
+prompt-machine-label() {
+  local -a ssh_connection_parts
+  ssh_connection_parts=(${=SSH_CONNECTION})
+  local ssh_host_ip="${ssh_connection_parts[3]}"
+  local host_name="${HOST:-$(hostname -s 2>/dev/null || hostname 2>/dev/null)}"
+  local host_name_lc="${(L)host_name}"
+
+  if [[ "$OSTYPE" == darwin* ]]; then
+    echo "macbook"
+  elif [[ -n "$WSL_DISTRO_NAME" ]] || [[ -r /proc/version && ${(L)$(</proc/version)} == *microsoft* ]]; then
+    echo "wsl"
+  elif [[ "$ssh_host_ip" == "192.168.86.40" ]]; then
+    echo "cloud"
+  elif [[ "$ssh_host_ip" == "192.168.86.39" ]]; then
+    echo "kvm"
+  elif [[ "$host_name_lc" == tokuwin* ]]; then
+    echo "win"
+  else
+    echo "${host_name:-other}"
+  fi
+}
+
+prompt-machine-colors() {
+  local machine_label="$1"
+  case "$machine_label" in
+    macbook) echo "195m%} 016m%}" ;;
+    win) echo "220m%} 016m%}" ;;
+    wsl) echo "114m%} 016m%}" ;;
+    cloud) echo "051m%} 016m%}" ;;
+    kvm) echo "203m%} 016m%}" ;;
+    *) echo "183m%} 016m%}" ;;
+  esac
+}
+
 # --- left prompt ---
 left-prompt() {
   local clock_t=$'217m%}' clock_b=$'016m%}' name_t=$'153m%}' name_b=$'016m%}'
   local machine_t=$'141m%}' machine_b=$'016m%}' path_t=$'255m%}' path_b=$'031m%}'
   local text_color=$'%{\e[38;5;' back_color=$'%{\e[30;48;5;' reset=$'%{\e[0m%}' sharp=$'\uE0B0'
-  case "$HOST" in tokuserver) machine_t='014m%}'; machine_b='016m%}';; esac
-  case "$HOST" in tokuserver3) machine_t='014m%}'; machine_b='016m%}';; esac
+  local machine_label machine_colors
+  machine_label="$(prompt-machine-label)"
+  machine_colors=(${=$(prompt-machine-colors "$machine_label")})
+  machine_t="${machine_colors[1]}"
+  machine_b="${machine_colors[2]}"
   local clock="${back_color}${clock_b}${text_color}${clock_t}"
   local user="${back_color}${name_b}${text_color}${name_t}"
   local machine="${back_color}${machine_b}${text_color}${machine_t}"
   local dir="${back_color}${path_b}${text_color}${path_t}"
-  echo "${clock}%* ${user}%n %# ${reset}${machine}%m${back_color}${path_b}${text_color}${name_b}${sharp} ${dir}%~${reset}${text_color}${path_b}${sharp}${reset}
+  echo "${clock}%* ${user}%n %# ${reset}${machine}${machine_label}${back_color}${path_b}${text_color}${name_b}${sharp} ${dir}%~${reset}${text_color}${path_b}${sharp}${reset}
 %{%F{cyan}%}❯%{%F{magenta}%}❯%{%F{blue}%}❯ "
 }
 
@@ -68,11 +107,13 @@ RPROMPT='$(virtualenv_info) $(rprompt-git-current-branch)'
 PROMPT='$(left-prompt)'
 
 # コマンドの実行ごとに改行(定義しておくだけで効果アリ)
-function precmd() {
-    # Print a newline before the prompt, unless it's the first prompt in the process.
-    if [ -z "$NEW_LINE_BEFORE_PROMPT" ]; then
-        NEW_LINE_BEFORE_PROMPT=1
-    elif [ "$NEW_LINE_BEFORE_PROMPT" -eq 1 ]; then
-        echo ""
-    fi
+prompt-precmd-newline() {
+  # Print a newline before the prompt, unless it's the first prompt in the process.
+  if [ -z "$NEW_LINE_BEFORE_PROMPT" ]; then
+    NEW_LINE_BEFORE_PROMPT=1
+  elif [ "$NEW_LINE_BEFORE_PROMPT" -eq 1 ]; then
+    echo ""
+  fi
 }
+
+add-zsh-hook precmd prompt-precmd-newline
