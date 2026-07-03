@@ -1,7 +1,8 @@
-model = "gpt-5.4-mini"
+model = "gpt-5.4"
 personality = "pragmatic"
 model_reasoning_effort = "medium"
-notify = ["python3", "/Users/tokumasa/dotfiles/codex/scripts/notify.py"]
+
+notify = ["/Users/tokumasa/dotfiles/codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended", "--previous-notify", "[\"python3\",\"\\/Users\\/tokumasa\\/dotfiles\\/codex\\/scripts\\/notify.py\"]"]
 
 [projects."/Users/tokumasa/github/qmk/keyball"]
 trust_level = "trusted"
@@ -48,6 +49,12 @@ trust_level = "trusted"
 [projects."/Users/tokumasa/github/WanaLyser"]
 trust_level = "trusted"
 
+[projects."/Users/tokumasa/Documents/Codex/2026-06-28/ob"]
+trust_level = "trusted"
+
+[projects."/Users/tokumasa/github/karukan"]
+trust_level = "trusted"
+
 [notice]
 hide_gpt5_1_migration_prompt = true
 
@@ -55,6 +62,7 @@ hide_gpt5_1_migration_prompt = true
 "gpt-5.1-codex" = "gpt-5.2-codex"
 "gpt-5.2-codex" = "gpt-5.3-codex"
 "gpt-5.3-codex" = "gpt-5.4"
+"gpt-5.4" = "gpt-5.5"
 
 [plugins."github@openai-curated"]
 enabled = true
@@ -68,16 +76,19 @@ enabled = true
 [plugins."presentations@openai-primary-runtime"]
 enabled = true
 
-[plugins."browser-use@openai-bundled"]
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
 enabled = true
 
 [marketplaces.openai-bundled]
-last_updated = "2026-05-07T00:26:32Z"
+last_updated = "2026-07-02T03:28:43Z"
 source_type = "local"
 source = "/Users/tokumasa/dotfiles/codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-05-01T02:24:26Z"
+last_updated = "2026-07-01T07:48:29Z"
 source_type = "local"
 source = "/Users/tokumasa/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -89,3 +100,10 @@ submit = "f6"
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
+
+[desktop]
+ambient-suggestions-enabled = false
+conversationDetailMode = "STEPS_COMMANDS"
+followUpQueueMode = "queue"
+
+[features]
