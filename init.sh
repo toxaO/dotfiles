@@ -159,3 +159,6 @@ fi
 
 # ripgrep install
 sudo apt install -y ripgrep
+
+# fzf install
+sudo apt install -y fzf

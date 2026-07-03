@@ -78,7 +78,9 @@ fi
 #-------------------------------------------------
 # fzf set up
 #-------------------------------------------------
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+if command -v fzf >/dev/null; then
+  source <(fzf --zsh)
+fi
 # fzf-extra
 # https://github.com/atweiden/fzf-extras
 [[ -e "$HOME/.fzf-extras/fzf-extras.zsh" ]] \
