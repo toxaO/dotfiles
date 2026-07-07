@@ -50,7 +50,7 @@ karabiner/automatic_backups/*.json
 /codex/**
 !/codex/AGENTS.md
 !/codex/RTK.md
-!/codex/config.toml
+# !/codex/config.toml
 !/codex/rules/
 !/codex/rules/**
 !/codex/scripts/
