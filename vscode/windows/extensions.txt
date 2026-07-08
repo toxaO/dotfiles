@@ -1,0 +1,9 @@
+esbenp.prettier-vscode
+ms-dotnettools.csharp
+ms-python.black-formatter
+ms-python.python
+ms-python.vscode-pylance
+ms-vscode.cpptools
+ms-vscode-remote.remote-wsl
+rust-lang.rust-analyzer
+yzhang.markdown-all-in-one

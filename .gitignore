@@ -36,6 +36,18 @@
 !/nvim/lua/**
 nvim/package-lock.json
 
+!/vscode/
+!/vscode/**
+!/vscode/README.md
+!/vscode/common/
+!/vscode/common/**
+!/vscode/mac/
+!/vscode/mac/**
+!/vscode/windows/
+!/vscode/windows/**
+!/vscode/wsl/
+!/vscode/wsl/**
+
 !/karabiner/
 !/karabiner/assets/
 !/karabiner/assets/**
