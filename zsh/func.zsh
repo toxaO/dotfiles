@@ -239,6 +239,7 @@ ob_drafts_status() {
 }
 
 unalias cx 2>/dev/null
+unalias cr 2>/dev/null
 
 _agents_dotfiles_dir() {
   local dir="$HOME/dotfiles"
@@ -251,56 +252,122 @@ _agents_dotfiles_dir() {
   print -r -- "${dir:A}"
 }
 
-_agents_write_main() {
-  local dest="$1"
-  local dotfiles_dir base
+_agents_project_name() {
+  local dir="${1:-$PWD}"
+  local top
+
+  top="$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null)" || top="$dir"
+  top="${top:A}"
+  if [[ "$top" == "$HOME/"* ]]; then
+    top="${top#$HOME/}"
+  fi
+  top="${top// /_}"
+  top="${top//\//__}"
+  print -r -- "$top"
+}
+
+_agents_base_path() {
+  local dotfiles_dir
 
   dotfiles_dir="$(_agents_dotfiles_dir)" || return 1
-  base="$dotfiles_dir/templates/AGENTS_BASE.md"
-  if [ ! -f "$base" ]; then
-    echo "base template not found: $base" >&2
-    return 1
-  fi
+  print -r -- "$dotfiles_dir/agents/base.md"
+}
+
+_agents_project_path() {
+  local dir="${1:-$PWD}"
+  local dotfiles_dir project_name
+
+  dotfiles_dir="$(_agents_dotfiles_dir)" || return 1
+  project_name="$(_agents_project_name "$dir")" || return 1
+  print -r -- "$dotfiles_dir/agents/projects/$project_name/AGENTS.md"
+}
+
+_agents_write_main() {
+  local dest="$1"
+  local base="$2"
+  local project="$3"
 
   {
     print -r -- "# AGENTS.md"
     print -r -- ""
     print -r -- "@$base"
-    print -r -- "@./AGENTS_PROJECT.md"
+    print -r -- "@$project"
   } > "$dest"
 }
 
-agents_template() {
-  local dotfiles_dir project_template dest_dir main project
+_agents_write_claude() {
+  local dest="$1"
+  local base="$2"
+  local project="$3"
+  local service="$4"
+
+  {
+    print -r -- "# CLAUDE.md"
+    print -r -- ""
+    print -r -- "@$base"
+    print -r -- "@$project"
+    print -r -- "@$service"
+  } > "$dest"
+}
+
+_agents_ensure_project() {
+  local dir="$1"
+  local project="$2"
+  local dotfiles_dir project_template legacy
+
   dotfiles_dir="$(_agents_dotfiles_dir)" || return 1
   project_template="$dotfiles_dir/templates/AGENTS_PROJECT.md"
-  dest_dir="${1:-$PWD}"
+  legacy="$dir/AGENTS_PROJECT.md"
 
-  if [[ "$dest_dir" == */AGENTS.md ]]; then
-    dest_dir="${dest_dir:h}"
+  if [ -e "$project" ]; then
+    if [ -e "$legacy" ]; then
+      rm -f "$legacy" || return 1
+    fi
+    return 0
   fi
-
-  main="$dest_dir/AGENTS.md"
-  project="$dest_dir/AGENTS_PROJECT.md"
 
   if [ ! -f "$project_template" ]; then
     echo "project template not found: $project_template" >&2
     return 1
   fi
 
-  if [ -e "$main" ] || [ -e "$project" ]; then
-    echo "already exists: $main or $project" >&2
-    return 1
+  mkdir -p "${project:h}" || return 1
+
+  if [ -f "$legacy" ]; then
+    mv "$legacy" "$project" || return 1
+    return 0
   fi
 
   cp "$project_template" "$project" || return 1
-  _agents_write_main "$main" || return 1
-  echo "created: $main"
-  echo "created: $project"
 }
 
-agents_migrate() {
-  local dest_dir main project
+_agents_ensure_repo_docs() {
+  local dir="${1:-$PWD}"
+  local main="$dir/AGENTS.md"
+  local claude="$dir/CLAUDE.md"
+  local project base service
+
+  project="$(_agents_project_path "$dir")" || return 1
+  base="$(_agents_base_path)" || return 1
+  service="$(_agents_dotfiles_dir)/agents/services/claude-code.md"
+  if [ ! -f "$service" ]; then
+    echo "service template not found: $service" >&2
+    return 1
+  fi
+
+  _agents_ensure_project "$dir" "$project" || return 1
+
+  if [ ! -e "$main" ]; then
+    _agents_write_main "$main" "$base" "$project" || return 1
+  fi
+
+  if [ ! -e "$claude" ]; then
+    _agents_write_claude "$claude" "$base" "$project" "$service" || return 1
+  fi
+}
+
+agents_template() {
+  local dest_dir main project base
   dest_dir="${1:-$PWD}"
 
   if [[ "$dest_dir" == */AGENTS.md ]]; then
@@ -308,26 +375,45 @@ agents_migrate() {
   fi
 
   main="$dest_dir/AGENTS.md"
-  project="$dest_dir/AGENTS_PROJECT.md"
+  project="$(_agents_project_path "$dest_dir")" || return 1
+  base="$(_agents_base_path)" || return 1
+
+  if [ -e "$main" ]; then
+    echo "already exists: $main" >&2
+    return 1
+  fi
+
+  _agents_ensure_project "$dest_dir" "$project" || return 1
+  _agents_write_main "$main" "$base" "$project" || return 1
+  echo "created: $main"
+  echo "project: $project"
+}
+
+agents_migrate() {
+  local dest_dir main project base
+  dest_dir="${1:-$PWD}"
+
+  if [[ "$dest_dir" == */AGENTS.md ]]; then
+    dest_dir="${dest_dir:h}"
+  fi
+
+  main="$dest_dir/AGENTS.md"
+  project="$(_agents_project_path "$dest_dir")" || return 1
+  base="$(_agents_base_path)" || return 1
 
   if [ ! -f "$main" ]; then
     echo "not found: $main" >&2
     return 1
   fi
 
-  if [ -e "$project" ]; then
-    echo "already exists: $project" >&2
-    return 1
-  fi
-
-  cp "$main" "$project" || return 1
-  _agents_write_main "$main" || return 1
+  _agents_ensure_project "$dest_dir" "$project" || return 1
+  _agents_write_main "$main" "$base" "$project" || return 1
   echo "migrated: $main"
-  echo "created: $project"
+  echo "project: $project"
 }
 
 agents_refresh() {
-  local dest_dir main project
+  local dest_dir main project base
   dest_dir="${1:-$PWD}"
 
   if [[ "$dest_dir" == */AGENTS.md ]]; then
@@ -335,28 +421,34 @@ agents_refresh() {
   fi
 
   main="$dest_dir/AGENTS.md"
-  project="$dest_dir/AGENTS_PROJECT.md"
+  project="$(_agents_project_path "$dest_dir")" || return 1
+  base="$(_agents_base_path)" || return 1
 
   if [ ! -f "$project" ]; then
     echo "not found: $project" >&2
     return 1
   fi
 
-  _agents_write_main "$main" || return 1
+  _agents_write_main "$main" "$base" "$project" || return 1
   echo "refreshed: $main"
 }
 
 function cx {
-  local target="$PWD/AGENTS.md"
-  local project="$PWD/AGENTS_PROJECT.md"
+  local project
   local agent_editor="${AGENTS_EDITOR:-nvim}"
+  project="$(_agents_project_path "$PWD")" || return 1
 
-  if [ ! -f "$target" ]; then
-    agents_template "$PWD" || return 1
+  if [ ! -f "$PWD/AGENTS.md" ] || [ ! -f "$PWD/CLAUDE.md" ]; then
+    _agents_ensure_repo_docs "$PWD" || return 1
     "$agent_editor" "$project" || return 1
   fi
 
   codex "$@"
+}
+
+cr() {
+  _agents_ensure_repo_docs "$PWD" || return 1
+  codex resume "$@"
 }
 
 #--------------------------------------------------

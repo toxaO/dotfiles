@@ -8,7 +8,7 @@ alias	co	git	git checkout	alias: git checkout
 alias	coC	git	git checkout Codex	alias: git checkout Codex
 alias	cod	git	git checkout develop	alias: git checkout develop
 alias	com	git	git checkout main	alias: git checkout main
-alias	cr			alias: codex resume
+function	cr	tools	resume codex after ensuring AGENTS/CLAUDE docs	function: zsh/func.zsh
 alias	da	core	vadeactivate	alias: vadeactivate
 alias	ga	git	git add .	alias: git add .
 alias	gaa	git	git add -A	alias: git add -A
@@ -45,12 +45,12 @@ alias	tm	tmux	tmux	alias: tmux_start
 alias	tn			alias: tmux new -A -s
 alias	vf	core	fzf pick file to open in vim	alias: f(){ local f; f=$(fzf -1 -0) || return; vim "$f"; }; f
 alias	x86	system	run zsh under x86_64	alias: arch -x86_64 zsh
-function	agents_migrate	tools	migrate existing AGENTS.md to split BASE/PROJECT layout	function: zsh/func.zsh
-function	agents_refresh	tools	refresh split AGENTS.md BASE link from current environment	function: zsh/func.zsh
-function	agents_template	tools	create split AGENTS.md and AGENTS_PROJECT.md	function: zsh/func.zsh
+function	agents_migrate	tools	migrate existing AGENTS.md to central BASE/PROJECT layout	function: zsh/func.zsh
+function	agents_refresh	tools	refresh AGENTS.md to point at central BASE/PROJECT files	function: zsh/func.zsh
+function	agents_template	tools	create AGENTS.md and central project AGENTS.md	function: zsh/func.zsh
 function	chpwd	core	refresh tmux status on dir change	function: zsh/func.zsh
 function	colorlist	core	show 256-color palette	function: zsh/func.zsh
-function	cx			function: zsh/func.zsh
+function	cx	tools	prepare AGENTS/CLAUDE docs and open project memo before codex	function: zsh/func.zsh
 function	hermes_ollama_tui	ai	start Ollama if needed and open Hermes TUI	function: zsh/func.zsh
 function	hermes_openai_tui	ai	open Hermes TUI with OpenAI API	function: zsh/func.zsh
 function	mkvenv	core	create python venv + direnv helper	function: zsh/func.zsh

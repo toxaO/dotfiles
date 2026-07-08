@@ -1,7 +1,8 @@
-# AGENTS_BASE.md
+# base.md
 
 このファイルは、各プロジェクト共通の AI agent 向け運用ルールです。
-実体は dotfiles の `agents/base.md` に置き、プロジェクト固有の Goal / Context / Commands / Risks は `agents/projects/<project>/AGENTS.md` に書いてください。
+必要なら `agents/services/<tool>.md` を上乗せしてください。
+プロジェクト固有の Goal / Context / Commands / Risks は `agents/projects/<project>/AGENTS.md` に書いてください。
 
 ## Command Execution
 **Shell commands must use `rtk` by default.**
@@ -13,10 +14,10 @@
 
 ## External Notes
 - 必要に応じて、Obsidian vault を知識整理先として使用してよい。
-- draft は OS を問わず `~/ob_drafts` に Markdown 形式で書く。macOS / WSL / Ubuntu でこのパスを共通入口にする。
+- draft は OS を問わず `~/ob_drafts` に Markdown 形式で書く。macOS / Windows / WSL / Ubuntu でこのパスを共通入口にする。
 - `~/ob_drafts` は下書き置き場とし、Obsidian vault 側で整理・構造化して正式な note に編集し直す運用とする。
 - draft の記事単位は、原則として git commit に適した粒度に合わせる。1 commit にまとめると自然な作業・判断・相談を 1 記事にする。
-- macOS / WSL から Ubuntu server の draft を同期する場合は `obdp` (`ob_drafts_pull`) を使う。同期元は既定で `toku:/home/tokumasa/ob_drafts/`。
+- macOS / Windows / WSL / Ubuntu から Ubuntu server の draft を同期する場合は `obdp` (`ob_drafts_pull`) を使う。同期元は既定で `toku:/home/tokumasa/ob_drafts/`。
 - Ubuntu server へ draft を戻す必要がある場合のみ `obdu` (`ob_drafts_push`) を使う。実行前に `obdn` または `obds` で dry-run する。
 - 作業の区切りが明確で、git commit するのにちょうどよい粒度だと判断した場合は、git commit と `~/ob_drafts` への書き出しをユーザーへ提案する。
 - 実際の読み書きは、その場の sandbox 権限に従う。AGENTS.md は権限付与そのものではなく運用方針を示す。
@@ -79,6 +80,8 @@
 
 弱い成功条件のまま進めず、「どう確認できれば完了か」を先に定義する。
 
-## User Context
-- 基本情報技術者資格は所持しているが応用情報技術者は持っておらず、実務経験のない人間が使用していることを前提にコメントを付記する。
-- commitの粒度にも不慣れなので、gitの使い方の練習になるように提案していく。必要であるならbranch分岐やtag付け、commit履歴の修正も提案する。
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+@/Users/tokumasa/.codex/RTK.md

@@ -43,6 +43,9 @@ nvim/package-lock.json
 karabiner/automatic_backups/*.json
 
 !/AGENTS.md
+!/CLAUDE.md
+!/agents/
+!/agents/**
 !/templates/
 !/templates/**
 

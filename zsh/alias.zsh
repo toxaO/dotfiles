@@ -68,9 +68,6 @@ alias arm='arch -arm64e zsh'
 #.DS_Store消去
 alias rmDS='find . -name ".DS_Store" -type f -ls -delete'
 
-# Codex
-alias cr='codex resume'
-
 # Hermes
 alias hmo='hermes_ollama_tui'
 alias hmc='hermes_openai_tui'
