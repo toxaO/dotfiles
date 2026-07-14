@@ -22,6 +22,8 @@ export EDITOR=nvim
 export VISUAL=$EDITOR
 
 # cdr の設定
+mkdir -p "$HOME/.cache/shell"
+touch "$HOME/.cache/shell/chpwd-recent-dirs"
 autoload -Uz add-zsh-hook chpwd_recent_dirs cdr
 add-zsh-hook chpwd chpwd_recent_dirs
 zstyle ':completion:*' recent-dirs-insert both
