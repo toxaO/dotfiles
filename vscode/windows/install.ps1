@@ -37,5 +37,8 @@ Get-Content $extensionsFile | ForEach-Object {
     $ext = $_.Trim()
     if ($ext -and -not $ext.StartsWith("#")) {
         & $codeCmd.Path --install-extension $ext --force | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "skip extension install: $ext not available"
+        }
     }
 }
