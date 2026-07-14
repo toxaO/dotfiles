@@ -10,6 +10,7 @@ alias wsl='ssh wsl'
 alias cloud='ssh cloud'
 alias kvm='ssh kvm'
 alias win='ssh win'
+alias hms='ssh hermes'
 
 # vim / nvim
 alias nv='nvim'

@@ -15,6 +15,22 @@ colorlist() {
 }
 
 #--------------------------------------------------
+# prompt machine color check
+#--------------------------------------------------
+prompt_machine_color_check() {
+  local -a machines=(macbook win wsl cloud kvm hermes other)
+  local machine colors fg bg
+
+  for machine in "${machines[@]}"; do
+    colors=(${=$(prompt-machine-colors "$machine")})
+    fg="${colors[1]}"
+    bg="${colors[2]}"
+    printf '%-8s ' "$machine"
+    print -P "%K{${bg}}%F{${fg}}  SAMPLE  %f%k fg=${fg} bg=${bg}"
+  done
+}
+
+#--------------------------------------------------
 # cd project root
 #--------------------------------------------------
 project_root() {

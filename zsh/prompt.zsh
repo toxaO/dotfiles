@@ -64,6 +64,8 @@ prompt-machine-label() {
     echo "cloud"
   elif [[ "$ssh_host_ip" == "192.168.86.39" ]]; then
     echo "kvm"
+  elif [[ "$host_name_lc" == hermes* ]]; then
+    echo "hermes"
   elif [[ "$host_name_lc" == tokuwin* ]]; then
     echo "win"
   else
@@ -79,6 +81,7 @@ prompt-machine-colors() {
     wsl) echo "114m%} 016m%}" ;;
     cloud) echo "051m%} 016m%}" ;;
     kvm) echo "203m%} 016m%}" ;;
+    hermes) echo "120m%} 022m%}" ;;
     *) echo "183m%} 016m%}" ;;
   esac
 }

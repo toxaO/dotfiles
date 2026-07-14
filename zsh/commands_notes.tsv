@@ -50,6 +50,7 @@ function	agents_refresh	tools	refresh AGENTS.md to point at central BASE/PROJECT
 function	agents_template	tools	create AGENTS.md and central project AGENTS.md	function: zsh/func.zsh
 function	chpwd	core	refresh tmux status on dir change	function: zsh/func.zsh
 function	colorlist	core	show 256-color palette	function: zsh/func.zsh
+function	prompt_machine_color_check	core	show prompt machine color samples	function: zsh/func.zsh
 function	cx	tools	prepare AGENTS/CLAUDE docs and open project memo before codex	function: zsh/func.zsh
 function	hermes_ollama_tui	ai	start Ollama if needed and open Hermes TUI	function: zsh/func.zsh
 function	hermes_openai_tui	ai	open Hermes TUI with OpenAI API	function: zsh/func.zsh
