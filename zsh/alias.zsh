@@ -73,11 +73,3 @@ alias rmDS='find . -name ".DS_Store" -type f -ls -delete'
 alias hmo='hermes_ollama_tui'
 alias hmc='hermes_openai_tui'
 alias hmob='hermes_obsidian'
-
-# Obsidian drafts sync
-alias obdp='ob_drafts_pull'
-alias obdu='ob_drafts_push'
-# n = rsync --dry-run
-alias obdn='ob_drafts_dry_run'
-# s = status
-alias obds='ob_drafts_status'

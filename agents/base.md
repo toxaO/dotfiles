@@ -14,14 +14,12 @@
 
 ## External Notes
 - 必要に応じて、Obsidian vault を知識整理先として使用してよい。
-- draft は OS を問わず `~/ob_drafts` に Markdown 形式で書く。macOS / Windows / WSL / Ubuntu でこのパスを共通入口にする。
-- `~/ob_drafts` は下書き置き場とし、Obsidian vault 側で整理・構造化して正式な note に編集し直す運用とする。
-- draft の記事単位は、原則として git commit に適した粒度に合わせる。1 commit にまとめると自然な作業・判断・相談を 1 記事にする。
-- macOS / Windows / WSL / Ubuntu から Ubuntu server の draft を同期する場合は `obdp` (`ob_drafts_pull`) を使う。同期元は既定で `toku:/home/tokumasa/ob_drafts/`。
-- Ubuntu server へ draft を戻す必要がある場合のみ `obdu` (`ob_drafts_push`) を使う。実行前に `obdn` または `obds` で dry-run する。
-- 作業の区切りが明確で、git commit するのにちょうどよい粒度だと判断した場合は、git commit と `~/ob_drafts` への書き出しをユーザーへ提案する。
+- vault は各マシンで Nextcloud / rclone 経由で同期される共有知識基盤として扱う。
+- draft や作業記録は vault 内の該当ディレクトリ（下書きは drafts、長期知識は notes 等）に直接書き、vault 側で整理・構造化して正式な note に編集し直す運用とする。
+- 記事・note の単位は、原則として git commit に適した粒度に合わせる。1 commit にまとめると自然な作業・判断・相談を 1 記事にする。
+- 作業の区切りが明確で、git commit するのにちょうどよい粒度だと判断した場合は、git commit をユーザーへ提案する。
 - 実際の読み書きは、その場の sandbox 権限に従う。AGENTS.md は権限付与そのものではなく運用方針を示す。
-- `~/ob_drafts` へ追記する前に、可能なら `~/ob_drafts/Ob_use_policy.md` を読んでから、配置と粒度を判断する。
+- vault のディレクトリ構成・運用ルールは、vault 側の運用ドキュメント（例: Hermes VM では `07_hermes/current.md` と `07_hermes/rules.md`）を正とする。
 
 ## Communication
 - 基本のユーザー向け応答は日本語で行う。ユーザーが別言語を求めた場合のみ切り替える。

@@ -210,50 +210,6 @@ zsh_cmds_menu() {
   "$script"
 }
 
-ob_drafts_pull() {
-  local remote="${OB_DRAFTS_REMOTE:-toku}"
-  local remote_dir="${OB_DRAFTS_REMOTE_DIR:-/home/tokumasa/ob_drafts}"
-  local local_dir="${OB_DRAFTS_DIR:-$HOME/ob_drafts}"
-
-  mkdir -p "$local_dir" || return 1
-  rsync -rtv --itemize-changes --no-perms --no-owner --no-group \
-    "$remote:$remote_dir/" "$local_dir/"
-}
-
-ob_drafts_push() {
-  local remote="${OB_DRAFTS_REMOTE:-toku}"
-  local remote_dir="${OB_DRAFTS_REMOTE_DIR:-/home/tokumasa/ob_drafts}"
-  local local_dir="${OB_DRAFTS_DIR:-$HOME/ob_drafts}"
-
-  mkdir -p "$local_dir" || return 1
-  rsync -rtv --itemize-changes --no-perms --no-owner --no-group \
-    "$local_dir/" "$remote:$remote_dir/"
-}
-
-ob_drafts_dry_run() {
-  local remote="${OB_DRAFTS_REMOTE:-toku}"
-  local remote_dir="${OB_DRAFTS_REMOTE_DIR:-/home/tokumasa/ob_drafts}"
-  local local_dir="${OB_DRAFTS_DIR:-$HOME/ob_drafts}"
-
-  mkdir -p "$local_dir" || return 1
-  rsync -rtvn --itemize-changes --no-perms --no-owner --no-group \
-    "$remote:$remote_dir/" "$local_dir/"
-}
-
-ob_drafts_status() {
-  local remote="${OB_DRAFTS_REMOTE:-toku}"
-  local remote_dir="${OB_DRAFTS_REMOTE_DIR:-/home/tokumasa/ob_drafts}"
-  local local_dir="${OB_DRAFTS_DIR:-$HOME/ob_drafts}"
-
-  echo "local : $local_dir"
-  echo "remote: $remote:$remote_dir"
-  echo ""
-  echo "[remote -> local dry-run]"
-  mkdir -p "$local_dir" || return 1
-  rsync -rtvn --itemize-changes --no-perms --no-owner --no-group \
-    "$remote:$remote_dir/" "$local_dir/"
-}
-
 unalias cx 2>/dev/null
 unalias cr 2>/dev/null
 
