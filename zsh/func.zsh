@@ -525,6 +525,28 @@ hermes_openai_tui() {
   hermes chat --tui --provider "$provider" --model "$model" "$@"
 }
 
+# Obsidian vault で Hermes を起動する。
+# vault へ cd してから hermes を起動することで、vault ルートの AGENTS.md
+# (→ AGENTS_PROJECT.md の Startup Protocol)が cwd 経由で自動注入され、
+# Hermes が起動時に 07_hermes/current.md を読む運用になる。
+hermes_obsidian() {
+  local vault="${HERMES_OBSIDIAN_VAULT:-$HOME/workspace/obsidian}"
+
+  if ! command -v hermes >/dev/null; then
+    echo "hermes not found" >&2
+    return 1
+  fi
+  if [ ! -d "$vault" ]; then
+    echo "obsidian vault not found: $vault" >&2
+    return 1
+  fi
+  if [ ! -f "$vault/AGENTS.md" ]; then
+    echo "warning: $vault/AGENTS.md not found (Startup Protocol は自動注入されない)" >&2
+  fi
+
+  ( cd "$vault" && hermes "$@" )
+}
+
 #--------------------------------------------------
 # python
 #--------------------------------------------------
